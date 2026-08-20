@@ -127,7 +127,7 @@ function App() {
           Format Converter
         </span>
         <div className="header-actions">
-          <span className="badge">100% private · nothing uploaded</span>
+          <span className="badge">Private &amp; secure</span>
           {isPro ? (
             <span className="badge badge-pro">Pro</span>
           ) : (
