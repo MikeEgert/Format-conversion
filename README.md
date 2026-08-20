@@ -1,45 +1,55 @@
 # Format Converter
 
-A client-side Swiss Army knife for file conversions. Convert files right in your browser — nothing is uploaded, so there are no ads, watermarks, or privacy worries.
+Convert files right in your browser — nothing gets uploaded.
 
-## Conversions
+No ads, no watermarks, no "enter your email" step. The file stays on your computer the whole
+time, so it's safe even for private documents like medical or legal records.
 
-| From | To | Notes |
+## What it can do
+
+| Convert | To | Why you'd use it |
 | --- | --- | --- |
-| HEIC/HEIF | JPG | Uses `heic2any` (libheif) in-browser |
-| DOCX | Markdown | Uses `mammoth` + `turndown` |
-| CSV | JSON | Uses `papaparse` |
+| HEIC / HEIF | JPG | iPhone photos that won't open on Windows or older apps |
+| DOCX | Markdown | Turn a Word document into clean text for notes, blogs, or wikis |
+| CSV | JSON | Get spreadsheet data into a format developers and tools can use |
 
-## Pricing model (freemium)
+The heavy lifting is done by open-source libraries —
+[heic2any](https://github.com/alexcorvi/heic2any),
+[mammoth](https://github.com/mwilliamson/mammoth.js),
+[papaparse](https://github.com/mholt/PapaParse),
+[fflate](https://github.com/101arrowz/fflate) —
+but you don't need to know any of that to use the site.
+
+## Free vs Pro
 
 - **Free** — convert one file at a time.
-- **Pro** — batch conversion + one-click ZIP download.
+- **Pro** — batch convert many files at once and download them all as a single ZIP.
 
-Pro is gated by a license key. Since everything is client-side, the check is a stub in
-[`src/pro/license.ts`](src/pro/license.ts) — wire it to Lemon Squeezy, Stripe, Paddle, or your own
-backend. For local testing, use the demo key: `PRO-DEMO-2026`.
+## Your data stays on your device
 
-## How it works
+- Files are read and converted locally in your browser.
+- Nothing is sent to a server.
+- There are no analytics or trackers.
 
-- **100% client-side** — files are read and converted locally in your browser and never leave your device.
-- **Lazy-loaded converters** — heavy conversion libraries (`heic2any`, `mammoth`) are code-split and only downloaded when you actually use them.
-- **Batch pipeline** — `mapWithConcurrency` + `zipResults` in [`src/lib/batch.ts`](src/lib/batch.ts) power the Pro tier.
-
-## Development
+## Try it
 
 ```bash
 npm install
 npm run dev
 ```
 
-Build and lint:
+Then open the URL it prints (usually http://localhost:5173/).
 
-```bash
-npm run build
-npm run lint
-```
+To preview the Pro features without paying, enter the demo key in the upgrade dialog:
+`PRO-DEMO-2026`.
+
+## For developers
+
+Pro is gated by a license key. Because everything runs in the browser, the check is just a stub
+in [`src/pro/license.ts`](src/pro/license.ts) — connect it to a payment provider (Lemon Squeezy,
+Stripe, Paddle) or your own server before charging real money.
 
 ## Roadmap
 
-- Wire the license check to a real payment provider
+- Connect the license check to a real payment provider
 - More conversions (EPUB → PDF, and others)
