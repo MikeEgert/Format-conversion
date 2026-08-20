@@ -1,12 +1,57 @@
+export interface LicenseCheck {
+  valid: boolean
+  reason?: string
+}
+
 const DEMO_KEY = 'PRO-DEMO-2026'
 
-export async function verifyLicenseKey(key: string): Promise<boolean> {
-  const normalized = key.trim().toUpperCase()
+function reasonForStatus(status: string | null): string | undefined {
+  switch (status) {
+    case 'expired':
+      return 'This license key has expired.'
+    case 'disabled':
+      return 'This license key has been disabled.'
+    default:
+      return undefined
+  }
+}
 
-  if (normalized === DEMO_KEY) return true
+export async function verifyLicenseKey(key: string): Promise<LicenseCheck> {
+  const licenseKey = key.trim()
+  const serviceUrl = import.meta.env.VITE_LICENSE_URL
 
-  // TODO: Replace with real license validation against your payment provider
-  // (Lemon Squeezy, Stripe, Paddle) or your own backend. Return the
-  // entitlement result here (valid + plan) instead of a boolean.
-  return false
+  if (!serviceUrl) {
+    const demoOk = licenseKey.toUpperCase() === DEMO_KEY
+    return demoOk
+      ? { valid: true }
+      : { valid: false, reason: "That key isn't valid. Try again." }
+  }
+
+  try {
+    const res = await fetch(`${serviceUrl.replace(/\/$/, '')}/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ licenseKey }),
+    })
+
+    if (!res.ok) {
+      return {
+        valid: false,
+        reason: 'Could not verify the license key right now. Please try again.',
+      }
+    }
+
+    const data = (await res.json()) as { valid: boolean; status: string | null }
+    if (data.valid) return { valid: true }
+
+    return {
+      valid: false,
+      reason: reasonForStatus(data.status) ?? "That key isn't valid. Try again.",
+    }
+  } catch {
+    return {
+      valid: false,
+      reason: 'Could not verify the license key right now. Please try again.',
+    }
+  }
 }

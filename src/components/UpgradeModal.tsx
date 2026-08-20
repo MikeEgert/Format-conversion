@@ -16,12 +16,12 @@ export function UpgradeModal({ onClose, onUnlocked }: UpgradeModalProps) {
     e.preventDefault()
     setChecking(true)
     setError(null)
-    const ok = await unlock(key)
+    const result = await unlock(key)
     setChecking(false)
-    if (ok) {
+    if (result.valid) {
       onUnlocked()
     } else {
-      setError("That key isn't valid. Try again.")
+      setError(result.reason ?? "That key isn't valid. Try again.")
     }
   }
 

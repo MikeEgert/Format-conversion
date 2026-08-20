@@ -1,8 +1,9 @@
 import { createContext } from 'react'
+import type { LicenseCheck } from './license'
 
 export interface ProContextValue {
   isPro: boolean
-  unlock: (key: string) => Promise<boolean>
+  unlock: (key: string) => Promise<LicenseCheck>
   lock: () => void
 }
 

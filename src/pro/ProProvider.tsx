@@ -14,8 +14,8 @@ export function ProProvider({ children }: { children: ReactNode }) {
   })
 
   const unlock = useCallback(async (key: string) => {
-    const valid = await verifyLicenseKey(key)
-    if (valid) {
+    const result = await verifyLicenseKey(key)
+    if (result.valid) {
       try {
         localStorage.setItem(STORAGE_KEY, '1')
       } catch {
@@ -23,7 +23,7 @@ export function ProProvider({ children }: { children: ReactNode }) {
       }
       setIsPro(true)
     }
-    return valid
+    return result
   }, [])
 
   const lock = useCallback(() => {
