@@ -1,6 +1,16 @@
 import { isZipFile, replaceExtension } from './helpers'
 import { ConversionError, type Converter } from './types'
 
+export async function htmlToMarkdown(html: string): Promise<string> {
+  const TurndownService = (await import('turndown')).default
+  const turndown = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced',
+    bulletListMarker: '-',
+  })
+  return turndown.turndown(html)
+}
+
 export const docxToMarkdown: Converter = {
   id: 'docx-to-markdown',
   name: 'DOCX to Markdown',
@@ -31,14 +41,7 @@ export const docxToMarkdown: Converter = {
     try {
       const mammoth = (await import('mammoth')).default
       const { value: html } = await mammoth.convertToHtml({ arrayBuffer })
-
-      const TurndownService = (await import('turndown')).default
-      const turndown = new TurndownService({
-        headingStyle: 'atx',
-        codeBlockStyle: 'fenced',
-        bulletListMarker: '-',
-      })
-      const markdown = turndown.turndown(html)
+      const markdown = await htmlToMarkdown(html)
 
       return {
         blob: new Blob([markdown], { type: 'text/markdown' }),

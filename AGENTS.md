@@ -43,11 +43,15 @@ keys, handle sales tax). Plan was done in 3 pieces:
   Pages subpath. Don't remove it without also changing the deploy setup.
 
 ## Open decisions / next steps
-- Add EPUB→PDF (4th converter originally planned) — or consider JSON→CSV / image
-  conversion instead (higher demand, lower effort).
+- Add EPUB→PDF (next converter candidate).
 - Privacy/"how it works" page for medical/legal audience.
-- Tests (none yet).
 - Payments (Lemon Squeezy) — do last, see above.
+
+## Tests
+- Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is
+  extracted (e.g. `parseCsv`, `toCsvRows`, `htmlToMarkdown`) and tested directly;
+  browser-only code paths (canvas, createImageBitmap, heic2any) are covered via
+  wrong-file guards or stubbed globals.
 
 ## Working conventions
 - State your plan briefly before editing (files touched, why) for anything beyond a trivial fix.

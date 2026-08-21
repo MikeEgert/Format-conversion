@@ -102,7 +102,7 @@ export function LandingPage() {
               <button type="button" className="btn btn-ghost" onClick={() => setDetail(null)}>
                 Close
               </button>
-              <a href="#/tool" className="btn btn-primary">
+              <a href={`#/tool?converter=${detail.id}`} className="btn btn-primary">
                 Start converting
               </a>
             </div>

@@ -12,6 +12,7 @@ time, so it's safe even for private documents like medical or legal records.
 | HEIC / HEIF | JPG | iPhone photos that won't open on Windows or older apps |
 | DOCX | Markdown | Turn a Word document into clean text for notes, blogs, or wikis |
 | CSV | JSON | Get spreadsheet data into a format developers and tools can use |
+| JSON | CSV | Open API responses and structured data in Excel or Google Sheets |
 
 The heavy lifting is done by open-source libraries —
 [heic2any](https://github.com/alexcorvi/heic2any),

@@ -20,8 +20,16 @@ interface FailedFile {
 
 type Outcome = { ok: true; result: ConversionResult } | ({ ok: false } & FailedFile)
 
+function getInitialConverterId(): string {
+  const match = window.location.hash.match(/[?&]converter=([^&]+)/)
+  if (match && converters.some((c) => c.id === match[1])) {
+    return match[1]
+  }
+  return converters[0].id
+}
+
 export function ConverterPage() {
-  const [converterId, setConverterId] = useState(converters[0].id)
+  const [converterId, setConverterId] = useState(getInitialConverterId)
   const [files, setFiles] = useState<File[]>([])
   const [status, setStatus] = useState<Status>('idle')
   const [results, setResults] = useState<ConversionResult[]>([])
