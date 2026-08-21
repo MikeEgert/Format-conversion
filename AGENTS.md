@@ -10,11 +10,13 @@ browser — files never leave the device (privacy is the core selling point).
 - **Converters**: HEIC→JPG (`heic2any`), DOCX→Markdown (`mammoth` + `turndown`),
   CSV→JSON (`papaparse`). Heavy libs are code-split via dynamic `import()`.
 - **Freemium**: free = single file; Pro = batch convert + "Download as ZIP".
-  Demo key `PRO-DEMO-2026` unlocks Pro (persisted in `localStorage`).
+  Demo key `PRO-DEMO-2026` unlocks Pro (persisted in `localStorage`). This is a
+  temporary stand-in — it should be removed/gated once real license validation
+  (below) ships, not treated as permanent behavior to preserve.
 - **Error reporting**: converters detect *why* a file fails and show an actionable
   hint (e.g. "old .doc, re-save as .docx").
 
-## License validation (payment) — IN PROGRESS
+## License validation (payment) — DEFERRED (do last)
 Goal: real Pro key validation via Lemon Squeezy (they're merchant of record, issue
 keys, handle sales tax). Plan was done in 3 pieces:
 
@@ -24,7 +26,7 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - **Piece 2 (DONE)**: `src/pro/license.ts` `verifyLicenseKey()` calls the worker via
   `VITE_LICENSE_URL` (see `.env.example`). Falls back to the demo key when unset.
   Shows specific reasons (`expired`/`disabled`) on failure.
-- **Piece 3 (TODO — next session)**: user creates free Cloudflare + Lemon Squeezy
+- **Piece 3 (DEFERRED — do last)**: user creates free Cloudflare + Lemon Squeezy
   accounts, deploy the worker, create the "Pro" product, set `VITE_LICENSE_URL`,
   deploy the site.
 
@@ -34,8 +36,27 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - `src/pro/` — Pro state (`ProProvider.tsx`, `usePro.ts`, `license.ts`)
 - `worker/` — license relay (Cloudflare Worker, deploy with `wrangler`)
 
+## Deployment
+- Live at https://mikeegert.github.io/Format-conversion/ — GitHub Pages via
+  `.github/workflows/deploy.yml` (rebuilds on every push to `main`).
+- `vite.config.ts` sets `base: '/Format-conversion/'` so assets resolve under the
+  Pages subpath. Don't remove it without also changing the deploy setup.
+
 ## Open decisions / next steps
-- Deploy site (Netlify/Vercel/Cloudflare Pages) — still localhost only.
-- Add EPUB→PDF (4th converter originally planned).
+- Add EPUB→PDF (4th converter originally planned) — or consider JSON→CSV / image
+  conversion instead (higher demand, lower effort).
 - Privacy/"how it works" page for medical/legal audience.
 - Tests (none yet).
+- Payments (Lemon Squeezy) — do last, see above.
+
+## Working conventions
+- State your plan briefly before editing (files touched, why) for anything beyond a trivial fix.
+- After changes: run `npm run lint` and `npm run build`; fix any errors before calling a task done.
+- New converters: implement the `Converter` interface in `src/converters/`, register it,
+  code-split any heavy parsing library via dynamic `import()` (see existing converters for pattern).
+- Never add code that sends file contents over the network — this app's core promise is
+  "files never leave the device." Flag it explicitly if a task seems to require it. !!!
+- Don't commit secrets/env values, and don't run `wrangler deploy` or touch `worker/` deploy
+  config without asking first.
+- Prefer small, focused diffs. No unrelated refactors.
+- No tests exist yet — if you add non-trivial logic, add a test alongside it rather than leaving it untested.
