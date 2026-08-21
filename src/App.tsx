@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { converters, ConversionError } from './converters'
-import type { ConversionResult } from './converters'
+import type { ConversionResult, ImageFormat } from './converters'
 import { mapWithConcurrency, zipResults } from './lib/batch'
 import { downloadResult, formatBytes } from './converters/helpers'
 import { DropZone } from './components/DropZone'
+import { FormatPicker } from './components/FormatPicker'
 import { QualityPicker } from './components/QualityPicker'
 import { ResultCard } from './components/ResultCard'
 import { Results } from './components/Results'
@@ -28,8 +29,12 @@ function App() {
   const [errorHint, setErrorHint] = useState<string | null>(null)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const [quality, setQuality] = useState(0.9)
+  const [format, setFormat] = useState<ImageFormat>('jpg')
 
   const converter = converters.find((c) => c.id === converterId) ?? converters[0]
+  const formatOption = converter.formats?.find((f) => f.id === format)
+  const showQuality =
+    converter.supportsQuality && (!converter.formats || !formatOption || formatOption.lossy)
 
   function reset() {
     setFiles([])
@@ -66,7 +71,7 @@ function App() {
       1,
       async (file) => {
         try {
-          const result = await converter.convert(file, { quality })
+          const result = await converter.convert(file, { quality, format })
           return { ok: true, result }
         } catch (err) {
           return {
@@ -181,7 +186,10 @@ function App() {
           </div>
         ) : (
           <>
-            {converter.supportsQuality && (
+            {converter.formats && (
+              <FormatPicker formats={converter.formats} value={format} onChange={setFormat} />
+            )}
+            {showQuality && (
               <QualityPicker value={quality} onChange={setQuality} />
             )}
             <DropZone accept={converter.accept} onFiles={handleFiles} />

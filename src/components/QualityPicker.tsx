@@ -16,19 +16,19 @@ interface QualityPickerProps {
 
 export function QualityPicker({ value, onChange }: QualityPickerProps) {
   return (
-    <div className="quality">
-      <span className="quality-label">Quality</span>
-      <div className="quality-options" role="group" aria-label="JPEG quality">
+    <div className="picker">
+      <span className="picker-label">Quality</span>
+      <div className="picker-options" role="group" aria-label="Image quality">
         {PRESETS.map((preset) => (
           <button
             key={preset.label}
             type="button"
-            className={preset.value === value ? 'quality-option active' : 'quality-option'}
+            className={preset.value === value ? 'picker-option active' : 'picker-option'}
             aria-pressed={preset.value === value}
             onClick={() => onChange(preset.value)}
           >
             {preset.label}
-            <span className="quality-option-value">{Math.round(preset.value * 100)}%</span>
+            <span className="picker-option-value">{Math.round(preset.value * 100)}%</span>
           </button>
         ))}
       </div>

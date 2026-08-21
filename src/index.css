@@ -225,25 +225,25 @@ body {
   font-size: 14px;
 }
 
-.quality {
+.picker {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.quality-label {
+.picker-label {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
 }
 
-.quality-options {
+.picker-options {
   display: inline-flex;
   gap: 8px;
 }
 
-.quality-option {
+.picker-option {
   font: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -259,22 +259,22 @@ body {
   transition: border-color 0.15s, background 0.15s;
 }
 
-.quality-option:hover {
+.picker-option:hover {
   border-color: var(--accent);
 }
 
-.quality-option.active {
+.picker-option.active {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent-strong);
 }
 
-.quality-option-value {
+.picker-option-value {
   font-size: 12px;
   color: var(--text-muted);
 }
 
-.quality-option.active .quality-option-value {
+.picker-option.active .picker-option-value {
   color: var(--accent-strong);
 }
 

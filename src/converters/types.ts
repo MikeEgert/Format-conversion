@@ -13,8 +13,17 @@ export interface ConversionResult {
   filename: string
 }
 
+export type ImageFormat = 'jpg' | 'png' | 'webp'
+
+export interface ImageFormatOption {
+  id: ImageFormat
+  label: string
+  lossy: boolean
+}
+
 export interface ConversionOptions {
   quality?: number
+  format?: ImageFormat
 }
 
 export interface Converter {
@@ -26,5 +35,6 @@ export interface Converter {
   accept: string
   outputType: string
   supportsQuality?: boolean
+  formats?: ImageFormatOption[]
   convert: (file: File, options?: ConversionOptions) => Promise<ConversionResult>
 }
