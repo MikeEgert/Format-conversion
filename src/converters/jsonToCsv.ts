@@ -16,9 +16,15 @@ function flattenRow(row: JsonRow): JsonRow {
   return out
 }
 
-export function toCsvRows(data: unknown): JsonRow[] | unknown[][] {
+export interface CsvTable {
+  columns: string[] | null
+  rows: JsonRow[] | unknown[][]
+}
+
+export function toCsvTable(data: unknown): CsvTable {
   if (isObject(data)) {
-    return [flattenRow(data)]
+    const row = flattenRow(data)
+    return { columns: Object.keys(row), rows: [row] }
   }
   if (Array.isArray(data)) {
     if (data.length === 0) {
@@ -28,10 +34,12 @@ export function toCsvRows(data: unknown): JsonRow[] | unknown[][] {
       )
     }
     if (data.every(isObject)) {
-      return data.map(flattenRow)
+      const rows = data.map(flattenRow)
+      const columns = [...new Set(rows.flatMap((row) => Object.keys(row)))]
+      return { columns, rows }
     }
     if (data.every(Array.isArray)) {
-      return data
+      return { columns: null, rows: data }
     }
     throw new ConversionError(
       "This JSON structure can't be turned into a spreadsheet.",
@@ -42,6 +50,16 @@ export function toCsvRows(data: unknown): JsonRow[] | unknown[][] {
     "This JSON isn't a list of rows.",
     'CSV needs rows and columns. Use an array of objects or an array of arrays as the top-level value.',
   )
+}
+
+export function tableToCsv(table: CsvTable): string {
+  if (table.columns) {
+    return Papa.unparse(table.rows as JsonRow[], {
+      columns: table.columns,
+      escapeFormulae: true,
+    })
+  }
+  return Papa.unparse(table.rows as unknown[][], { escapeFormulae: true })
 }
 
 export const jsonToCsv: Converter = {
@@ -63,7 +81,7 @@ export const jsonToCsv: Converter = {
   accept: '.json,application/json,text/plain',
   outputType: 'text/csv',
   async convert(file) {
-    const text = await file.text()
+    const text = (await file.text()).replace(/^\uFEFF/, '')
     if (!text.trim()) {
       throw new ConversionError(
         'The JSON file appears to be empty.',
@@ -81,7 +99,7 @@ export const jsonToCsv: Converter = {
       )
     }
 
-    const csv = Papa.unparse(toCsvRows(data) as JsonRow[])
+    const csv = tableToCsv(toCsvTable(data))
     return {
       blob: new Blob([csv], { type: 'text/csv' }),
       filename: replaceExtension(file.name, 'csv'),

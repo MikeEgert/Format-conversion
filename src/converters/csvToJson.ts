@@ -2,6 +2,27 @@ import Papa from 'papaparse'
 import { replaceExtension } from './helpers'
 import { ConversionError, type Converter } from './types'
 
+const FLOAT = /^\s*-?(\d+\.?|\.\d+|\d+\.\d+)([eE][-+]?\d+)?\s*$/
+const ISO_DATE =
+  /^((\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z)))$/
+const MAX_SAFE_FLOAT = 2 ** 53
+
+function hasLeadingZero(value: string): boolean {
+  const integer = value.replace(/^\s*[+-]/, '').split(/[.eE]/)[0]
+  return integer.length > 1 && integer.startsWith('0')
+}
+
+export function typeCsvValue(value: string): unknown {
+  if (value === 'true' || value === 'TRUE') return true
+  if (value === 'false' || value === 'FALSE') return false
+  if (FLOAT.test(value) && !hasLeadingZero(value)) {
+    const n = parseFloat(value)
+    if (n > -MAX_SAFE_FLOAT && n < MAX_SAFE_FLOAT) return n
+  }
+  if (ISO_DATE.test(value)) return new Date(value)
+  return value === '' ? null : value
+}
+
 export function parseCsv(text: string): Record<string, unknown>[] {
   if (!text.trim()) {
     throw new ConversionError(
@@ -13,7 +34,7 @@ export function parseCsv(text: string): Record<string, unknown>[] {
   const parsed = Papa.parse<Record<string, unknown>>(text, {
     header: true,
     skipEmptyLines: 'greedy',
-    dynamicTyping: true,
+    transform: typeCsvValue,
   })
 
   if (parsed.data.length === 0) {
