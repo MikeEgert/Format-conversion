@@ -5,6 +5,7 @@ import { usePro } from './pro/usePro'
 import { mapWithConcurrency, zipResults } from './lib/batch'
 import { downloadResult, formatBytes } from './converters/helpers'
 import { DropZone } from './components/DropZone'
+import { QualityPicker } from './components/QualityPicker'
 import { ResultCard } from './components/ResultCard'
 import { Results } from './components/Results'
 import { UpgradeModal } from './components/UpgradeModal'
@@ -31,6 +32,7 @@ function App() {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
+  const [quality, setQuality] = useState(0.9)
 
   const converter = converters.find((c) => c.id === converterId) ?? converters[0]
 
@@ -74,7 +76,7 @@ function App() {
       1,
       async (file) => {
         try {
-          const result = await converter.convert(file)
+          const result = await converter.convert(file, { quality })
           return { ok: true, result }
         } catch (err) {
           return {
@@ -203,7 +205,12 @@ function App() {
             </button>
           </div>
         ) : (
-          <DropZone accept={converter.accept} onFiles={handleFiles} />
+          <>
+            {converter.supportsQuality && (
+              <QualityPicker value={quality} onChange={setQuality} />
+            )}
+            <DropZone accept={converter.accept} onFiles={handleFiles} />
+          </>
         )}
 
         {status === 'done' && failed.length > 0 && (

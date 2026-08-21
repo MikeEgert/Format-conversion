@@ -9,7 +9,8 @@ export const heicToJpg: Converter = {
   description: 'Convert iPhone HEIC photos to universally-supported JPG.',
   accept: '.heic,.heif,image/heic,image/heif',
   outputType: 'image/jpeg',
-  async convert(file) {
+  supportsQuality: true,
+  async convert(file, options) {
     const buffer = await file.arrayBuffer()
     if (!isHeicFile(buffer)) {
       throw new ConversionError(
@@ -21,7 +22,11 @@ export const heicToJpg: Converter = {
     const heic2any = (await import('heic2any')).default
 
     try {
-      const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 })
+      const blob = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: options?.quality ?? 0.9,
+      })
       const jpeg = Array.isArray(blob) ? blob[0] : blob
       return {
         blob: new Blob([jpeg], { type: 'image/jpeg' }),

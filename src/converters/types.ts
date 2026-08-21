@@ -13,6 +13,10 @@ export interface ConversionResult {
   filename: string
 }
 
+export interface ConversionOptions {
+  quality?: number
+}
+
 export interface Converter {
   id: string
   name: string
@@ -21,5 +25,6 @@ export interface Converter {
   description: string
   accept: string
   outputType: string
-  convert: (file: File) => Promise<ConversionResult>
+  supportsQuality?: boolean
+  convert: (file: File, options?: ConversionOptions) => Promise<ConversionResult>
 }
