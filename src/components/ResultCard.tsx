@@ -10,6 +10,7 @@ interface ResultCardProps {
 export function ResultCard({ result, onReset }: ResultCardProps) {
   const isImage = result.blob.type.startsWith('image/')
   const [text, setText] = useState<string | null>(null)
+  const [dims, setDims] = useState<{ width: number; height: number } | null>(null)
 
   const imageUrl = useMemo(
     () => (isImage ? URL.createObjectURL(result.blob) : null),
@@ -21,6 +22,20 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
       if (imageUrl) URL.revokeObjectURL(imageUrl)
     }
   }, [imageUrl])
+
+  useEffect(() => {
+    if (!isImage) return
+    let cancelled = false
+    createImageBitmap(result.blob)
+      .then((bitmap) => {
+        if (!cancelled) setDims({ width: bitmap.width, height: bitmap.height })
+        bitmap.close()
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [result, isImage])
 
   useEffect(() => {
     if (isImage) return
@@ -38,7 +53,10 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
       <div className="result-meta">
         <div className="result-file">
           <span className="result-name">{result.filename}</span>
-          <span className="result-size">{formatBytes(result.blob.size)}</span>
+          <span className="result-size">
+            {dims ? `${dims.width} × ${dims.height} · ` : ''}
+            {formatBytes(result.blob.size)}
+          </span>
         </div>
         <div className="result-actions">
           <button type="button" className="btn btn-ghost" onClick={onReset}>
@@ -50,13 +68,15 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
         </div>
       </div>
 
-      <div className={isImage ? 'result-preview image' : 'result-preview'}>
-        {isImage && imageUrl ? (
-          <img src={imageUrl} alt={result.filename} />
-        ) : (
+      {isImage ? (
+        <div className="result-preview image">
+          {imageUrl && <img src={imageUrl} alt={result.filename} />}
+        </div>
+      ) : (
+        <div className="result-preview">
           <pre>{text ?? 'Loading preview…'}</pre>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

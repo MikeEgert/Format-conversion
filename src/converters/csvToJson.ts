@@ -8,6 +8,16 @@ export const csvToJson: Converter = {
   fromLabel: 'CSV',
   toLabel: 'JSON',
   description: 'Turn spreadsheet rows into clean, nested JSON objects.',
+  detail: {
+    about:
+      'Convert spreadsheet rows into clean, nested JSON objects — ready for developers, apps, and APIs. The first row becomes the field names.',
+    useCases: [
+      'Feed spreadsheet data into a script or API',
+      'Inspect data as structured JSON',
+      'Prepare data for a database import',
+    ],
+    accepts: ['CSV'],
+  },
   accept: '.csv,text/csv,text/plain',
   outputType: 'application/json',
   async convert(file) {

@@ -1,4 +1,4 @@
-import { isHeicFile, replaceExtension } from './helpers'
+import { isHeicFile, replaceExtension, resizeImage } from './helpers'
 import { ConversionError, type Converter } from './types'
 
 export const heicToJpg: Converter = {
@@ -7,9 +7,20 @@ export const heicToJpg: Converter = {
   fromLabel: 'HEIC',
   toLabel: 'JPG',
   description: 'Convert iPhone HEIC photos to universally-supported JPG.',
+  detail: {
+    about:
+      'Turn iPhone and camera HEIC/HEIF photos into universally-supported JPG. Share and open your photos anywhere without compatibility problems.',
+    useCases: [
+      'Open iPhone photos on Windows or older apps',
+      'Upload HEIC files to sites that only accept JPG',
+      'Resize large photos down for faster sharing',
+    ],
+    accepts: ['HEIC', 'HEIF'],
+  },
   accept: '.heic,.heif,image/heic,image/heif',
   outputType: 'image/jpeg',
   supportsQuality: true,
+  supportsResize: true,
   async convert(file, options) {
     const buffer = await file.arrayBuffer()
     if (!isHeicFile(buffer)) {
@@ -28,8 +39,13 @@ export const heicToJpg: Converter = {
         quality: options?.quality ?? 0.9,
       })
       const jpeg = Array.isArray(blob) ? blob[0] : blob
+      const maxDimension = options?.maxDimension ?? 0
+      const output =
+        maxDimension > 0
+          ? await resizeImage(jpeg, maxDimension, 'image/jpeg', options?.quality ?? 0.9)
+          : new Blob([jpeg], { type: 'image/jpeg' })
       return {
-        blob: new Blob([jpeg], { type: 'image/jpeg' }),
+        blob: output,
         filename: replaceExtension(file.name, 'jpg'),
       }
     } catch {

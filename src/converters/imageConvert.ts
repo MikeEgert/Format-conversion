@@ -1,4 +1,4 @@
-import { replaceExtension } from './helpers'
+import { replaceExtension, scaledSize } from './helpers'
 import { ConversionError, type Converter, type ImageFormat } from './types'
 
 const MIME: Record<ImageFormat, string> = {
@@ -13,9 +13,20 @@ export const imageConvert: Converter = {
   fromLabel: 'Image',
   toLabel: 'JPG/PNG/WebP',
   description: 'Convert PNG, JPG, and WebP images between formats.',
+  detail: {
+    about:
+      'Convert between PNG, JPG, and WebP in any direction, resize images down, or reduce file size — all in your browser.',
+    useCases: [
+      'Open a .webp file in an app that only accepts JPG or PNG',
+      'Resize a large image down for email, forms, or upload limits',
+      'Reduce file size by switching format or lowering quality',
+    ],
+    accepts: ['PNG', 'JPG', 'WebP'],
+  },
   accept: '.png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp',
   outputType: 'image/jpeg',
   supportsQuality: true,
+  supportsResize: true,
   formats: [
     { id: 'jpg', label: 'JPG', lossy: true },
     { id: 'png', label: 'PNG', lossy: false },
@@ -36,9 +47,11 @@ export const imageConvert: Converter = {
       )
     }
 
+    const { width, height } = scaledSize(bitmap.width, bitmap.height, options?.maxDimension ?? 0)
+
     const canvas = document.createElement('canvas')
-    canvas.width = bitmap.width
-    canvas.height = bitmap.height
+    canvas.width = width
+    canvas.height = height
     const ctx = canvas.getContext('2d')
 
     if (!ctx) {
@@ -53,7 +66,7 @@ export const imageConvert: Converter = {
       ctx.fillStyle = '#ffffff'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
     }
-    ctx.drawImage(bitmap, 0, 0)
+    ctx.drawImage(bitmap, 0, 0, width, height)
     bitmap.close()
 
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, mime, quality))

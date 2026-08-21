@@ -34,3 +34,41 @@ export function isZipFile(buffer: ArrayBuffer): boolean {
   const bytes = new Uint8Array(buffer, 0, 2)
   return bytes[0] === 0x50 && bytes[1] === 0x4b
 }
+
+export function scaledSize(
+  width: number,
+  height: number,
+  maxDimension: number,
+): { width: number; height: number } {
+  if (maxDimension <= 0) return { width, height }
+  const longest = Math.max(width, height)
+  if (longest <= maxDimension) return { width, height }
+  const scale = maxDimension / longest
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  }
+}
+
+export async function resizeImage(
+  blob: Blob,
+  maxDimension: number,
+  mime: string,
+  quality: number,
+): Promise<Blob> {
+  const bitmap = await createImageBitmap(blob)
+  const { width, height } = scaledSize(bitmap.width, bitmap.height, maxDimension)
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    bitmap.close()
+    throw new Error('Canvas is not available in this browser.')
+  }
+  ctx.drawImage(bitmap, 0, 0, width, height)
+  bitmap.close()
+  const out = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, mime, quality))
+  if (!out) throw new Error('Could not encode the resized image.')
+  return out
+}

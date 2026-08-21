@@ -7,6 +7,16 @@ export const docxToMarkdown: Converter = {
   fromLabel: 'DOCX',
   toLabel: 'MD',
   description: 'Convert Word documents into clean Markdown for notes and blogs.',
+  detail: {
+    about:
+      'Turn Word documents into clean Markdown for notes, blogs, and wikis. Headings, lists, and code blocks come through clean, without the formatting cruft.',
+    useCases: [
+      'Move a Word doc into a notes app or blog that uses Markdown',
+      'Strip formatting to plain, portable text',
+      'Get a clean, editable version of a report',
+    ],
+    accepts: ['DOCX'],
+  },
   accept: '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   outputType: 'text/markdown',
   async convert(file) {

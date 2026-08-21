@@ -24,6 +24,13 @@ export interface ImageFormatOption {
 export interface ConversionOptions {
   quality?: number
   format?: ImageFormat
+  maxDimension?: number
+}
+
+export interface ConverterDetail {
+  about: string
+  useCases: string[]
+  accepts: string[]
 }
 
 export interface Converter {
@@ -35,6 +42,8 @@ export interface Converter {
   accept: string
   outputType: string
   supportsQuality?: boolean
+  supportsResize?: boolean
   formats?: ImageFormatOption[]
+  detail?: ConverterDetail
   convert: (file: File, options?: ConversionOptions) => Promise<ConversionResult>
 }
