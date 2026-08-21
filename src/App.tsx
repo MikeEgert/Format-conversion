@@ -1,14 +1,12 @@
 import { useState } from 'react'
 import { converters, ConversionError } from './converters'
 import type { ConversionResult } from './converters'
-import { usePro } from './pro/usePro'
 import { mapWithConcurrency, zipResults } from './lib/batch'
 import { downloadResult, formatBytes } from './converters/helpers'
 import { DropZone } from './components/DropZone'
 import { QualityPicker } from './components/QualityPicker'
 import { ResultCard } from './components/ResultCard'
 import { Results } from './components/Results'
-import { UpgradeModal } from './components/UpgradeModal'
 
 type Status = 'idle' | 'working' | 'done' | 'error'
 
@@ -21,7 +19,6 @@ interface FailedFile {
 type Outcome = { ok: true; result: ConversionResult } | ({ ok: false } & FailedFile)
 
 function App() {
-  const { isPro } = usePro()
   const [converterId, setConverterId] = useState(converters[0].id)
   const [files, setFiles] = useState<File[]>([])
   const [status, setStatus] = useState<Status>('idle')
@@ -30,8 +27,6 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [errorHint, setErrorHint] = useState<string | null>(null)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
-  const [showUpgrade, setShowUpgrade] = useState(false)
-  const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [quality, setQuality] = useState(0.9)
 
   const converter = converters.find((c) => c.id === converterId) ?? converters[0]
@@ -54,11 +49,6 @@ function App() {
 
   function handleFiles(selected: File[]) {
     if (selected.length === 0) return
-    if (selected.length > 1 && !isPro) {
-      setPendingFiles(selected)
-      setShowUpgrade(true)
-      return
-    }
     void run(selected)
   }
 
@@ -113,11 +103,6 @@ function App() {
     downloadResult({ blob: zip, filename: 'converted-files.zip' })
   }
 
-  function handleUnlocked() {
-    setShowUpgrade(false)
-    if (pendingFiles.length) void run(pendingFiles)
-  }
-
   return (
     <div className="page">
       <header className="header">
@@ -130,23 +115,13 @@ function App() {
         </span>
         <div className="header-actions">
           <span className="badge">Private &amp; secure</span>
-          {isPro ? (
-            <span className="badge badge-pro">Pro</span>
-          ) : (
-            <button type="button" className="upgrade-link" onClick={() => setShowUpgrade(true)}>
-              Upgrade
-            </button>
-          )}
         </div>
       </header>
 
       <main className="main">
         <section className="hero">
-          <h1>Convert files in your browser.</h1>
-          <p>
-            No uploads, no ads, no watermarks. Your files never leave your device — pick a format,
-            drop a file, done.
-          </p>
+          <h1>Convert files privately, in your browser.</h1>
+          <p>Your files never leave your device. Pick a format, drop in a file, and it's done.</p>
         </section>
 
         <section className="converters" aria-label="Choose a conversion">
@@ -239,16 +214,9 @@ function App() {
       </main>
 
       <footer className="footer">
-        <p>
-          {isPro ? 'Pro: batch conversion enabled.' : 'Batch conversion is a Pro feature.'}{' '}
-          More formats coming soon.
-        </p>
-        <p className="footer-sub">Everything runs locally in your browser.</p>
+        <p>Convert files privately, right in your browser.</p>
+        <p className="footer-sub">Nothing is uploaded. No accounts, no tracking.</p>
       </footer>
-
-      {showUpgrade && (
-        <UpgradeModal onClose={() => setShowUpgrade(false)} onUnlocked={handleUnlocked} />
-      )}
     </div>
   )
 }

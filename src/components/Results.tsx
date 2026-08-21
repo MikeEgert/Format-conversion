@@ -23,7 +23,6 @@ export function Results({ results, onDownloadAll, onReset }: ResultsProps) {
           {isBatch && (
             <button type="button" className="btn btn-primary" onClick={onDownloadAll}>
               Download as ZIP
-              <span className="btn-pro-tag">Pro</span>
             </button>
           )}
         </div>
