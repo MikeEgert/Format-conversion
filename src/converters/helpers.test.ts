@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { formatBytes, isHeicFile, isZipFile, replaceExtension, scaledSize } from './helpers'
+import {
+  assertFileSize,
+  formatBytes,
+  isHeicFile,
+  isZipFile,
+  MAX_FILE_BYTES,
+  replaceExtension,
+  scaledSize,
+} from './helpers'
 
 describe('replaceExtension', () => {
   it('replaces an existing extension', () => {
@@ -78,5 +86,23 @@ describe('scaledSize', () => {
 
   it('never scales below 1px', () => {
     expect(scaledSize(2, 2, 1)).toEqual({ width: 1, height: 1 })
+  })
+})
+
+describe('assertFileSize', () => {
+  it('allows files at or under the limit', () => {
+    expect(() => assertFileSize({ size: MAX_FILE_BYTES })).not.toThrow()
+    expect(() => assertFileSize({ size: 0 })).not.toThrow()
+  })
+
+  it('rejects files over the limit with a hint', () => {
+    try {
+      assertFileSize({ size: MAX_FILE_BYTES + 1, name: 'big.heic' })
+      expect.unreachable()
+    } catch (err) {
+      expect((err as Error).name).toBe('ConversionError')
+      expect((err as Error).message).toContain('over the 100 MB limit')
+      expect((err as { hint?: string }).hint).toBeTruthy()
+    }
   })
 })

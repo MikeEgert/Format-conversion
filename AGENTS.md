@@ -64,6 +64,12 @@ keys, handle sales tax). Plan was done in 3 pieces:
   (auto-escaped); images via `<img>`/`createObjectURL`. If a future converter/preview
   (e.g. EPUB) needs to render HTML, sanitize it first — otherwise a malicious file could
   inject scripts (XSS) into the visitor's browser.
+- Security hardening: a CSP `<meta>` tag is injected into the production build only
+  (`vite.config.ts` `injectCsp`). `unsafe-eval` is required by heic2any. When the Lemon
+  Squeezy worker ships (`VITE_LICENSE_URL`), the CSP's `connect-src` must be updated to
+  allow that origin or license checks will be blocked.
+- Files over 100 MB (`MAX_FILE_BYTES`) are rejected up front (`assertFileSize`) to avoid
+  freezing the tab on a huge/malicious input. Raise it only deliberately.
 - Don't commit secrets/env values, and don't run `wrangler deploy` or touch `worker/` deploy
   config without asking first.
 - Prefer small, focused diffs. No unrelated refactors.

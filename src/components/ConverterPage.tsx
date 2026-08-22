@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { converters, ConversionError } from '../converters'
 import type { ConversionResult, ImageFormat } from '../converters'
 import { mapWithConcurrency, zipResults } from '../lib/batch'
-import { downloadResult, formatBytes } from '../converters/helpers'
+import { assertFileSize, downloadResult, formatBytes } from '../converters/helpers'
 import { DropZone } from './DropZone'
 import { FormatPicker } from './FormatPicker'
 import { QualityPicker } from './QualityPicker'
@@ -82,6 +82,7 @@ export function ConverterPage() {
       1,
       async (file) => {
         try {
+          assertFileSize(file)
           const result = await converter.convert(file, { quality, format, maxDimension })
           return { ok: true, result }
         } catch (err) {
