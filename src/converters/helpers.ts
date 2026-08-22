@@ -6,7 +6,7 @@ export const MAX_FILE_BYTES = 100 * 1024 * 1024
 export function assertFileSize(file: { size: number; name?: string }): void {
   if (file.size > MAX_FILE_BYTES) {
     throw new ConversionError(
-      `${file.name ?? 'File'} is ${Math.round(file.size / (1024 * 1024))} MB, over the 100 MB limit.`,
+      `${file.name ?? 'File'} is ${Math.ceil(file.size / (1024 * 1024))} MB, over the 100 MB limit.`,
       'Try a smaller file or split it before converting.',
     )
   }
