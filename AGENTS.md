@@ -60,6 +60,10 @@ keys, handle sales tax). Plan was done in 3 pieces:
   code-split any heavy parsing library via dynamic `import()` (see existing converters for pattern).
 - Never add code that sends file contents over the network — this app's core promise is
   "files never leave the device." Flag it explicitly if a task seems to require it. !!!
+- Never render converted file content as live HTML/JS. Text output goes through `<pre>`
+  (auto-escaped); images via `<img>`/`createObjectURL`. If a future converter/preview
+  (e.g. EPUB) needs to render HTML, sanitize it first — otherwise a malicious file could
+  inject scripts (XSS) into the visitor's browser.
 - Don't commit secrets/env values, and don't run `wrangler deploy` or touch `worker/` deploy
   config without asking first.
 - Prefer small, focused diffs. No unrelated refactors.
