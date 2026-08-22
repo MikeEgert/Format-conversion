@@ -46,6 +46,10 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - Add EPUB→PDF (next converter candidate).
 - Privacy/"how it works" page for medical/legal audience.
 - Payments (Lemon Squeezy) — do last, see above.
+- Legal pages (`src/components/Legal.tsx`, routes `#/terms`, `#/privacy`, `#/legal-notice`)
+  contain `[placeholder]` fields (name, address, contact, VAT ID) that must be filled in
+  before launch. Content is a draft — have it reviewed by a lawyer, especially the
+  Impressum (§ 5 TMG / § 18 MStV).
 
 ## Tests
 - Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is
