@@ -9,6 +9,7 @@ time, so it's safe even for private documents like medical or legal records.
 
 | Convert | To | Why you'd use it |
 | --- | --- | --- |
+| Image (PNG / JPG / WebP) | JPG / PNG / WebP | Convert, resize, and compress images between formats |
 | HEIC / HEIF | JPG | iPhone photos that won't open on Windows or older apps |
 | DOCX | Markdown | Turn a Word document into clean text for notes, blogs, or wikis |
 | CSV | JSON | Get spreadsheet data into a format developers and tools can use |
@@ -29,7 +30,7 @@ but you don't need to know any of that to use the site.
 
 ## Try it
 
-The site is live at https://mikeegert.github.io/Format-conversion/.
+The site is live at https://format-conversion.maidemikkegert.workers.dev.
 
 To run it locally:
 
@@ -42,9 +43,9 @@ Then open the URL it prints (usually http://localhost:5173/).
 
 ## For developers
 
-The site is deployed to GitHub Pages via
-[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) — every push to `main` rebuilds
-and redeploys.
+The site is deployed to Cloudflare Workers (static assets) via Workers Builds — every push to
+`main` rebuilds and redeploys automatically. Build output is configured in `wrangler.jsonc`,
+and security headers live in `public/_headers`.
 
 ## Roadmap
 
