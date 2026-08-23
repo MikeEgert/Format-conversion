@@ -1,5 +1,36 @@
+import { unzipSync, type UnzipFileInfo } from 'fflate'
 import { isZipFile, replaceExtension } from './helpers'
 import { ConversionError, type Converter } from './types'
+
+export const MAX_DOCX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024
+
+export function assertDocxUncompressedSize(
+  data: Uint8Array,
+  maxBytes = MAX_DOCX_UNCOMPRESSED_BYTES,
+): void {
+  let total = 0
+  try {
+    unzipSync(data, {
+      filter(file: UnzipFileInfo) {
+        total += file.originalSize
+        return false
+      },
+    })
+  } catch {
+    throw new ConversionError(
+      'Could not read this .docx file.',
+      'The file may be corrupted or password-protected. Try opening and re-saving it in Word.',
+    )
+  }
+
+  if (total > maxBytes) {
+    const limit = Math.floor(maxBytes / (1024 * 1024))
+    throw new ConversionError(
+      `This document expands to over ${limit} MB, which is too large to convert.`,
+      'Try removing embedded images or splitting the document.',
+    )
+  }
+}
 
 export async function htmlToMarkdown(html: string): Promise<string> {
   const TurndownService = (await import('turndown')).default
@@ -37,6 +68,8 @@ export const docxToMarkdown: Converter = {
         'A .docx is actually a ZIP archive. Old .doc files or renamed files won\'t work — open it in Word or Google Docs and re-save it as ".docx".',
       )
     }
+
+    assertDocxUncompressedSize(new Uint8Array(arrayBuffer))
 
     try {
       const mammoth = (await import('mammoth')).default

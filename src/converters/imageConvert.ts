@@ -1,4 +1,5 @@
 import { assertImageDimensions, replaceExtension, scaledSize } from './helpers'
+import { readImageDimensions } from './imageHeaders'
 import { ConversionError, type Converter, type ImageFormat } from './types'
 
 const MIME: Record<ImageFormat, string> = {
@@ -6,6 +7,8 @@ const MIME: Record<ImageFormat, string> = {
   png: 'image/png',
   webp: 'image/webp',
 }
+
+const HEADER_BYTES = 64 * 1024
 
 export const imageConvert: Converter = {
   id: 'image',
@@ -36,6 +39,12 @@ export const imageConvert: Converter = {
     const format = options?.format ?? 'jpg'
     const quality = options?.quality ?? 0.9
     const mime = MIME[format]
+
+    const header = await file.slice(0, HEADER_BYTES).arrayBuffer()
+    const headerDims = readImageDimensions(header)
+    if (headerDims) {
+      assertImageDimensions(headerDims.width, headerDims.height, file.name)
+    }
 
     let bitmap: ImageBitmap
     try {

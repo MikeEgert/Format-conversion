@@ -21,7 +21,11 @@ keys, handle sales tax). Plan was done in 3 pieces:
 
 - **Piece 1 (DONE)**: `worker/` — a Cloudflare Worker relay that calls the Lemon
   Squeezy License API (`POST /v1/licenses/validate`, no API key needed — the License
-  API is public; the worker exists only to get around CORS).
+  API is public; the worker exists only to get around CORS). Hardened: CORS is
+  restricted to `ALLOWED_ORIGINS` (not `*`), license keys are length-capped, and a
+  best-effort in-memory rate limit is applied per IP. The in-memory limiter is
+  per-isolate and unreliable under load — for production, add a Cloudflare WAF rate
+  limiting rule in the dashboard rather than relying on it.
 - **Piece 2 (DONE)**: `src/pro/license.ts` `verifyLicenseKey()` calls the worker via
   `VITE_LICENSE_URL` (see `.env.example`). Until it is set, Pro stays locked.
   Shows specific reasons (`expired`/`disabled`) on failure.
@@ -49,10 +53,10 @@ keys, handle sales tax). Plan was done in 3 pieces:
   contain `[placeholder]` fields (name, address, contact, VAT ID) that must be filled in
   before launch. Content is a draft — have it reviewed by a lawyer, especially the
   Impressum (§ 5 TMG / § 18 MStV).
-- Security follow-up: the image dimension cap (`MAX_IMAGE_DIMENSION` / `assertImageDimensions`)
-  runs *after* decode, so it stops canvas/output blow-ups but not a true "decode bomb" that
-  exhausts memory inside `createImageBitmap`. Pre-decode prevention needs per-format header
-  sniffing (PNG/JPEG/WebP are easy; HEIC is complex).
+- Security follow-up (HEIC only): PNG/JPEG/WebP now sniff dimensions from the file header
+  *before* decoding (`src/converters/imageHeaders.ts` `readImageDimensions`), rejecting decode
+  bombs up front. HEIC still relies on the post-decode cap because its dimensions live in
+  nested ISO-BMFF `ispe` boxes (complex to parse).
 - Pro is currently locked for everyone: the demo key was removed and `VITE_LICENSE_URL` is
   unset, so "Go Pro → Unlock Pro" always fails with "Pro is not available yet". Re-enable by
   deploying the license worker (Piece 3). Note: anyone who already unlocked via the old demo
@@ -81,6 +85,9 @@ keys, handle sales tax). Plan was done in 3 pieces:
   allow that origin or license checks will be blocked.
 - Files over 100 MB (`MAX_FILE_BYTES`) are rejected up front (`assertFileSize`) to avoid
   freezing the tab on a huge/malicious input. Raise it only deliberately.
+- DOCX files are also capped by total uncompressed size (`MAX_DOCX_UNCOMPRESSED_BYTES`, 256 MB,
+  read from the ZIP central directory without decompressing) to stop zip bombs. Images are
+  capped by pixel dimensions (`MAX_IMAGE_DIMENSION`) plus pre-decode header sniffing.
 - Don't commit secrets/env values, and don't run `wrangler deploy` or touch `worker/` deploy
   config without asking first.
 - Prefer small, focused diffs. No unrelated refactors.

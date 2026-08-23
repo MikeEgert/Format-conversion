@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { strToU8, zipSync } from 'fflate'
 import mammoth from 'mammoth'
 import { ConversionError } from './types'
-import { docxToMarkdown, htmlToMarkdown } from './docxToMarkdown'
+import { assertDocxUncompressedSize, docxToMarkdown, htmlToMarkdown } from './docxToMarkdown'
 
 vi.mock('mammoth', () => ({
   default: { convertToHtml: vi.fn(async () => ({ value: '<p>Hello World</p>' })) },
@@ -67,9 +67,31 @@ describe('docxToMarkdown.convert', () => {
     await expect(docxToMarkdown.convert(file)).rejects.toThrowError(ConversionError)
   })
 
-  it('rejects a zip that is not a valid docx', async () => {
-    vi.mocked(mammoth.convertToHtml).mockRejectedValueOnce(new Error('not a docx'))
+  it('rejects a truncated zip', async () => {
     const file = new File([new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0, 0, 0, 0])], 'corrupt.docx')
     await expect(docxToMarkdown.convert(file)).rejects.toThrowError(ConversionError)
+  })
+
+  it('rejects a valid zip that mammoth cannot parse', async () => {
+    vi.mocked(mammoth.convertToHtml).mockRejectedValueOnce(new Error('not a docx'))
+    const file = new File([buildDocx(BODY)], 'corrupt.docx')
+    await expect(docxToMarkdown.convert(file)).rejects.toThrowError(ConversionError)
+  })
+})
+
+describe('assertDocxUncompressedSize', () => {
+  it('allows a zip under the cap', () => {
+    const zip = zipSync({ 'a.txt': strToU8('hello world') })
+    expect(() => assertDocxUncompressedSize(zip)).not.toThrow()
+  })
+
+  it('rejects a zip that expands beyond the cap', () => {
+    const zip = zipSync({ 'a.txt': strToU8('hello world') })
+    expect(() => assertDocxUncompressedSize(zip, 10)).toThrowError(ConversionError)
+  })
+
+  it('rejects a corrupt zip', () => {
+    const bad = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0, 0, 0, 0])
+    expect(() => assertDocxUncompressedSize(bad)).toThrowError(ConversionError)
   })
 })
