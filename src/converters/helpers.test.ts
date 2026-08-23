@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
   assertFileSize,
+  assertImageDimensions,
   formatBytes,
   isHeicFile,
   isZipFile,
   MAX_FILE_BYTES,
+  MAX_IMAGE_DIMENSION,
   replaceExtension,
+  sanitizeFilename,
   scaledSize,
 } from './helpers'
 
@@ -20,6 +23,32 @@ describe('replaceExtension', () => {
 
   it('appends an extension when there is none', () => {
     expect(replaceExtension('noext', 'png')).toBe('noext.png')
+  })
+
+  it('sanitizes path traversal in the filename', () => {
+    expect(replaceExtension('../evil', 'jpg')).toBe('evil.jpg')
+    expect(replaceExtension('..\\..\\win', 'csv')).toBe('win.csv')
+  })
+})
+
+describe('sanitizeFilename', () => {
+  it('strips path traversal segments', () => {
+    expect(sanitizeFilename('../evil')).toBe('evil')
+    expect(sanitizeFilename('../../etc/passwd')).toBe('passwd')
+    expect(sanitizeFilename('/absolute/path/name')).toBe('name')
+  })
+
+  it('strips Windows-style backslash separators', () => {
+    expect(sanitizeFilename('..\\..\\win')).toBe('win')
+  })
+
+  it('removes control characters', () => {
+    expect(sanitizeFilename('bad\u0000\u001fname')).toBe('badname')
+  })
+
+  it('falls back to a safe name when the result is empty', () => {
+    expect(sanitizeFilename('..')).toBe('file')
+    expect(sanitizeFilename('')).toBe('file')
   })
 })
 
@@ -87,6 +116,14 @@ describe('scaledSize', () => {
   it('never scales below 1px', () => {
     expect(scaledSize(2, 2, 1)).toEqual({ width: 1, height: 1 })
   })
+
+  it('scales down very large dimensions without overflow', () => {
+    expect(scaledSize(100000, 80000, 4096)).toEqual({ width: 4096, height: 3277 })
+  })
+
+  it('returns zero dimensions unchanged', () => {
+    expect(scaledSize(0, 0, 1000)).toEqual({ width: 0, height: 0 })
+  })
 })
 
 describe('assertFileSize', () => {
@@ -102,6 +139,24 @@ describe('assertFileSize', () => {
     } catch (err) {
       expect((err as Error).name).toBe('ConversionError')
       expect((err as Error).message).toContain('over the 100 MB limit')
+      expect((err as { hint?: string }).hint).toBeTruthy()
+    }
+  })
+})
+
+describe('assertImageDimensions', () => {
+  it('allows images at or under the dimension limit', () => {
+    expect(() => assertImageDimensions(MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION)).not.toThrow()
+    expect(() => assertImageDimensions(100, 100)).not.toThrow()
+  })
+
+  it('rejects images exceeding the dimension limit with a hint', () => {
+    try {
+      assertImageDimensions(20000, 100, 'huge.png')
+      expect.unreachable()
+    } catch (err) {
+      expect((err as Error).name).toBe('ConversionError')
+      expect((err as Error).message).toContain('too large')
       expect((err as { hint?: string }).hint).toBeTruthy()
     }
   })

@@ -1,4 +1,4 @@
-import { replaceExtension, scaledSize } from './helpers'
+import { assertImageDimensions, replaceExtension, scaledSize } from './helpers'
 import { ConversionError, type Converter, type ImageFormat } from './types'
 
 const MIME: Record<ImageFormat, string> = {
@@ -46,6 +46,8 @@ export const imageConvert: Converter = {
         'Try a PNG, JPG, or WebP file. If it came from another app, open it and re-export it as one of those formats.',
       )
     }
+
+    assertImageDimensions(bitmap.width, bitmap.height, file.name)
 
     const { width, height } = scaledSize(bitmap.width, bitmap.height, options?.maxDimension ?? 0)
 

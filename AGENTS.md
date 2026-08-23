@@ -50,6 +50,10 @@ keys, handle sales tax). Plan was done in 3 pieces:
   contain `[placeholder]` fields (name, address, contact, VAT ID) that must be filled in
   before launch. Content is a draft — have it reviewed by a lawyer, especially the
   Impressum (§ 5 TMG / § 18 MStV).
+- Security follow-up: the image dimension cap (`MAX_IMAGE_DIMENSION` / `assertImageDimensions`)
+  runs *after* decode, so it stops canvas/output blow-ups but not a true "decode bomb" that
+  exhausts memory inside `createImageBitmap`. Pre-decode prevention needs per-format header
+  sniffing (PNG/JPEG/WebP are easy; HEIC is complex).
 
 ## Tests
 - Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is

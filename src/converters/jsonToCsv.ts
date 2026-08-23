@@ -1,5 +1,5 @@
 import Papa from 'papaparse'
-import { replaceExtension } from './helpers'
+import { replaceExtension, setOwn } from './helpers'
 import { ConversionError, type Converter } from './types'
 
 type JsonRow = Record<string, unknown>
@@ -11,7 +11,8 @@ function isObject(value: unknown): value is JsonRow {
 function flattenRow(row: JsonRow): JsonRow {
   const out: JsonRow = {}
   for (const [key, value] of Object.entries(row)) {
-    out[key] = value != null && typeof value === 'object' ? JSON.stringify(value) : value
+    const flat = value != null && typeof value === 'object' ? JSON.stringify(value) : value
+    setOwn(out, key, flat)
   }
   return out
 }

@@ -26,6 +26,15 @@ describe('toCsvTable', () => {
     expect(table.rows).toEqual([{ name: 'Alice', score: 10 }])
   })
 
+  it('preserves __proto__ and constructor keys as ordinary columns', () => {
+    const row = JSON.parse('{"__proto__":"a","constructor":"b","name":"c"}')
+    const table = toCsvTable([row])
+    expect(table.columns).toEqual(['__proto__', 'constructor', 'name'])
+    expect(table.rows[0]).toHaveProperty('__proto__', 'a')
+    expect(table.rows[0]).toHaveProperty('constructor', 'b')
+    expect(table.rows[0]).toHaveProperty('name', 'c')
+  })
+
   it('passes through an array of arrays unchanged', () => {
     expect(
       toCsvTable([
@@ -68,6 +77,19 @@ describe('tableToCsv', () => {
     expect(csv).toContain("'=cmd()")
   })
 
+  it('escapes every formula-leading prefix character', () => {
+    const csv = tableToCsv({
+      columns: ['eq', 'plus', 'minus', 'at', 'tab', 'cr'],
+      rows: [{ eq: '=1+1', plus: '+2', minus: '-3', at: '@cmd', tab: '\tx', cr: '\ry' }],
+    })
+    expect(csv).toContain("'=1+1")
+    expect(csv).toContain("'+2")
+    expect(csv).toContain("'-3")
+    expect(csv).toContain("'@cmd")
+    expect(csv).toContain("'\tx")
+    expect(csv).toContain("'\ry")
+  })
+
   it('serializes raw rows without a header', () => {
     const csv = tableToCsv({ columns: null, rows: [['a', 'b']] })
     expect(csv).toBe('a,b')
@@ -79,5 +101,28 @@ describe('jsonToCsv.convert', () => {
     const file = new File(['\uFEFF{"name":"Alice"}'], 'data.json')
     const result = await jsonToCsv.convert(file)
     expect(await result.blob.text()).toContain('Alice')
+  })
+
+  it('rejects malformed JSON', async () => {
+    const file = new File(['{"name": "Alice"'], 'data.json')
+    await expect(jsonToCsv.convert(file)).rejects.toThrowError(ConversionError)
+  })
+
+  it('rejects JSON that is only whitespace', async () => {
+    const file = new File(['   \n\t '], 'data.json')
+    await expect(jsonToCsv.convert(file)).rejects.toThrowError(ConversionError)
+  })
+
+  it('rejects a JSON value that is not an array or object', async () => {
+    const file = new File(['"just a string"'], 'data.json')
+    await expect(jsonToCsv.convert(file)).rejects.toThrowError(ConversionError)
+  })
+
+  it('keeps __proto__ columns in the output', async () => {
+    const file = new File(['{"__proto__":"a","name":"b"}'], 'data.json')
+    const result = await jsonToCsv.convert(file)
+    const text = await result.blob.text()
+    expect(text).toContain('__proto__')
+    expect(text).toContain('a')
   })
 })

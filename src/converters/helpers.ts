@@ -2,6 +2,7 @@ import { ConversionError } from './types'
 import type { ConversionResult } from './types'
 
 export const MAX_FILE_BYTES = 100 * 1024 * 1024
+export const MAX_IMAGE_DIMENSION = 16384
 
 export function assertFileSize(file: { size: number; name?: string }): void {
   if (file.size > MAX_FILE_BYTES) {
@@ -13,9 +14,35 @@ export function assertFileSize(file: { size: number; name?: string }): void {
 }
 
 export function replaceExtension(filename: string, newExt: string): string {
-  const i = filename.lastIndexOf('.')
-  const base = i > 0 ? filename.slice(0, i) : filename
+  const clean = sanitizeFilename(filename)
+  const i = clean.lastIndexOf('.')
+  const base = i > 0 ? clean.slice(0, i) : clean
   return `${base}.${newExt}`
+}
+
+export function sanitizeFilename(name: string): string {
+  const lastSep = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'))
+  const base = name.slice(lastSep + 1).replace(/\p{Cc}/gu, '')
+  const cleaned = base.replace(/^\.+/, '')
+  return cleaned || 'file'
+}
+
+export function setOwn(target: Record<string, unknown>, key: string, value: unknown): void {
+  Object.defineProperty(target, key, {
+    value,
+    enumerable: true,
+    writable: true,
+    configurable: true,
+  })
+}
+
+export function assertImageDimensions(width: number, height: number, name?: string): void {
+  if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+    throw new ConversionError(
+      `${name ?? 'The image'} is ${width} × ${height} px, which is too large to convert in the browser.`,
+      `Resize it so its longest side is under ${MAX_IMAGE_DIMENSION} px, then try again.`,
+    )
+  }
 }
 
 export function downloadResult(result: ConversionResult): void {
@@ -69,6 +96,7 @@ export async function resizeImage(
   quality: number,
 ): Promise<Blob> {
   const bitmap = await createImageBitmap(blob)
+  assertImageDimensions(bitmap.width, bitmap.height)
   const { width, height } = scaledSize(bitmap.width, bitmap.height, maxDimension)
   const canvas = document.createElement('canvas')
   canvas.width = width

@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 import { strToU8, zipSync } from 'fflate'
+import mammoth from 'mammoth'
 import { ConversionError } from './types'
 import { docxToMarkdown, htmlToMarkdown } from './docxToMarkdown'
 
 vi.mock('mammoth', () => ({
-  default: { convertToHtml: async () => ({ value: '<p>Hello World</p>' }) },
+  default: { convertToHtml: vi.fn(async () => ({ value: '<p>Hello World</p>' })) },
 }))
 
 const CONTENT_TYPES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -58,6 +59,17 @@ describe('docxToMarkdown.convert', () => {
 
   it('rejects a file that is not a zip archive', async () => {
     const file = new File(['this is not a docx'], 'notes.docx')
+    await expect(docxToMarkdown.convert(file)).rejects.toThrowError(ConversionError)
+  })
+
+  it('rejects an empty file', async () => {
+    const file = new File([], 'empty.docx')
+    await expect(docxToMarkdown.convert(file)).rejects.toThrowError(ConversionError)
+  })
+
+  it('rejects a zip that is not a valid docx', async () => {
+    vi.mocked(mammoth.convertToHtml).mockRejectedValueOnce(new Error('not a docx'))
+    const file = new File([new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0, 0, 0, 0])], 'corrupt.docx')
     await expect(docxToMarkdown.convert(file)).rejects.toThrowError(ConversionError)
   })
 })

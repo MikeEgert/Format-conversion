@@ -1,5 +1,5 @@
 import Papa from 'papaparse'
-import { replaceExtension } from './helpers'
+import { replaceExtension, setOwn } from './helpers'
 import { ConversionError, type Converter } from './types'
 
 const FLOAT = /^\s*-?(\d+\.?|\.\d+|\d+\.\d+)([eE][-+]?\d+)?\s*$/
@@ -23,6 +23,27 @@ export function typeCsvValue(value: string): unknown {
   return value === '' ? null : value
 }
 
+function dedupeHeaders(headers: string[]): string[] {
+  const used = new Set<string>()
+  const counts = new Map<string, number>()
+  return headers.map((raw) => {
+    const header = raw.replace(/^\uFEFF/, '')
+    let name = header
+    if (used.has(header)) {
+      let n = counts.get(header) ?? 1
+      do {
+        name = `${header}_${n}`
+        n += 1
+      } while (used.has(name))
+      counts.set(header, n)
+    } else {
+      counts.set(header, 1)
+    }
+    used.add(name)
+    return name
+  })
+}
+
 export function parseCsv(text: string): Record<string, unknown>[] {
   if (!text.trim()) {
     throw new ConversionError(
@@ -31,20 +52,39 @@ export function parseCsv(text: string): Record<string, unknown>[] {
     )
   }
 
-  const parsed = Papa.parse<Record<string, unknown>>(text, {
-    header: true,
-    skipEmptyLines: 'greedy',
-    transform: typeCsvValue,
-  })
+  const parsed = Papa.parse<string[]>(text, { skipEmptyLines: 'greedy' })
+  const rows = parsed.data
+  const headerRow = rows[0] ?? []
 
-  if (parsed.data.length === 0) {
+  if (headerRow.length === 0) {
     throw new ConversionError(
       'No data rows were found in this CSV.',
       'Make sure the first row is a header and there is at least one row of data below it.',
     )
   }
 
-  return parsed.data
+  const fieldNames = dedupeHeaders(headerRow)
+  const dataRows = rows.slice(1)
+
+  if (dataRows.length === 0) {
+    throw new ConversionError(
+      'No data rows were found in this CSV.',
+      'Make sure the first row is a header and there is at least one row of data below it.',
+    )
+  }
+
+  return dataRows.map((row) => {
+    const obj: Record<string, unknown> = {}
+    fieldNames.forEach((field, i) => {
+      if (i < row.length) {
+        setOwn(obj, field, typeCsvValue(row[i]))
+      }
+    })
+    if (row.length > fieldNames.length) {
+      setOwn(obj, '__parsed_extra', row.slice(fieldNames.length).map(typeCsvValue))
+    }
+    return obj
+  })
 }
 
 export const csvToJson: Converter = {

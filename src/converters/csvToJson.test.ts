@@ -64,4 +64,49 @@ describe('parseCsv', () => {
   it('throws when there is a header but no data rows', () => {
     expect(() => parseCsv('name,score\n')).toThrowError(ConversionError)
   })
+
+  it('preserves a __proto__ header without polluting Object.prototype', () => {
+    const rows = parseCsv('__proto__,constructor,name\na,b,c')
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toHaveProperty('__proto__', 'a')
+    expect(rows[0]).toHaveProperty('constructor', 'b')
+    expect(rows[0]).toHaveProperty('name', 'c')
+    expect(Object.prototype.hasOwnProperty.call(Object.prototype, 'a')).toBe(false)
+    expect('a' in {}).toBe(false)
+  })
+
+  it('keeps a constructor header as ordinary data', () => {
+    const rows = parseCsv('constructor,name\nx,y')
+    expect(rows[0]).toEqual({ constructor: 'x', name: 'y' })
+  })
+
+  it('renames duplicate headers with a numeric suffix', () => {
+    const rows = parseCsv('a,a,b\n1,2,3')
+    expect(rows).toEqual([{ a: 1, a_1: 2, b: 3 }])
+  })
+
+  it('strips a UTF-8 BOM from the first header', () => {
+    const rows = parseCsv('\uFEFFname,score\nAlice,10')
+    expect(rows).toEqual([{ name: 'Alice', score: 10 }])
+  })
+
+  it('keeps spreadsheet formula strings as plain strings', () => {
+    const rows = parseCsv('name\n=cmd()\n@sum\n+1\n-2+2')
+    expect(rows).toEqual([
+      { name: '=cmd()' },
+      { name: '@sum' },
+      { name: '+1' },
+      { name: '-2+2' },
+    ])
+  })
+
+  it('handles quoted fields with commas and newlines', () => {
+    const rows = parseCsv('name,note\n"Alice, A.","line1\nline2"')
+    expect(rows).toEqual([{ name: 'Alice, A.', note: 'line1\nline2' }])
+  })
+
+  it('handles CRLF line endings', () => {
+    const rows = parseCsv('a,b\r\n1,2\r\n3,4')
+    expect(rows).toEqual([{ a: 1, b: 2 }, { a: 3, b: 4 }])
+  })
 })
