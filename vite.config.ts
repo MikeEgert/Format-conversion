@@ -18,15 +18,20 @@ const CSP = [
   "frame-src 'none'",
 ].join('; ')
 
-function injectCsp(): Plugin {
+function injectSecurityMeta(): Plugin {
   return {
-    name: 'inject-csp',
+    name: 'inject-security-meta',
     apply: 'build',
     transformIndexHtml() {
       return [
         {
           tag: 'meta',
           attrs: { 'http-equiv': 'Content-Security-Policy', content: CSP },
+          injectTo: 'head-prepend',
+        },
+        {
+          tag: 'meta',
+          attrs: { name: 'referrer', content: 'no-referrer' },
           injectTo: 'head-prepend',
         },
       ]
@@ -36,6 +41,6 @@ function injectCsp(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), injectCsp()],
+  plugins: [react(), injectSecurityMeta()],
   base: '/Format-conversion/',
 })
