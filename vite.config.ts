@@ -7,10 +7,10 @@ import react from '@vitejs/plugin-react'
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-eval'",
-  "style-src 'self' 'unsafe-inline'",
+  "style-src 'self'",
   "img-src 'self' blob: data:",
   "font-src 'self' data:",
-  "connect-src 'self' blob: data:",
+  "connect-src 'self'",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
