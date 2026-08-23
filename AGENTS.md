@@ -40,10 +40,9 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - `worker/` — license relay (Cloudflare Worker, deploy with `wrangler`)
 
 ## Deployment
-- Live at https://mikeegert.github.io/Format-conversion/ — GitHub Pages via
-  `.github/workflows/deploy.yml` (rebuilds on every push to `main`).
-- `vite.config.ts` sets `base: '/Format-conversion/'` so assets resolve under the
-  Pages subpath. Don't remove it without also changing the deploy setup.
+- Hosted on Cloudflare Pages (connect the repo in the Pages dashboard; auto-deploys on every
+  push to `main`). Security headers are set as real HTTP headers in `public/_headers`.
+- `vite.config.ts` sets `base: '/'` (Pages serves at the domain root).
 
 ## Open decisions / next steps
 - Add EPUB→PDF (next converter candidate).
@@ -79,16 +78,13 @@ keys, handle sales tax). Plan was done in 3 pieces:
   (auto-escaped); images via `<img>`/`createObjectURL`. If a future converter/preview
   (e.g. EPUB) needs to render HTML, sanitize it first — otherwise a malicious file could
   inject scripts (XSS) into the visitor's browser.
-- Security hardening: CSP and `Referrer-Policy` `<meta>` tags are injected into the
-  production build only (`vite.config.ts` `injectSecurityMeta`) because GitHub Pages can't
-  set HTTP headers. Scanners will flag "missing CSP header" — this is an accepted platform
-  limitation; the `<meta>` CSP is still enforced by browsers. Meta CSP also can't set the
-  header-only directives `frame-ancestors` / `report-to`, so there's no header-based
-  clickjacking protection; a JS frame-busting guard in `src/main.tsx` hides the page and
-  escapes the frame as defense-in-depth (bypassable by a sandboxed iframe; low risk because
-  the app has no sensitive actions). `unsafe-eval` is required by heic2any. When the Lemon
-  Squeezy worker ships (`VITE_LICENSE_URL`), the CSP's `connect-src` must be updated to allow
-  that origin or license checks will be blocked.
+- Security hardening: CSP, `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`,
+  and `Permissions-Policy` are set as real HTTP headers via `public/_headers` (Cloudflare
+  Pages). The header CSP includes `frame-ancestors 'none'` for clickjacking protection, and
+  `unsafe-eval` (required by heic2any). When the Lemon Squeezy worker ships
+  (`VITE_LICENSE_URL`), update the CSP's `connect-src` in `public/_headers` to allow that
+  origin or license checks will be blocked. The JS frame-busting guard in `src/main.tsx` is
+  kept as redundant defense-in-depth.
 - Files over 100 MB (`MAX_FILE_BYTES`) are rejected up front (`assertFileSize`) to avoid
   freezing the tab on a huge/malicious input. Raise it only deliberately.
 - DOCX files are also capped by total uncompressed size (`MAX_DOCX_UNCOMPRESSED_BYTES`, 256 MB,
