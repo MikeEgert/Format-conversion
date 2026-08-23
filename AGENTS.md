@@ -40,9 +40,11 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - `worker/` — license relay (Cloudflare Worker, deploy with `wrangler`)
 
 ## Deployment
-- Hosted on Cloudflare Pages (connect the repo in the Pages dashboard; auto-deploys on every
-  push to `main`). Security headers are set as real HTTP headers in `public/_headers`.
-- `vite.config.ts` sets `base: '/'` (Pages serves at the domain root).
+- Hosted on Cloudflare Workers (static assets), auto-deploys on every push to `main` via
+  Workers Builds. `wrangler.jsonc` declares `assets.directory = "./dist"`. Live at
+  https://format-conversion.maidemikkegert.workers.dev.
+- Security headers are set as real HTTP headers in `public/_headers`.
+- `vite.config.ts` sets `base: '/'` (serves at the domain root).
 
 ## Open decisions / next steps
 - Add EPUB→PDF (next converter candidate).
