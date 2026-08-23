@@ -48,10 +48,6 @@ export function UpgradeModal({ onClose, onUnlocked }: UpgradeModalProps) {
             {checking ? 'Checking…' : 'Unlock Pro'}
           </button>
         </form>
-
-        <p className="modal-hint">
-          Preview the Pro tier with the demo key <code>PRO-DEMO-2026</code>
-        </p>
       </div>
     </div>
   )

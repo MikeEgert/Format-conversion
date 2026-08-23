@@ -3,8 +3,6 @@ export interface LicenseCheck {
   reason?: string
 }
 
-const DEMO_KEY = 'PRO-DEMO-2026'
-
 function reasonForStatus(status: string | null): string | undefined {
   switch (status) {
     case 'expired':
@@ -21,10 +19,7 @@ export async function verifyLicenseKey(key: string): Promise<LicenseCheck> {
   const serviceUrl = import.meta.env.VITE_LICENSE_URL
 
   if (!serviceUrl) {
-    const demoOk = licenseKey.toUpperCase() === DEMO_KEY
-    return demoOk
-      ? { valid: true }
-      : { valid: false, reason: "That key isn't valid. Try again." }
+    return { valid: false, reason: 'Pro is not available yet.' }
   }
 
   try {

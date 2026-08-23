@@ -10,9 +10,8 @@ browser — files never leave the device (privacy is the core selling point).
 - **Converters**: HEIC→JPG (`heic2any`), DOCX→Markdown (`mammoth` + `turndown`),
   CSV→JSON (`papaparse`). Heavy libs are code-split via dynamic `import()`.
 - **Freemium**: free = single file; Pro = batch convert + "Download as ZIP".
-  Demo key `PRO-DEMO-2026` unlocks Pro (persisted in `localStorage`). This is a
-  temporary stand-in — it should be removed/gated once real license validation
-  (below) ships, not treated as permanent behavior to preserve.
+  Pro is unlocked via a license key validated by the (deferred) worker. Until it
+  ships, `VITE_LICENSE_URL` is unset and Pro stays locked for everyone.
 - **Error reporting**: converters detect *why* a file fails and show an actionable
   hint (e.g. "old .doc, re-save as .docx").
 
@@ -24,7 +23,7 @@ keys, handle sales tax). Plan was done in 3 pieces:
   Squeezy License API (`POST /v1/licenses/validate`, no API key needed — the License
   API is public; the worker exists only to get around CORS).
 - **Piece 2 (DONE)**: `src/pro/license.ts` `verifyLicenseKey()` calls the worker via
-  `VITE_LICENSE_URL` (see `.env.example`). Falls back to the demo key when unset.
+  `VITE_LICENSE_URL` (see `.env.example`). Until it is set, Pro stays locked.
   Shows specific reasons (`expired`/`disabled`) on failure.
 - **Piece 3 (DEFERRED — do last)**: user creates free Cloudflare + Lemon Squeezy
   accounts, deploy the worker, create the "Pro" product, set `VITE_LICENSE_URL`,
@@ -54,6 +53,10 @@ keys, handle sales tax). Plan was done in 3 pieces:
   runs *after* decode, so it stops canvas/output blow-ups but not a true "decode bomb" that
   exhausts memory inside `createImageBitmap`. Pre-decode prevention needs per-format header
   sniffing (PNG/JPEG/WebP are easy; HEIC is complex).
+- Pro is currently locked for everyone: the demo key was removed and `VITE_LICENSE_URL` is
+  unset, so "Go Pro → Unlock Pro" always fails with "Pro is not available yet". Re-enable by
+  deploying the license worker (Piece 3). Note: anyone who already unlocked via the old demo
+  key keeps a stale `localStorage` flag and stays "Pro" until they clear site data.
 
 ## Tests
 - Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is
