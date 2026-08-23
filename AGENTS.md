@@ -82,11 +82,14 @@ keys, handle sales tax). Plan was done in 3 pieces:
   inject scripts (XSS) into the visitor's browser.
 - Security hardening: CSP, `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`,
   and `Permissions-Policy` are set as real HTTP headers via `public/_headers` (Cloudflare
-  Pages). The header CSP includes `frame-ancestors 'none'` for clickjacking protection, and
-  `unsafe-eval` (required by heic2any). When the Lemon Squeezy worker ships
-  (`VITE_LICENSE_URL`), update the CSP's `connect-src` in `public/_headers` to allow that
-  origin or license checks will be blocked. The JS frame-busting guard in `src/main.tsx` is
-  kept as redundant defense-in-depth.
+  Workers). The header CSP includes `frame-ancestors 'none'` for clickjacking protection.
+  `script-src` keeps `'unsafe-eval'` because heic2any/libheif calls `new Function` at runtime;
+  nonces/hashes don't help here — they authorize `<script>` elements, not `eval()`/`new
+  Function()`. The only way to drop `unsafe-eval` is to swap heic2any for a no-eval HEIC
+  decoder. Residual risk is contained: the app has no XSS sink (output is auto-escaped `<pre>`
+  or `blob:` images). When the Lemon Squeezy worker ships (`VITE_LICENSE_URL`), update the
+  CSP's `connect-src` in `public/_headers` to allow that origin or license checks will be
+  blocked. The JS frame-busting guard in `src/main.tsx` is kept as redundant defense-in-depth.
 - Files over 100 MB (`MAX_FILE_BYTES`) are rejected up front (`assertFileSize`) to avoid
   freezing the tab on a huge/malicious input. Raise it only deliberately.
 - DOCX files are also capped by total uncompressed size (`MAX_DOCX_UNCOMPRESSED_BYTES`, 256 MB,
