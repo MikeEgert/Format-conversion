@@ -97,7 +97,7 @@ export function PrivacyPage() {
       <h2>2. Data controller</h2>
       <p>
         The controller responsible for this website is FoldenLoom,
-        reachable at <Placeholder>[Email address]</Placeholder>.
+        reachable at foldenloom@gmail.com.
       </p>
 
       <h2>3. What we do not process</h2>
@@ -126,7 +126,7 @@ export function PrivacyPage() {
       <p>
         Because the Service processes essentially no personal data, most data-subject requests
         (such as access or erasure) will simply confirm that we hold no data about you. If you have
-        any questions about privacy, please contact <Placeholder>[Email address]</Placeholder>. You
+        any questions about privacy, please contact foldenloom@gmail.com. You
         also have the right to lodge a complaint with a supervisory authority.
       </p>
     </LegalLayout>
@@ -152,7 +152,7 @@ export function LegalNoticePage() {
 
       <h2>Contact</h2>
       <p>
-        Email: <Placeholder>[Email address]</Placeholder>
+        Email: foldenloom@gmail.com
       </p>
 
       <h2>VAT ID</h2>
