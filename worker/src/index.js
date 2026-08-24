@@ -1,7 +1,7 @@
 const LS_ENDPOINT = 'https://api.lemonsqueezy.com/v1/licenses/validate'
 
 const ALLOWED_ORIGINS = [
-  'https://mikeegert.github.io',
+  'https://format-conversion.maidemikkegert.workers.dev',
   'http://localhost:5173',
   'http://localhost:4173',
 ]

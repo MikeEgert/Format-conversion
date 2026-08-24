@@ -486,6 +486,12 @@ body {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
 .error {
   display: flex;
   flex-direction: column;
