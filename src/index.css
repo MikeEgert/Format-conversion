@@ -198,6 +198,10 @@ body {
   align-items: flex-start;
 }
 
+.how-steps.two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .how-step-num {
   width: 32px;
   height: 32px;

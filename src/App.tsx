@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ConverterPage } from './components/ConverterPage'
+import { HowItWorksPage } from './components/HowItWorks'
 import { LandingPage } from './components/Landing'
 import { LegalNoticePage, PrivacyPage, TermsPage } from './components/Legal'
 
@@ -17,6 +18,7 @@ function App() {
   }, [route])
 
   const isTool = route.startsWith('#/tool')
+  const isHowItWorks = route.startsWith('#/how-it-works')
   const isTerms = route.startsWith('#/terms')
   const isPrivacy = route.startsWith('#/privacy')
   const isLegalNotice = route.startsWith('#/legal-notice')
@@ -38,6 +40,8 @@ function App() {
 
       {isTool ? (
         <ConverterPage />
+      ) : isHowItWorks ? (
+        <HowItWorksPage />
       ) : isTerms ? (
         <TermsPage />
       ) : isPrivacy ? (
@@ -52,6 +56,7 @@ function App() {
         <p>Convert files privately, right in your browser.</p>
         <p className="footer-sub">Nothing is uploaded. No accounts, no tracking.</p>
         <nav className="footer-links" aria-label="Legal">
+          <a href="#/how-it-works">How it works</a>
           <a href="#/terms">Terms &amp; Conditions</a>
           <a href="#/privacy">Privacy Policy</a>
           <a href="#/legal-notice">Legal Notice</a>
