@@ -131,7 +131,7 @@ export function ConverterPage() {
 
   return (
     <main className="main">
-      <section className="converters" aria-label="Choose a conversion">
+      <section className="converters converters-select" aria-label="Choose a conversion">
         {converters.map((c) => (
           <button
             key={c.id}

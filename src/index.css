@@ -931,7 +931,52 @@ body {
   }
 
   .header {
+    flex-wrap: wrap;
+  }
+
+  .converters-select {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+
+  .converters-select::-webkit-scrollbar {
+    display: none;
+  }
+
+  .converters-select .converter-card {
+    flex: 0 0 80%;
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 20px 16px 40px;
+  }
+
+  .hero-actions {
     flex-direction: column;
-    align-items: flex-start;
+    width: 100%;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .picker-option {
+    padding: 10px 16px;
+  }
+
+  .result-actions {
+    flex-wrap: wrap;
+  }
+
+  .modal {
+    padding: 20px;
   }
 }
