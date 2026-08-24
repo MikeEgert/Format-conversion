@@ -7,7 +7,7 @@ browser — files never leave the device (privacy is the core selling point).
 - React 19 + Vite + TypeScript (`npm run dev` / `npm run build` / `npm run lint`)
 
 ## What's built
-- **Converters**: HEIC→JPG (`heic2any`), DOCX→Markdown (`mammoth` + `turndown`),
+- **Converters**: HEIC→JPG (`libheif-js` WASM), DOCX→Markdown (`mammoth` + `turndown`),
   CSV→JSON (`papaparse`). Heavy libs are code-split via dynamic `import()`.
 - **Freemium**: free = single file; Pro = batch convert + "Download as ZIP".
   Pro is unlocked via a license key validated by the (deferred) worker. Until it
@@ -54,10 +54,11 @@ keys, handle sales tax). Plan was done in 3 pieces:
   contain `[placeholder]` fields (name, address, contact, VAT ID) that must be filled in
   before launch. Content is a draft — have it reviewed by a lawyer, especially the
   Impressum (§ 5 TMG / § 18 MStV).
-- Security follow-up (HEIC only): PNG/JPEG/WebP now sniff dimensions from the file header
+- Security follow-up (HEIC only): PNG/JPEG/WebP sniff dimensions from the file header
   *before* decoding (`src/converters/imageHeaders.ts` `readImageDimensions`), rejecting decode
-  bombs up front. HEIC still relies on the post-decode cap because its dimensions live in
-  nested ISO-BMFF `ispe` boxes (complex to parse).
+  bombs up front. HEIC now reads dimensions from the decoded handle (`get_width`/`get_height`,
+  which come from the ISO-BMFF `ispe` metadata) *before* the pixel decode/`display` step, so
+  oversized images are rejected before the expensive RGBA render.
 - Pro is currently locked for everyone: the demo key was removed and `VITE_LICENSE_URL` is
   unset, so "Go Pro → Unlock Pro" always fails with "Pro is not available yet". Re-enable by
   deploying the license worker (Piece 3). Note: anyone who already unlocked via the old demo
@@ -66,7 +67,7 @@ keys, handle sales tax). Plan was done in 3 pieces:
 ## Tests
 - Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is
   extracted (e.g. `parseCsv`, `toCsvRows`, `htmlToMarkdown`) and tested directly;
-  browser-only code paths (canvas, createImageBitmap, heic2any) are covered via
+  browser-only code paths (canvas, createImageBitmap, libheif-js) are covered via
   wrong-file guards or stubbed globals.
 
 ## Working conventions
@@ -83,13 +84,16 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - Security hardening: CSP, `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`,
   and `Permissions-Policy` are set as real HTTP headers via `public/_headers` (Cloudflare
   Workers). The header CSP includes `frame-ancestors 'none'` for clickjacking protection.
-  `script-src` keeps `'unsafe-eval'` because heic2any/libheif calls `new Function` at runtime;
-  nonces/hashes don't help here — they authorize `<script>` elements, not `eval()`/`new
-  Function()`. The only way to drop `unsafe-eval` is to swap heic2any for a no-eval HEIC
-  decoder. Residual risk is contained: the app has no XSS sink (output is auto-escaped `<pre>`
-  or `blob:` images). When the Lemon Squeezy worker ships (`VITE_LICENSE_URL`), update the
-  CSP's `connect-src` in `public/_headers` to allow that origin or license checks will be
-  blocked. The JS frame-busting guard in `src/main.tsx` is kept as redundant defense-in-depth.
+  `script-src` uses `'wasm-unsafe-eval'` (not `'unsafe-eval'`): the HEIC decoder is
+  `libheif-js/wasm-bundle` (a WebAssembly build) and needs to instantiate WASM, but it never
+  calls `eval()`/`new Function()`. `'wasm-unsafe-eval'` only permits WebAssembly compilation
+  and can't run arbitrary injected JS, so it's a far smaller CSP risk than `'unsafe-eval'`.
+  (The previous `heic2any` decoder was an asm.js build that called `new Function`, which forced
+  `'unsafe-eval'`; it was swapped out for `libheif-js` to drop that keyword.) Residual risk is
+  contained: the app has no XSS sink (output is auto-escaped `<pre>` or `blob:` images). When
+  the Lemon Squeezy worker ships (`VITE_LICENSE_URL`), update the CSP's `connect-src` in
+  `public/_headers` to allow that origin or license checks will be blocked. The JS frame-busting
+  guard in `src/main.tsx` is kept as redundant defense-in-depth.
 - Files over 100 MB (`MAX_FILE_BYTES`) are rejected up front (`assertFileSize`) to avoid
   freezing the tab on a huge/malicious input. Raise it only deliberately.
 - DOCX files are also capped by total uncompressed size (`MAX_DOCX_UNCOMPRESSED_BYTES`, 256 MB,

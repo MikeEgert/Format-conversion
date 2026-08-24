@@ -16,7 +16,7 @@ time, so it's safe even for private documents like medical or legal records.
 | JSON | CSV | Open API responses and structured data in Excel or Google Sheets |
 
 The heavy lifting is done by open-source libraries —
-[heic2any](https://github.com/alexcorvi/heic2any),
+[libheif-js](https://github.com/catdad-experiments/libheif-js),
 [mammoth](https://github.com/mwilliamson/mammoth.js),
 [papaparse](https://github.com/mholt/PapaParse),
 [fflate](https://github.com/101arrowz/fflate) —

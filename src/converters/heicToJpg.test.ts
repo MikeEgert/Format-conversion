@@ -2,10 +2,14 @@ import { describe, expect, it, vi } from 'vitest'
 import { ConversionError } from './types'
 import { heicToJpg } from './heicToJpg'
 
-vi.mock('heic2any', () => ({
-  default: vi.fn(async () => {
-    throw new Error('decode failed')
-  }),
+vi.mock('libheif-js/wasm-bundle', () => ({
+  default: {
+    HeifDecoder: class {
+      decode() {
+        throw new Error('decode failed')
+      }
+    },
+  },
 }))
 
 function heicSignatureBuffer(): ArrayBuffer {

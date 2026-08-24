@@ -1,5 +1,92 @@
-import { isHeicFile, replaceExtension, resizeImage } from './helpers'
+import { assertImageDimensions, isHeicFile, replaceExtension, scaledSize } from './helpers'
 import { ConversionError, type Converter } from './types'
+import type { HeifImage } from 'libheif-js/wasm-bundle'
+
+async function decodeHeicToJpeg(
+  file: File,
+  arrayBuffer: ArrayBuffer,
+  quality: number,
+  maxDimension: number,
+): Promise<Blob> {
+  const libheif = (await import('libheif-js/wasm-bundle')).default
+
+  let images: HeifImage[]
+  try {
+    images = new libheif.HeifDecoder().decode(new Uint8Array(arrayBuffer))
+  } catch {
+    throw new ConversionError(
+      'Could not decode this HEIC image.',
+      'The file may be corrupted or use an unsupported HEIF variant. Try opening it in Photos and re-exporting it as a JPEG.',
+    )
+  }
+
+  const image = images[0]
+  if (!image) {
+    throw new ConversionError(
+      'No image was found in this HEIC file.',
+      'This file may not contain a decodable image. Try re-exporting it from Photos.',
+    )
+  }
+
+  const width = image.get_width()
+  const height = image.get_height()
+  assertImageDimensions(width, height, file.name)
+
+  const { width: outWidth, height: outHeight } = scaledSize(width, height, maxDimension)
+
+  const canvas = document.createElement('canvas')
+  canvas.width = outWidth
+  canvas.height = outHeight
+  const ctx = canvas.getContext('2d')
+  if (!ctx) {
+    throw new ConversionError(
+      'Could not process this image.',
+      'Your browser may not support canvas. Try a different browser.',
+    )
+  }
+
+  const imageData = ctx.createImageData(width, height)
+  await new Promise<void>((resolve, reject) => {
+    image.display(imageData, (displayData) => {
+      if (!displayData) {
+        reject(
+          new ConversionError(
+            'Could not decode this HEIC image.',
+            'The file may be corrupted or use an unsupported HEIF variant. Try re-exporting it as a JPEG.',
+          ),
+        )
+      } else {
+        resolve()
+      }
+    })
+  })
+
+  if (outWidth !== width || outHeight !== height) {
+    const source = document.createElement('canvas')
+    source.width = width
+    source.height = height
+    const sourceCtx = source.getContext('2d')
+    if (!sourceCtx) {
+      throw new ConversionError(
+        'Could not process this image.',
+        'Your browser may not support canvas. Try a different browser.',
+      )
+    }
+    sourceCtx.putImageData(imageData, 0, 0)
+    ctx.drawImage(source, 0, 0, outWidth, outHeight)
+  } else {
+    ctx.putImageData(imageData, 0, 0)
+  }
+
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality))
+  if (!blob) {
+    throw new ConversionError(
+      'Could not encode this image.',
+      'The image may be too large. Try a smaller file.',
+    )
+  }
+  return blob
+}
 
 export const heicToJpg: Converter = {
   id: 'heic-to-jpg',
@@ -22,37 +109,23 @@ export const heicToJpg: Converter = {
   supportsQuality: true,
   supportsResize: true,
   async convert(file, options) {
-    const buffer = await file.arrayBuffer()
-    if (!isHeicFile(buffer)) {
+    const arrayBuffer = await file.arrayBuffer()
+    if (!isHeicFile(arrayBuffer)) {
       throw new ConversionError(
         'This file is not a valid HEIC/HEIF image.',
         'HEIC photos come from iPhones and some cameras. Make sure you picked a real .heic or .heif file.',
       )
     }
 
-    const heic2any = (await import('heic2any')).default
-
-    try {
-      const blob = await heic2any({
-        blob: file,
-        toType: 'image/jpeg',
-        quality: options?.quality ?? 0.9,
-      })
-      const jpeg = Array.isArray(blob) ? blob[0] : blob
-      const maxDimension = options?.maxDimension ?? 0
-      const output =
-        maxDimension > 0
-          ? await resizeImage(jpeg, maxDimension, 'image/jpeg', options?.quality ?? 0.9)
-          : new Blob([jpeg], { type: 'image/jpeg' })
-      return {
-        blob: output,
-        filename: replaceExtension(file.name, 'jpg'),
-      }
-    } catch {
-      throw new ConversionError(
-        'Could not decode this HEIC image.',
-        'The file may be corrupted or use an unsupported HEIF variant. Try opening it in Photos and re-exporting it as a JPEG.',
-      )
+    const blob = await decodeHeicToJpeg(
+      file,
+      arrayBuffer,
+      options?.quality ?? 0.9,
+      options?.maxDimension ?? 0,
+    )
+    return {
+      blob,
+      filename: replaceExtension(file.name, 'jpg'),
     }
   },
 }

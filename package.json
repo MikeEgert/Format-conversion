@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "fflate": "^0.8.3",
-    "heic2any": "^0.0.4",
+    "libheif-js": "^1.19.8",
     "mammoth": "^1.12.1",
     "papaparse": "^5.6.0",
     "react": "^19.2.8",
