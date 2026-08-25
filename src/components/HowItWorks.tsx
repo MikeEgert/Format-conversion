@@ -5,11 +5,11 @@ const PIPELINE = [
   },
   {
     title: 'Parse locally',
-    text: 'The converter decodes the format in-browser: HEIC via libheif compiled to WebAssembly, DOCX unzipped in memory and read by Mammoth, CSV and JSON parsed by PapaParse, and PNG/JPG/WebP decoded by the browser\u2019s own image engine.',
+    text: 'The converter decodes the format in-browser: HEIC via libheif compiled to WebAssembly, DOCX and EPUB unzipped in memory, CSV and JSON parsed by PapaParse, and PNG/JPG/WebP decoded by the browser\u2019s own image engine.',
   },
   {
     title: 'Encode locally',
-    text: 'A new file \u2014 JPG, PNG, WebP, Markdown, CSV, or JSON \u2014 is built in memory. Encoding, like decoding, runs entirely inside your tab.',
+    text: 'A new file \u2014 JPG, PNG, WebP, Markdown, CSV, JSON, or PDF \u2014 is built in memory. Encoding, like decoding, runs entirely inside your tab.',
   },
   {
     title: 'Download from memory',
@@ -61,6 +61,11 @@ export function HowItWorksPage() {
           <li>
             <strong>DOCX &rarr; Markdown</strong>: Mammoth + Turndown, after the document is
             unzipped in memory.
+          </li>
+          <li>
+            <strong>EPUB &rarr; PDF</strong>: parsed in memory and re-laid-out into a text PDF.
+            DRM-protected books are detected and refused, and embedded HTML is never rendered as
+            a live page.
           </li>
           <li>
             <strong>CSV &rarr; JSON</strong> and <strong>JSON &rarr; CSV</strong>: PapaParse.
@@ -174,6 +179,11 @@ export function HowItWorksPage() {
           <li>
             DOCX documents are limited to 256&nbsp;MB of uncompressed content, measured from the
             file&apos;s archive directory before anything is extracted.
+          </li>
+          <li>
+            EPUB&rarr;PDF lays text out with standard PDF fonts (Latin script), embeds only PNG
+            and JPEG images, and flattens tables to plain text. Reflowable e-books never map
+            perfectly onto fixed pages.
           </li>
           <li>Conversion runs on your own CPU, so speed depends on your device.</li>
           <li>

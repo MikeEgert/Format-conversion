@@ -21,8 +21,8 @@ export function LandingPage() {
         </div>
         <h1>Convert files in your browser. Privately.</h1>
         <p className="hero-sub">
-          Images, HEIC photos, Word documents, and spreadsheets — converted right in your browser.
-          Nothing is uploaded, and nothing ever leaves your device.
+          Images, HEIC photos, Word documents, e-books, and spreadsheets — converted right in
+          your browser. Nothing is uploaded, and nothing ever leaves your device.
         </p>
         <div className="hero-actions">
           <a href="#/tool" className="btn btn-primary">

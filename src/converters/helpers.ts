@@ -68,7 +68,7 @@ export function isHeicFile(buffer: ArrayBuffer): boolean {
   return bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70
 }
 
-export function isZipFile(buffer: ArrayBuffer): boolean {
+export function isZipFile(buffer: ArrayBufferLike): boolean {
   if (buffer.byteLength < 2) return false
   const bytes = new Uint8Array(buffer, 0, 2)
   return bytes[0] === 0x50 && bytes[1] === 0x4b
