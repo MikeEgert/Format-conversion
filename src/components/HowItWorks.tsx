@@ -5,11 +5,11 @@ const PIPELINE = [
   },
   {
     title: 'Parse locally',
-    text: 'The converter decodes the format in-browser: HEIC via libheif compiled to WebAssembly, DOCX unzipped in memory and read by Mammoth, CSV parsed by PapaParse.',
+    text: 'The converter decodes the format in-browser: HEIC via libheif compiled to WebAssembly, DOCX unzipped in memory and read by Mammoth, CSV and JSON parsed by PapaParse, and PNG/JPG/WebP decoded by the browser\u2019s own image engine.',
   },
   {
     title: 'Encode locally',
-    text: 'A new file \u2014 JPG, Markdown, or JSON \u2014 is built in memory. Encoding, like decoding, runs entirely inside your tab.',
+    text: 'A new file \u2014 JPG, PNG, WebP, Markdown, CSV, or JSON \u2014 is built in memory. Encoding, like decoding, runs entirely inside your tab.',
   },
   {
     title: 'Download from memory',
@@ -48,6 +48,26 @@ export function HowItWorksPage() {
           ))}
         </div>
 
+        <h2>Which engine converts what</h2>
+        <ul>
+          <li>
+            <strong>Image</strong> (PNG, JPG, WebP in any direction): your browser&apos;s built-in
+            image engine, drawn onto a canvas. No external codec.
+          </li>
+          <li>
+            <strong>HEIC &rarr; JPG</strong>: libheif, compiled to WebAssembly and run inside your
+            tab.
+          </li>
+          <li>
+            <strong>DOCX &rarr; Markdown</strong>: Mammoth + Turndown, after the document is
+            unzipped in memory.
+          </li>
+          <li>
+            <strong>CSV &rarr; JSON</strong> and <strong>JSON &rarr; CSV</strong>: PapaParse.
+          </li>
+        </ul>
+        <p>All of these run locally. None of them has a network step.</p>
+
         <h2>What your browser actually downloads</h2>
         <ul>
           <li>
@@ -77,18 +97,67 @@ export function HowItWorksPage() {
           </ul>
         </div>
 
-        <h2>Why this matters for sensitive documents</h2>
+        <h2>For sensitive documents (medical and legal)</h2>
         <p>
           Because your content never crosses the network boundary, it cannot be intercepted in
-          transit or exposed by a server breach &mdash; there is simply no copy on any server to
-          leak. That makes FoldenLoom suitable for medical records, client-legal documents, and
-          student work. You should still follow your own confidentiality obligations and verify
-          every output before relying on it.
+          transit or exposed by a server breach &mdash; there is no copy on any server to leak.
+          This is why the tool is used for medical records, client-legal documents, and student
+          work.
         </p>
+        <ul>
+          <li>
+            <strong>No upload step exists.</strong> The application has no endpoint that accepts
+            file contents, and no code path sends them over the network.
+          </li>
+          <li>
+            <strong>Nothing is retained.</strong> Converted output exists only in your tab&apos;s
+            memory until you download it or close the page. There is no server-side copy to retain
+            or delete.
+          </li>
+          <li>
+            <strong>The hosting provider sees request metadata only.</strong> Cloudflare serves the
+            app&apos;s static files and may log technical data such as your IP address to do so
+            &mdash; but never the contents of your files, which are not transmitted.
+          </li>
+        </ul>
+        <p>Local processing does <em>not</em> remove your own responsibilities. You remain responsible for:</p>
+        <ul>
+          <li>
+            Following your own confidentiality and compliance obligations (for example,
+            professional duties or data-protection rules such as the GDPR). Running a conversion
+            locally does not, on its own, make a processing activity compliant.
+          </li>
+          <li>
+            Verifying the output. Some conversions are lossy &mdash; JPG drops detail, and
+            DOCX-to-Markdown can drop layout &mdash; so a converted file may differ from the
+            original. Review it before relying on it.
+          </li>
+          <li>
+            Keeping your originals. Nothing is backed up, and a closed or crashed tab loses the
+            result.
+          </li>
+        </ul>
+        <h3>Residual risks to know about</h3>
+        <ul>
+          <li>
+            Conversion happens on your device, so the content is only as protected as that device.
+            A compromised device, a malicious browser extension, or someone with access to your
+            unlocked computer could read what your tab has in memory.
+          </li>
+          <li>
+            Your internet service provider can see that you visited this website (and when), though
+            not the files you convert.
+          </li>
+        </ul>
 
         <h2>Honest limitations</h2>
         <ul>
           <li>Files over 100&nbsp;MB are rejected up front to keep the tab responsive.</li>
+          <li>Images are limited to 16,384 pixels on their longest side.</li>
+          <li>
+            DOCX documents are limited to 256&nbsp;MB of uncompressed content, measured from the
+            file&apos;s archive directory before anything is extracted.
+          </li>
           <li>Conversion runs on your own CPU, so speed depends on your device.</li>
           <li>
             Nothing is backed up: if your tab closes or crashes mid-conversion, the in-memory

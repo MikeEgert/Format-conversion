@@ -116,10 +116,11 @@ export function PrivacyPage() {
 
       <h2>5. Hosting</h2>
       <p>
-        The website is delivered via GitHub Pages, a service of GitHub, Inc. As is standard for any
-        website, the hosting provider&apos;s servers may log technical data necessary to deliver the
-        page (such as your IP address). These logs are created and held by the hosting provider, not
-        by us.
+        The website is delivered as static files via the Cloudflare network (Cloudflare, Inc.). As
+        is standard for any website, the hosting provider&apos;s servers may log technical data
+        necessary to deliver the page (such as your IP address). These logs are created and held by
+        the hosting provider, not by us. Your files themselves are never transmitted to the hosting
+        provider, because all conversion happens locally in your browser.
       </p>
 
       <h2>6. Your rights</h2>
