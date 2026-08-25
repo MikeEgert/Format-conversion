@@ -4,10 +4,11 @@ import type { ConversionResult } from '../converters/types'
 
 interface ResultCardProps {
   result: ConversionResult
+  sourceSize?: number
   onReset: () => void
 }
 
-export function ResultCard({ result, onReset }: ResultCardProps) {
+export function ResultCard({ result, sourceSize, onReset }: ResultCardProps) {
   const isImage = result.blob.type.startsWith('image/')
   const isPdf = result.blob.type === 'application/pdf'
   const isText = !isImage && !isPdf
@@ -57,7 +58,14 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
           <span className="result-name">{result.filename}</span>
           <span className="result-size">
             {dims ? `${dims.width} × ${dims.height} · ` : ''}
-            {formatBytes(result.blob.size)}
+            {sourceSize != null ? (
+              <>
+                {formatBytes(sourceSize)} <span className="size-arrow">&rarr;</span>{' '}
+                <span className="size-out">{formatBytes(result.blob.size)}</span>
+              </>
+            ) : (
+              formatBytes(result.blob.size)
+            )}
           </span>
         </div>
         <div className="result-actions">

@@ -4,6 +4,7 @@ interface QualityPreset {
 }
 
 const PRESETS: QualityPreset[] = [
+  { label: 'Very low', value: 0.3 },
   { label: 'Low', value: 0.5 },
   { label: 'Balanced', value: 0.8 },
   { label: 'High', value: 0.9 },
