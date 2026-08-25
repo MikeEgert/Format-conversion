@@ -7,8 +7,9 @@ browser — files never leave the device (privacy is the core selling point).
 - React 19 + Vite + TypeScript (`npm run dev` / `npm run build` / `npm run lint`)
 
 ## What's built
-- **Converters**: HEIC→JPG (`libheif-js` WASM), DOCX→Markdown (`mammoth` + `turndown`),
-  CSV→JSON (`papaparse`). Heavy libs are code-split via dynamic `import()`.
+- **Converters**: Image (PNG/JPG/WebP ↔ any), HEIC→JPG (`libheif-js` WASM), DOCX→Markdown
+  (`mammoth` + `turndown`), EPUB→PDF (`pdf-lib` + `@pdf-lib/fontkit`), CSV→JSON and
+  JSON→CSV (`papaparse`). Heavy libs are code-split via dynamic `import()`.
 - **Freemium**: free = single file; Pro = batch convert + "Download as ZIP".
   Pro is unlocked via a license key validated by the (deferred) worker. Until it
   ships, `VITE_LICENSE_URL` is unset and Pro stays locked for everyone.
@@ -47,7 +48,6 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - `vite.config.ts` sets `base: '/'` (serves at the domain root).
 
 ## Open decisions / next steps
-- Add EPUB→PDF (next converter candidate).
 - Privacy/"how it works" page for medical/legal audience.
 - Payments (Lemon Squeezy) — do last, see above.
 - Legal pages (`src/components/Legal.tsx`, routes `#/terms`, `#/privacy`, `#/legal-notice`)
@@ -78,9 +78,11 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - Never add code that sends file contents over the network — this app's core promise is
   "files never leave the device." Flag it explicitly if a task seems to require it. !!!
 - Never render converted file content as live HTML/JS. Text output goes through `<pre>`
-  (auto-escaped); images via `<img>`/`createObjectURL`. If a future converter/preview
-  (e.g. EPUB) needs to render HTML, sanitize it first — otherwise a malicious file could
-  inject scripts (XSS) into the visitor's browser.
+  (auto-escaped); images via `<img>`/`createObjectURL`. The EPUB→PDF converter never renders
+  HTML at all — it extracts a text model via `htmlparser2` (scripts/iframes/styles are dropped),
+  and it refuses DRM-protected books (`META-INF/encryption.xml`). If a future converter/preview
+  needs to render HTML, sanitize it first — otherwise a malicious file could inject scripts
+  (XSS) into the visitor's browser.
 - Security hardening: CSP, `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`,
   and `Permissions-Policy` are set as real HTTP headers via `public/_headers` (Cloudflare
   Workers). The header CSP includes `frame-ancestors 'none'` for clickjacking protection.
@@ -99,6 +101,10 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - DOCX files are also capped by total uncompressed size (`MAX_DOCX_UNCOMPRESSED_BYTES`, 256 MB,
   read from the ZIP central directory without decompressing) to stop zip bombs. Images are
   capped by pixel dimensions (`MAX_IMAGE_DIMENSION`) plus pre-decode header sniffing.
+- EPUB files are capped the same way (`MAX_EPUB_UNCOMPRESSED_BYTES`, 256 MB). EPUB→PDF embeds
+  Noto Serif (Latin/Greek/Cyrillic) from `public/fonts/` (lazy-loaded via `@pdf-lib/fontkit`);
+  if it can't load, it falls back to WinAnsi standard fonts with a character-normalization pass
+  (`sanitizeForFont`). CJK/emoji are not covered.
 - Don't commit secrets/env values, and don't run `wrangler deploy` or touch `worker/` deploy
   config without asking first.
 - Prefer small, focused diffs. No unrelated refactors.
