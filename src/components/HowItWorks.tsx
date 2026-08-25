@@ -181,9 +181,9 @@ export function HowItWorksPage() {
             file&apos;s archive directory before anything is extracted.
           </li>
           <li>
-            EPUB&rarr;PDF lays text out with standard PDF fonts (Latin script), embeds only PNG
-            and JPEG images, and flattens tables to plain text. Reflowable e-books never map
-            perfectly onto fixed pages.
+            EPUB&rarr;PDF embeds the Noto Serif font (Latin, Greek, and Cyrillic scripts; CJK and
+            emoji are not covered), embeds only PNG and JPEG images, and flattens tables to plain
+            text. Reflowable e-books never map perfectly onto fixed pages.
           </li>
           <li>Conversion runs on your own CPU, so speed depends on your device.</li>
           <li>

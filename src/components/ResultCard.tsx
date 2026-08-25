@@ -9,6 +9,8 @@ interface ResultCardProps {
 
 export function ResultCard({ result, onReset }: ResultCardProps) {
   const isImage = result.blob.type.startsWith('image/')
+  const isPdf = result.blob.type === 'application/pdf'
+  const isText = !isImage && !isPdf
   const [text, setText] = useState<string | null>(null)
   const [dims, setDims] = useState<{ width: number; height: number } | null>(null)
 
@@ -38,7 +40,7 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
   }, [result, isImage])
 
   useEffect(() => {
-    if (isImage) return
+    if (!isText) return
     let cancelled = false
     result.blob.text().then((value) => {
       if (!cancelled) setText(value.slice(0, 6000))
@@ -46,7 +48,7 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
     return () => {
       cancelled = true
     }
-  }, [result, isImage])
+  }, [result, isText])
 
   return (
     <div className="result">
@@ -71,6 +73,10 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
       {isImage ? (
         <div className="result-preview image">
           {imageUrl && <img src={imageUrl} alt={result.filename} />}
+        </div>
+      ) : isPdf ? (
+        <div className="result-preview">
+          <p className="pdf-note">PDF ready &mdash; download to view it.</p>
         </div>
       ) : (
         <div className="result-preview">

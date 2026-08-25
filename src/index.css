@@ -664,6 +664,13 @@ body {
   word-break: break-word;
 }
 
+.pdf-note {
+  margin: 0;
+  padding: 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
 .note {
   margin: 0;
   text-align: center;

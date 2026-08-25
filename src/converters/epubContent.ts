@@ -453,6 +453,55 @@ function sameStyle(a: TextRun, b: TextRun): boolean {
   )
 }
 
+const WINANSI_EXTRA = new Set<number>([
+  0x152, 0x153, 0x160, 0x161, 0x178, 0x17d, 0x17e, 0x192, 0x2c6, 0x2dc, 0x2013, 0x2014, 0x2018,
+  0x2019, 0x201a, 0x201c, 0x201d, 0x201e, 0x2020, 0x2021, 0x2022, 0x2026, 0x2030, 0x2039, 0x203a,
+  0x20ac, 0x2122,
+])
+
+const WINANSI_FALLBACK: Record<number, string> = {
+  0x2010: '-',
+  0x2011: '-',
+  0x2012: '-',
+  0x2015: '\u2014',
+  0x2043: '-',
+  0x2212: '-',
+  0x2000: ' ',
+  0x2001: ' ',
+  0x2002: ' ',
+  0x2003: ' ',
+  0x2007: ' ',
+  0x2008: ' ',
+  0x2009: ' ',
+  0x200a: ' ',
+  0x202f: ' ',
+  0x205f: ' ',
+  0x3000: ' ',
+}
+
+export function sanitizeForFont(text: string, winAnsiOnly: boolean): string {
+  let out = ''
+  for (const ch of text) {
+    const code = ch.codePointAt(0) as number
+    if (code === 0x00a0) {
+      out += ' '
+      continue
+    }
+    if (code === 0x00ad) continue
+    if (code < 0x20 || (code >= 0x7f && code <= 0x9f)) continue
+    if (!winAnsiOnly) {
+      out += ch
+      continue
+    }
+    if (code <= 0x7e || (code >= 0xa0 && code <= 0xff) || WINANSI_EXTRA.has(code)) {
+      out += ch
+      continue
+    }
+    out += WINANSI_FALLBACK[code] ?? '?'
+  }
+  return out
+}
+
 export function resolveImage(
   files: Record<string, Uint8Array>,
   baseDir: string,

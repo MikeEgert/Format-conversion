@@ -8,6 +8,7 @@ import {
   htmlToBlocks,
   parseEpub,
   resolveImage,
+  sanitizeForFont,
   type Block,
   type TextStyle,
 } from './epubContent'
@@ -92,18 +93,14 @@ async function buildPdf(
   doc.setCreator('FoldenLoom')
   doc.setProducer('FoldenLoom')
 
-  const regular = await doc.embedFont(StandardFonts.TimesRoman)
-  const bold = await doc.embedFont(StandardFonts.TimesRomanBold)
-  const italic = await doc.embedFont(StandardFonts.TimesRomanItalic)
-  const boldItalic = await doc.embedFont(StandardFonts.TimesRomanBoldItalic)
-  const mono = await doc.embedFont(StandardFonts.Courier)
+  const { fontFor, winAnsiOnly } = await loadFonts(doc, StandardFonts)
 
-  const fontFor = (style: TextStyle): PDFFont => {
-    if (style.bold && style.italic) return boldItalic
-    if (style.bold) return bold
-    if (style.italic) return italic
-    if (style.mono) return mono
-    return regular
+  for (const block of blocks) {
+    if ('runs' in block) {
+      for (const run of block.runs) {
+        run.text = sanitizeForFont(run.text, winAnsiOnly)
+      }
+    }
   }
 
   const measure: FontMetrics = {
@@ -119,6 +116,56 @@ async function buildPdf(
   }
 
   return new Uint8Array(await doc.save())
+}
+
+interface LoadedFonts {
+  winAnsiOnly: boolean
+  fontFor: (style: TextStyle) => PDFFont
+}
+
+async function loadFonts(
+  doc: PDFDocument,
+  StandardFonts: typeof import('pdf-lib').StandardFonts,
+): Promise<LoadedFonts> {
+  try {
+    const fontkit = (await import('@pdf-lib/fontkit')).default
+    doc.registerFontkit(fontkit)
+    const base = import.meta.env.BASE_URL
+    const load = (name: string) => fetch(`${base}fonts/${name}`).then((r) => r.arrayBuffer())
+    return {
+      winAnsiOnly: false,
+      fontFor: makeFontFor({
+        regular: await doc.embedFont(await load('NotoSerif-Regular.ttf')),
+        bold: await doc.embedFont(await load('NotoSerif-Bold.ttf')),
+        italic: await doc.embedFont(await load('NotoSerif-Italic.ttf')),
+        boldItalic: await doc.embedFont(await load('NotoSerif-BoldItalic.ttf')),
+      }),
+    }
+  } catch {
+    return {
+      winAnsiOnly: true,
+      fontFor: makeFontFor({
+        regular: await doc.embedFont(StandardFonts.TimesRoman),
+        bold: await doc.embedFont(StandardFonts.TimesRomanBold),
+        italic: await doc.embedFont(StandardFonts.TimesRomanItalic),
+        boldItalic: await doc.embedFont(StandardFonts.TimesRomanBoldItalic),
+      }),
+    }
+  }
+}
+
+function makeFontFor(fonts: {
+  regular: PDFFont
+  bold: PDFFont
+  italic: PDFFont
+  boldItalic: PDFFont
+}): (style: TextStyle) => PDFFont {
+  return (style: TextStyle): PDFFont => {
+    if (style.bold && style.italic) return fonts.boldItalic
+    if (style.bold) return fonts.bold
+    if (style.italic) return fonts.italic
+    return fonts.regular
+  }
 }
 
 async function drawPage(

@@ -7,6 +7,7 @@ import {
   htmlToBlocks,
   parseEpub,
   resolveHref,
+  sanitizeForFont,
 } from './epubContent'
 import { DEFAULT_PAGE_CONFIG, layoutBlocks, type FontMetrics } from './epubLayout'
 import { epubToPdf } from './epubToPdf'
@@ -184,6 +185,24 @@ describe('layoutBlocks', () => {  it('wraps a long paragraph across lines', () =
   })
 })
 
+describe('sanitizeForFont', () => {
+  it('maps horizontal bar to em dash in WinAnsi-only mode', () => {
+    expect(sanitizeForFont('a\u2015b', true)).toBe('a\u2014b')
+  })
+
+  it('keeps characters when a Unicode font is available', () => {
+    expect(sanitizeForFont('a\u2015b', false)).toBe('a\u2015b')
+  })
+
+  it('strips control characters', () => {
+    expect(sanitizeForFont('a\u0000b', false)).toBe('ab')
+  })
+
+  it('replaces non-breaking space with a regular space', () => {
+    expect(sanitizeForFont('a\u00a0b', false)).toBe('a b')
+  })
+})
+
 describe('epubToPdf.convert', () => {
   it('produces a PDF end-to-end', async () => {
     const file = new File([minimalEpub()], 'book.epub')
@@ -208,5 +227,12 @@ describe('epubToPdf.convert', () => {
   it('rejects a non-zip file', async () => {
     const file = new File(['not an epub'], 'fake.epub')
     await expect(epubToPdf.convert(file)).rejects.toThrowError(ConversionError)
+  })
+
+  it('converts text with characters outside WinAnsi', async () => {
+    const epub = minimalEpub('<p>a\u2015b \u2014 c</p>')
+    const file = new File([epub], 'dash.epub')
+    const result = await epubToPdf.convert(file)
+    expect(result.blob.type).toBe('application/pdf')
   })
 })
