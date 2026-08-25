@@ -81,6 +81,8 @@ export const imageConvert: Converter = {
     bitmap.close()
 
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, mime, quality))
+    canvas.width = 0
+    canvas.height = 0
     if (!blob) {
       throw new ConversionError(
         'Could not encode this image.',

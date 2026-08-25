@@ -137,16 +137,33 @@ export function HowItWorksPage() {
             result.
           </li>
         </ul>
-        <h3>Residual risks to know about</h3>
+        <h3>What we do to minimize risk</h3>
         <ul>
           <li>
-            Conversion happens on your device, so the content is only as protected as that device.
-            A compromised device, a malicious browser extension, or someone with access to your
-            unlocked computer could read what your tab has in memory.
+            The site is served over HTTPS with strict security headers (HSTS, a restrictive
+            Content-Security-Policy, and no referrer forwarding), so your internet provider can
+            see only that you visited this domain &mdash; never which file or what you converted.
           </li>
           <li>
-            Your internet service provider can see that you visited this website (and when), though
-            not the files you convert.
+            Decoded image data is released from memory as soon as the new file is encoded, and
+            preview object URLs are revoked when they are no longer needed, so converted content
+            is not held any longer than necessary.
+          </li>
+          <li>
+            Third-party parsing libraries run locally in your browser&apos;s sandbox, and a strict
+            Content-Security-Policy blocks connections to any other origin.
+          </li>
+        </ul>
+        <h3>What we cannot prevent</h3>
+        <ul>
+          <li>
+            A compromised device, a malicious browser extension, or someone with access to your
+            unlocked computer can read whatever your tab has in memory. No client-side tool can
+            defend against a device that is already compromised.
+          </li>
+          <li>
+            Your internet service provider (or network administrator) can still see that you
+            visited this website and when, though not the files you convert.
           </li>
         </ul>
 

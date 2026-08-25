@@ -74,11 +74,15 @@ async function decodeHeicToJpeg(
     }
     sourceCtx.putImageData(imageData, 0, 0)
     ctx.drawImage(source, 0, 0, outWidth, outHeight)
+    source.width = 0
+    source.height = 0
   } else {
     ctx.putImageData(imageData, 0, 0)
   }
 
   const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality))
+  canvas.width = 0
+  canvas.height = 0
   if (!blob) {
     throw new ConversionError(
       'Could not encode this image.',
