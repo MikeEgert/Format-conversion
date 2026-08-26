@@ -16,8 +16,8 @@ export function LandingPage() {
       <section className="landing-hero">
         <div className="hero-pills">
           <span className="hero-pill">100% free</span>
-          <span className="hero-pill">Safe &amp; private</span>
           <span className="hero-pill">No signup</span>
+          <span className="hero-pill">No uploads</span>
         </div>
         <h1>Convert files in your browser. Privately.</h1>
         <p className="hero-sub">
@@ -39,7 +39,7 @@ export function LandingPage() {
       </section>
 
       <section className="formats-section">
-        <h2 className="section-title">What you can convert</h2>
+        <h2 className="section-title">What you can do</h2>
         <p className="section-sub">Pick a conversion — it all happens in your browser, nothing is uploaded.</p>
       </section>
 
@@ -65,7 +65,7 @@ export function LandingPage() {
       </section>
 
       <HowItWorks />
-      <PrivacySection />
+      <OfferSection />
 
       {detail && (
         <div className="modal-backdrop" onClick={() => setDetail(null)}>
@@ -131,19 +131,55 @@ function HowItWorks() {
   )
 }
 
-function PrivacySection() {
+const OFFERS = [
+  {
+    title: '100% private',
+    text: 'Everything runs locally in your browser — your files never leave your device.',
+    icon: (
+      <svg className="offer-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3 5 6v5c0 4.4 3 8.4 7 9.5 4-1.1 7-5.1 7-9.5V6l-7-3Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    title: 'No uploads',
+    text: 'Nothing is sent to a server. Not even a copy.',
+    icon: (
+      <svg className="offer-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="5" y="11" width="14" height="8" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    title: 'No signup',
+    text: 'No accounts, no tracking, no ads. Just convert.',
+    icon: (
+      <svg className="offer-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    ),
+  },
+]
+
+function OfferSection() {
   return (
-    <section className="privacy">
-      <h2>Your files never leave your device.</h2>
+    <section className="offer">
+      <h2 className="section-title">What we offer</h2>
       <p className="section-sub">
-        Everything is processed locally in your browser — private by design, for medical records,
-        legal documents, and student work.
+        Private by design — for medical records, legal documents, and student work.
       </p>
-      <ul className="privacy-list">
-        <li>Converted locally in your browser</li>
-        <li>Nothing is uploaded to a server</li>
-        <li>No accounts, no tracking, no ads</li>
-      </ul>
+      <div className="offer-grid">
+        {OFFERS.map((offer) => (
+          <div className="offer-card" key={offer.title}>
+            {offer.icon}
+            <h3>{offer.title}</h3>
+            <p>{offer.text}</p>
+          </div>
+        ))}
+      </div>
     </section>
   )
 }

@@ -27,10 +27,7 @@ function App() {
     <div className="page">
       <header className="header">
         <a className="brand" href="#/">
-          <svg className="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-            <path d="M8 13h8M8 16h5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
+          <img className="brand-logo" src="/favicon.png" alt="FoldenLoom" width="28" height="28" />
           FoldenLoom
         </a>
         <div className="header-actions">
