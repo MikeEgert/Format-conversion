@@ -11,14 +11,13 @@ browser — files never leave the device (privacy is the core selling point).
   (`mammoth` + `turndown`), EPUB→PDF (`pdf-lib` + `@pdf-lib/fontkit`), CSV→JSON and
   JSON→CSV (`papaparse`). Heavy libs are code-split via dynamic `import()`.
 - **Freemium**: free = single file; Pro = batch convert + "Download as ZIP".
-  Pro is unlocked via a license key validated by the (deferred) worker. Until it
-  ships, `VITE_LICENSE_URL` is unset and Pro stays locked for everyone.
+  Pro is unlocked via a license key validated by the worker (`src/pro/license.ts`).
 - **Error reporting**: converters detect *why* a file fails and show an actionable
   hint (e.g. "old .doc, re-save as .docx").
 
-## License validation (payment) — DEFERRED (do last)
-Goal: real Pro key validation via Lemon Squeezy (they're merchant of record, issue
-keys, handle sales tax). Plan was done in 3 pieces:
+## License validation (payment) — NOT DEPLOYED YET
+Real Pro key validation via Lemon Squeezy (merchant of record; they issue keys and
+handle sales tax). Built in 3 pieces, two done + one still pending:
 
 - **Piece 1 (DONE)**: `worker/` — a Cloudflare Worker relay that calls the Lemon
   Squeezy License API (`POST /v1/licenses/validate`, no API key needed — the License
@@ -28,11 +27,17 @@ keys, handle sales tax). Plan was done in 3 pieces:
   per-isolate and unreliable under load — for production, add a Cloudflare WAF rate
   limiting rule in the dashboard rather than relying on it.
 - **Piece 2 (DONE)**: `src/pro/license.ts` `verifyLicenseKey()` calls the worker via
-  `VITE_LICENSE_URL` (see `.env.example`). Until it is set, Pro stays locked.
-  Shows specific reasons (`expired`/`disabled`) on failure.
-- **Piece 3 (DEFERRED — do last)**: user creates free Cloudflare + Lemon Squeezy
-  accounts, deploy the worker, create the "Pro" product, set `VITE_LICENSE_URL`,
-  deploy the site.
+  `VITE_LICENSE_URL` (see `.env.example`). Shows specific reasons
+  (`expired`/`disabled`) on failure.
+- **Piece 3 (PENDING — the worker is NOT deployed)**: Cloudflare + Lemon Squeezy
+  accounts exist and the site is live, but `wrangler deploy` was never run for
+  `worker/`. Every request to `https://format-conversion-license.maidemikkegert.workers.dev`
+  returns Cloudflare `error code: 1042` (no Worker bound), so `verifyLicenseKey()`
+  always fails and Pro stays locked. Remaining steps: `wrangler login` (not yet
+  authenticated) then `wrangler deploy` from `worker/`, into the account whose
+  subdomain is `maidemikkegert`. `.env` already has `VITE_LICENSE_URL` set and the CSP
+  `connect-src` already allows the worker origin, so nothing else needs wiring once it
+  deploys.
 
 ## Key files
 - `src/converters/` — converter registry (`types.ts` has `Converter` + `ConversionError`)
@@ -48,8 +53,6 @@ keys, handle sales tax). Plan was done in 3 pieces:
 - `vite.config.ts` sets `base: '/'` (serves at the domain root).
 
 ## Open decisions / next steps
-- Privacy/"how it works" page for medical/legal audience.
-- Payments (Lemon Squeezy) — do last, see above.
 - Legal pages (`src/components/Legal.tsx`, routes `#/terms`, `#/privacy`, `#/legal-notice`)
   contain `[placeholder]` fields (name, address, contact, VAT ID) that must be filled in
   before launch. Content is a draft — have it reviewed by a lawyer, especially the
@@ -59,10 +62,10 @@ keys, handle sales tax). Plan was done in 3 pieces:
   bombs up front. HEIC now reads dimensions from the decoded handle (`get_width`/`get_height`,
   which come from the ISO-BMFF `ispe` metadata) *before* the pixel decode/`display` step, so
   oversized images are rejected before the expensive RGBA render.
-- Pro is currently locked for everyone: the demo key was removed and `VITE_LICENSE_URL` is
-  unset, so "Go Pro → Unlock Pro" always fails with "Pro is not available yet". Re-enable by
-  deploying the license worker (Piece 3). Note: anyone who already unlocked via the old demo
-  key keeps a stale `localStorage` flag and stays "Pro" until they clear site data.
+- Pro is locked for everyone (see License validation above): the worker isn't deployed
+  yet, so "Unlock Pro" fails. Note: anyone who unlocked via the old demo key (before it
+  was removed) keeps a stale `localStorage` flag and stays "Pro" until they clear site
+  data.
 
 ## Tests
 - Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is
@@ -92,10 +95,10 @@ keys, handle sales tax). Plan was done in 3 pieces:
   and can't run arbitrary injected JS, so it's a far smaller CSP risk than `'unsafe-eval'`.
   (The previous `heic2any` decoder was an asm.js build that called `new Function`, which forced
   `'unsafe-eval'`; it was swapped out for `libheif-js` to drop that keyword.) Residual risk is
-  contained: the app has no XSS sink (output is auto-escaped `<pre>` or `blob:` images). When
-  the Lemon Squeezy worker ships (`VITE_LICENSE_URL`), update the CSP's `connect-src` in
-  `public/_headers` to allow that origin or license checks will be blocked. The JS frame-busting
-  guard in `src/main.tsx` is kept as redundant defense-in-depth.
+  contained: the app has no XSS sink (output is auto-escaped `<pre>` or `blob:` images).
+  The license worker origin is allowed in the CSP's `connect-src` in `public/_headers`
+  (keep it in sync with the `ALLOWED_ORIGINS` in `worker/src/index.js` if it changes).
+  The JS frame-busting guard in `src/main.tsx` is kept as redundant defense-in-depth.
 - Files over 100 MB (`MAX_FILE_BYTES`) are rejected up front (`assertFileSize`) to avoid
   freezing the tab on a huge/malicious input. Raise it only deliberately.
 - DOCX files are also capped by total uncompressed size (`MAX_DOCX_UNCOMPRESSED_BYTES`, 256 MB,
