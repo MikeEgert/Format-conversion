@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { converters } from '../converters'
 import type { Converter } from '../converters'
+import { Showcase } from './Showcase'
 
 const STEPS = [
   { title: 'Choose a format', text: 'Pick the conversion you need — image, HEIC, document, or data.' },
@@ -36,6 +37,12 @@ export function LandingPage() {
             How it works
           </button>
         </div>
+      </section>
+
+      <section className="showcase-section">
+        <h2 className="section-title">See it in action</h2>
+        <p className="section-sub">HEIC photo in, JPG out — no upload, no account.</p>
+        <Showcase />
       </section>
 
       <section className="formats-section">
