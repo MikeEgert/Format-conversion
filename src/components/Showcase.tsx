@@ -20,7 +20,6 @@ interface Step {
   y?: number
   phase: Phase
   click?: boolean
-  caption: string
   hold?: number
   size?: Size
   quality?: Quality
@@ -28,22 +27,22 @@ interface Step {
 }
 
 const STEPS: Step[] = [
-  { target: 'hero-btn', phase: 'hero', caption: 'FoldenLoom converts files right in your browser.' },
-  { target: 'hero-btn', phase: 'hero', caption: 'Start with the big button.' },
-  { target: 'hero-btn', phase: 'hero', click: true, caption: 'Now pick the conversion you need.' },
-  { target: 'heic-card', phase: 'pick', caption: 'HEIC → JPG turns iPhone photos into JPGs.' },
-  { target: 'heic-card', phase: 'pick', click: true, caption: 'Click to browse — nothing is uploaded.' },
-  { target: 'drop-zone', phase: 'drop', caption: 'Drop a file — nothing is uploaded.' },
-  { target: 'drop-zone', phase: 'drop', click: true, caption: 'Click to browse — the file picker opens.' },
-  { target: 'file-dog', phase: 'dialog', caption: 'Pick dog.heic from your device.' },
-  { target: 'file-dog', phase: 'dialog', click: true, caption: 'Opening dog.heic…' },
-  { x: 24, y: 84, phase: 'working', hold: 1900, caption: 'No server, no upload. It never leaves this tab.' },
-  { target: 'size-medium', phase: 'done', caption: 'Pick the size you need.' },
-  { target: 'size-medium', phase: 'done', click: true, size: 'medium', caption: 'And the quality.' },
-  { target: 'quality-balanced', phase: 'done', caption: 'Medium, balanced quality — great default.' },
-  { target: 'quality-balanced', phase: 'done', click: true, quality: 'balanced', caption: 'Your JPG is ready.' },
-  { target: 'download', phase: 'done', caption: 'Download — saved only in your browser.' },
-  { target: 'download', phase: 'done', click: true, downloaded: true, hold: 1800, caption: 'Done. Files never leave your device.' },
+  { target: 'hero-btn', phase: 'hero' },
+  { target: 'hero-btn', phase: 'hero' },
+  { target: 'hero-btn', phase: 'hero', click: true },
+  { target: 'heic-card', phase: 'pick' },
+  { target: 'heic-card', phase: 'pick', click: true },
+  { target: 'drop-zone', phase: 'drop' },
+  { target: 'drop-zone', phase: 'drop', click: true },
+  { target: 'file-dog', phase: 'dialog' },
+  { target: 'file-dog', phase: 'dialog', click: true },
+  { x: 24, y: 84, phase: 'working', hold: 1900 },
+  { target: 'size-medium', phase: 'done' },
+  { target: 'size-medium', phase: 'done', click: true, size: 'medium' },
+  { target: 'quality-balanced', phase: 'done' },
+  { target: 'quality-balanced', phase: 'done', click: true, quality: 'balanced' },
+  { target: 'download', phase: 'done' },
+  { target: 'download', phase: 'done', click: true, downloaded: true, hold: 1800 },
 ]
 
 const SIZES: { id: Size; label: string; value?: string }[] = [
@@ -105,9 +104,6 @@ export function Showcase() {
   const [target, setTarget] = useState<Target | null>(() =>
     prefersReducedMotion() ? 'download' : null,
   )
-  const [caption, setCaption] = useState(() =>
-    prefersReducedMotion() ? STEPS[STEPS.length - 1].caption : STEPS[0].caption,
-  )
   const [clickKey, setClickKey] = useState(0)
   const [size, setSize] = useState<Size>(() => (prefersReducedMotion() ? 'medium' : 'original'))
   const [quality, setQuality] = useState<Quality>(() =>
@@ -135,7 +131,6 @@ export function Showcase() {
       timer = window.setTimeout(() => {
         if (cancelled) return
         setPhase(step.phase)
-        setCaption(step.caption)
         if (step.target) {
           setTarget(step.target)
         } else {
@@ -237,10 +232,6 @@ export function Showcase() {
           </span>
         </div>
       </div>
-
-      <p className="showcase-caption" aria-hidden="true">
-        {caption}
-      </p>
     </div>
   )
 }

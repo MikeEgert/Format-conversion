@@ -1130,14 +1130,6 @@ body {
   }
 }
 
-.showcase-caption {
-  margin: 0;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 14px;
-  min-height: 22px;
-}
-
 .showcase-label {
   font-size: 12px;
   font-weight: 600;
