@@ -15,9 +15,9 @@ browser — files never leave the device (privacy is the core selling point).
 - **Error reporting**: converters detect *why* a file fails and show an actionable
   hint (e.g. "old .doc, re-save as .docx").
 
-## License validation (payment) — NOT DEPLOYED YET
+## License validation (payment) — DEPLOYED
 Real Pro key validation via Lemon Squeezy (merchant of record; they issue keys and
-handle sales tax). Built in 3 pieces, two done + one still pending:
+handle sales tax). Built in 3 pieces, all done:
 
 - **Piece 1 (DONE)**: `worker/` — a Cloudflare Worker relay that calls the Lemon
   Squeezy License API (`POST /v1/licenses/validate`, no API key needed — the License
@@ -25,19 +25,18 @@ handle sales tax). Built in 3 pieces, two done + one still pending:
   restricted to `ALLOWED_ORIGINS` (not `*`), license keys are length-capped, and a
   best-effort in-memory rate limit is applied per IP. The in-memory limiter is
   per-isolate and unreliable under load — for production, add a Cloudflare WAF rate
-  limiting rule in the dashboard rather than relying on it.
+  limiting rule in the dashboard rather than relying on it. Note: Lemon Squeezy
+  returns HTTP 404 for an unknown key, so the worker maps LS 4xx responses to
+  `200 {valid:false}` (invalid key) and only 5xx/network failures to a 502.
 - **Piece 2 (DONE)**: `src/pro/license.ts` `verifyLicenseKey()` calls the worker via
-  `VITE_LICENSE_URL` (see `.env.example`). Shows specific reasons
-  (`expired`/`disabled`) on failure.
-- **Piece 3 (PENDING — the worker is NOT deployed)**: Cloudflare + Lemon Squeezy
-  accounts exist and the site is live, but `wrangler deploy` was never run for
-  `worker/`. Every request to `https://format-conversion-license.maidemikkegert.workers.dev`
-  returns Cloudflare `error code: 1042` (no Worker bound), so `verifyLicenseKey()`
-  always fails and Pro stays locked. Remaining steps: `wrangler login` (not yet
-  authenticated) then `wrangler deploy` from `worker/`, into the account whose
-  subdomain is `maidemikkegert`. `.env` already has `VITE_LICENSE_URL` set and the CSP
-  `connect-src` already allows the worker origin, so nothing else needs wiring once it
-  deploys.
+  `VITE_LICENSE_URL`, defaulting to
+  `https://format-conversion-license.maidemikkegert.workers.dev` if unset (the URL is
+  public, so the default keeps Pro working even when the Workers Builds build has no
+  env vars — `.env` is gitignored). Shows specific reasons (`expired`/`disabled`) on
+  failure.
+- **Piece 3 (DONE)**: worker is deployed to `format-conversion-license.maidemikkegert.workers.dev`
+  (via `wrangler deploy` from `worker/`, account `maidemikkegert`). The CSP
+  `connect-src` in `public/_headers` allows the worker origin.
 
 ## Key files
 - `src/converters/` — converter registry (`types.ts` has `Converter` + `ConversionError`)
@@ -62,10 +61,9 @@ handle sales tax). Built in 3 pieces, two done + one still pending:
   bombs up front. HEIC now reads dimensions from the decoded handle (`get_width`/`get_height`,
   which come from the ISO-BMFF `ispe` metadata) *before* the pixel decode/`display` step, so
   oversized images are rejected before the expensive RGBA render.
-- Pro is locked for everyone (see License validation above): the worker isn't deployed
-  yet, so "Unlock Pro" fails. Note: anyone who unlocked via the old demo key (before it
-  was removed) keeps a stale `localStorage` flag and stays "Pro" until they clear site
-  data.
+- Pro is validated by the deployed worker (see License validation above). Note: anyone
+  who unlocked via the old demo key (before it was removed) keeps a stale
+  `localStorage` flag and stays "Pro" until they clear site data.
 
 ## Tests
 - Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is
