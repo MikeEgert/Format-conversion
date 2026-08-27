@@ -88,7 +88,24 @@ export default {
     })
 
     if (!upstream.ok) {
-      return respond({ valid: false, error: 'Could not reach license service' }, 502, headers)
+      if (upstream.status >= 500) {
+        return respond({ valid: false, error: 'Could not reach license service' }, 502, headers)
+      }
+      let data
+      try {
+        data = await upstream.json()
+      } catch {
+        data = {}
+      }
+      return respond(
+        {
+          valid: false,
+          status: data.license_key?.status ?? null,
+          error: data.error ?? 'License key is invalid',
+        },
+        200,
+        headers,
+      )
     }
 
     const data = await upstream.json()

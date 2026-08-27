@@ -16,11 +16,8 @@ function reasonForStatus(status: string | null): string | undefined {
 
 export async function verifyLicenseKey(key: string): Promise<LicenseCheck> {
   const licenseKey = key.trim()
-  const serviceUrl = import.meta.env.VITE_LICENSE_URL
-
-  if (!serviceUrl) {
-    return { valid: false, reason: 'Pro is not available yet.' }
-  }
+  const serviceUrl =
+    import.meta.env.VITE_LICENSE_URL || 'https://format-conversion-license.maidemikkegert.workers.dev'
 
   try {
     const res = await fetch(`${serviceUrl.replace(/\/$/, '')}/validate`, {
