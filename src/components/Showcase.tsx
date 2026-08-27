@@ -59,8 +59,6 @@ const QUALITIES: { id: Quality; label: string; value: string }[] = [
   { id: 'high', label: 'High', value: '90%' },
 ]
 
-const FORMATS = ['JPG', 'PNG', 'WebP']
-
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
@@ -382,16 +380,6 @@ function Done({
   return (
     <div className="showcase-done">
       <div className="showcase-pickers">
-        <div className="showcase-picker">
-          <span className="showcase-label">Convert to</span>
-          <span className="showcase-options">
-            {FORMATS.map((f) => (
-              <span key={f} className={f === 'JPG' ? 'showcase-option active' : 'showcase-option'}>
-                {f}
-              </span>
-            ))}
-          </span>
-        </div>
         <div className="showcase-picker">
           <span className="showcase-label">Size</span>
           <span className="showcase-options">
