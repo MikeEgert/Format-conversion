@@ -101,6 +101,26 @@ body {
   white-space: nowrap;
 }
 
+.badge-pro {
+  color: #fff;
+  background: var(--accent);
+}
+
+.upgrade-link {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-strong);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.upgrade-link:hover {
+  text-decoration: underline;
+}
+
 .header-actions {
   display: inline-flex;
   align-items: center;
