@@ -92,8 +92,8 @@ export function PrivacyPage() {
 
       <h2>2. Data controller</h2>
       <p>
-        The controller responsible for this website is FoldenLoom,
-        reachable at foldenloom@gmail.com.
+        The controller responsible for this website is Mikk Egert Maide (FoldenLoom),
+        Pärnu Ruudu tn, 80016 Pärnu, Estonia, reachable at foldenloom@gmail.com.
       </p>
 
       <h2>3. What we do not process</h2>
