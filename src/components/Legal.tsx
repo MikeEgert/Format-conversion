@@ -1,9 +1,5 @@
 import type { ReactNode } from 'react'
 
-function Placeholder({ children }: { children: string }) {
-  return <span className="ph">{children}</span>
-}
-
 function LegalLayout({
   title,
   updated,
@@ -138,17 +134,17 @@ export function LegalNoticePage() {
   return (
     <LegalLayout title="Legal Notice (Impressum)" updated="22 August 2026">
       <p className="legal-note">
-        Information pursuant to Section 5 of the German Telemedia Act (TMG) and Section 18 of the
-        German State Media Treaty (MStV).
+        Information pursuant to Section 5 of the German Digital Services Act (DDG) and Section 18 of
+        the German State Media Treaty (MStV).
       </p>
 
       <h2>Service provider</h2>
       <p>
         FoldenLoom
         <br />
-        <Placeholder>[Street and number]</Placeholder>
+        Pärnu Ruudu tn
         <br />
-        <Placeholder>[Postal code and city]</Placeholder>, <Placeholder>[Country]</Placeholder>
+        80016 Pärnu, Estonia
       </p>
 
       <h2>Contact</h2>
@@ -156,14 +152,9 @@ export function LegalNoticePage() {
         Email: foldenloom@gmail.com
       </p>
 
-      <h2>VAT ID</h2>
-      <p>
-        <Placeholder>[VAT identification number, if applicable, per § 27a UStG]</Placeholder>
-      </p>
-
       <h2>Responsible for content (§ 18 MStV)</h2>
       <p>
-        <Placeholder>[Name of the person responsible]</Placeholder>
+        Mikk Egert Maide
       </p>
 
       <h2>Liability for content</h2>
