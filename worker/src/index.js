@@ -1,3 +1,5 @@
+import { createRateLimiter } from './rateLimit.js'
+
 const LS_ENDPOINT = 'https://api.lemonsqueezy.com/v1/licenses/validate'
 
 const ALLOWED_ORIGINS = [
@@ -9,8 +11,13 @@ const ALLOWED_ORIGINS = [
 const MAX_KEY_LENGTH = 200
 const RATE_LIMIT_WINDOW_MS = 60_000
 const RATE_LIMIT_MAX = 30
+const CACHE_TTL_VALID_SECONDS = 300
+const CACHE_TTL_INVALID_SECONDS = 60
 
-const buckets = new Map()
+const rateLimiter = createRateLimiter({
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX,
+})
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin')
@@ -27,14 +34,7 @@ function corsHeaders(request) {
 
 function rateLimited(request) {
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown'
-  const now = Date.now()
-  let entry = buckets.get(ip)
-  if (!entry || now - entry.start > RATE_LIMIT_WINDOW_MS) {
-    entry = { start: now, count: 0 }
-    buckets.set(ip, entry)
-  }
-  entry.count += 1
-  return entry.count > RATE_LIMIT_MAX
+  return rateLimiter.isLimited(ip)
 }
 
 function respond(body, status = 200, headers = {}) {
@@ -42,6 +42,41 @@ function respond(body, status = 200, headers = {}) {
     status,
     headers: { 'Content-Type': 'application/json', ...headers },
   })
+}
+
+async function cacheUrlFor(licenseKey) {
+  const digest = await crypto.subtle.digest(
+    'SHA-256',
+    new TextEncoder().encode(licenseKey),
+  )
+  const hex = [...new Uint8Array(digest)]
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+  return `https://license-cache.local/${hex}`
+}
+
+async function readCached(cacheUrl) {
+  try {
+    const cached = await caches.default.match(cacheUrl)
+    if (cached) return await cached.json()
+  } catch {
+    // fall through on cache failure
+  }
+  return null
+}
+
+async function writeCached(cacheUrl, body, ttlSeconds) {
+  try {
+    const response = new Response(JSON.stringify(body), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': `max-age=${ttlSeconds}`,
+      },
+    })
+    await caches.default.put(cacheUrl, response)
+  } catch {
+    // caching is best-effort
+  }
 }
 
 export default {
@@ -78,6 +113,12 @@ export default {
       return respond({ valid: false, error: 'License key is too long' }, 422, headers)
     }
 
+    const cacheUrl = await cacheUrlFor(licenseKey)
+    const cached = await readCached(cacheUrl)
+    if (cached) {
+      return respond(cached, 200, headers)
+    }
+
     const upstream = await fetch(LS_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -109,13 +150,15 @@ export default {
     }
 
     const data = await upstream.json()
-    return respond(
-      {
-        valid: data.valid === true,
-        status: data.license_key?.status ?? null,
-      },
-      200,
-      headers,
+    const body = {
+      valid: data.valid === true,
+      status: data.license_key?.status ?? null,
+    }
+    await writeCached(
+      cacheUrl,
+      body,
+      body.valid ? CACHE_TTL_VALID_SECONDS : CACHE_TTL_INVALID_SECONDS,
     )
+    return respond(body, 200, headers)
   },
 }
