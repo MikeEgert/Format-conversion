@@ -32,7 +32,7 @@ function App() {
     <div className="page">
       <header className="header">
         <a className="brand" href="#/">
-          <img className="brand-logo" src="/favicon.png" alt="FoldenLoom" width="28" height="28" />
+          <img className="brand-logo" src="/favicon.png?v=2" alt="FoldenLoom" width="28" height="28" />
           FoldenLoom
         </a>
         <div className="header-actions">

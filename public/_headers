@@ -6,3 +6,6 @@
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+
+/favicon.png
+  Cache-Control: no-cache
