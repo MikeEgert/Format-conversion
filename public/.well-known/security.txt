@@ -1,0 +1,4 @@
+Contact: mailto:foldenloom@gmail.com
+Expires: 2027-08-30T00:00:00Z
+Preferred-Languages: en
+Canonical: https://format-conversion.maidemikkegert.workers.dev/.well-known/security.txt
