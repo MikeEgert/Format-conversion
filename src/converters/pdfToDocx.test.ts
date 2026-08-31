@@ -28,7 +28,12 @@ describe('itemsToLines', () => {
   })
 
   it('skips items without text or coordinates', () => {
-    const items = [{ str: '' }, { transform: undefined }, { str: 'only', transform: [1, 0, 0, 1, 0, 0], width: 4 }]
+    const items = [
+      { str: '' },
+      { transform: undefined },
+      { type: 'beginMarkedContent', id: 'M1' },
+      { str: 'only', transform: [1, 0, 0, 1, 0, 0], width: 4 },
+    ]
     expect(itemsToLines(items)).toEqual(['only'])
   })
 

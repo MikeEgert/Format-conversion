@@ -3,14 +3,24 @@ import { isPdfFile, replaceExtension } from './helpers'
 import { ConversionError, type Converter } from './types'
 
 /**
- * A minimal structural view of the items pdf.js yields from `getTextContent()`.
- * Only the fields used to reconstruct lines are typed; the rest is left opaque.
+ * Structural shapes mirroring the items pdf.js yields from `getTextContent()`
+ * (its `items` array is typed `Array<TextItem | TextMarkedContent>`). Mirroring
+ * the union lets us pass `content.items` straight through with no cast; the
+ * text-bearing `PdfTextContentItem` keeps `str` optional so marked-content
+ * entries are still assignable, and they are filtered out at runtime.
  */
-export interface PdfTextItem {
+export interface PdfTextContentItem {
   str?: string
   transform?: number[]
   width?: number
 }
+
+export interface PdfTextMarkedContentItem {
+  type: string
+  id?: string
+}
+
+export type PdfTextContent = PdfTextContentItem | PdfTextMarkedContentItem
 
 /**
  * Reconstruct reading-order lines from a page's raw text items.
@@ -20,11 +30,11 @@ export interface PdfTextItem {
  * `yTolerance`) are grouped into one line and ordered left-to-right by x.
  * PDF coordinates grow upward, so lines are emitted top-to-bottom.
  */
-export function itemsToLines(items: PdfTextItem[], yTolerance = 3): string[] {
+export function itemsToLines(items: PdfTextContent[], yTolerance = 3): string[] {
   const rows = new Map<number, { x: number; text: string; width: number }[]>()
 
   for (const item of items) {
-    if (typeof item.str !== 'string' || item.str.length === 0) continue
+    if (!('str' in item) || typeof item.str !== 'string' || item.str.length === 0) continue
     if (!item.transform) continue
 
     const y = item.transform[5]
@@ -152,7 +162,7 @@ async function extractPdfText(data: ArrayBuffer): Promise<string[][]> {
     for (let i = 1; i <= doc.numPages; i += 1) {
       const page = await doc.getPage(i)
       const content = await page.getTextContent()
-      pages.push(itemsToLines(content.items as PdfTextItem[]))
+      pages.push(itemsToLines(content.items))
       page.cleanup()
     }
     return pages
