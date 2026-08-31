@@ -64,6 +64,13 @@ handle sales tax). Built in 3 pieces, all done:
 - Pro is validated by the deployed worker (see License validation above). Note: anyone
   who unlocked via the old demo key (before it was removed) keeps a stale
   `localStorage` flag and stays "Pro" until they clear site data.
+- PDF→DOCX (`src/converters/pdfToDocx.ts`) follow-ups:
+  - `itemsToLines` groups text by y-baseline only, so multi-column/table PDFs come out
+    jumbled (side-by-side columns interleave). Consider column detection, or at least note
+    the limitation in `detail.about`.
+  - The catch-all in `extractPdfText` maps *every* failure (including OOM) to the
+    "corrupted/password/scanned" hint — slightly imprecise.
+  - `content.items as PdfTextItem[]` is a loose cast (guarded by the `typeof item.str` check).
 
 ## Tests
 - Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is
