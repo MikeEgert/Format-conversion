@@ -70,7 +70,9 @@ handle sales tax). Built in 3 pieces, all done:
     the limitation in `detail.about`.
   - The catch-all in `extractPdfText` maps *every* failure (including OOM) to the
     "corrupted/password/scanned" hint — slightly imprecise.
-  - `content.items as PdfTextItem[]` is a loose cast (guarded by the `typeof item.str` check).
+  - (Resolved) `content.items as PdfTextItem[]` was a loose cast; `itemsToLines` now takes a
+    structural mirror of pdf.js's `TextItem | TextMarkedContent` union and narrows it with
+    `'str' in item`, so `content.items` passes through with no cast.
 
 ## Tests
 - Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is
