@@ -33,6 +33,9 @@ export function UpgradeModal({ onClose, onUnlocked }: UpgradeModalProps) {
           Free users convert one file at a time. Pro unlocks batch conversion and one-click ZIP
           downloads — all still processed locally on your device.
         </p>
+        <p className="modal-note">
+          Purchases are coming soon — if you already have a license key, enter it below.
+        </p>
 
         <form className="modal-form" onSubmit={handleSubmit}>
           <input

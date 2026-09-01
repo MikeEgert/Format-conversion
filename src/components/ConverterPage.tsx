@@ -11,7 +11,6 @@ import { ResultCard } from './ResultCard'
 import { Results } from './Results'
 import { UpgradeModal } from './UpgradeModal'
 import { usePro } from '../pro/usePro'
-import { isLocalhost } from '../lib/isLocalhost'
 
 type Status = 'idle' | 'working' | 'done' | 'error'
 
@@ -103,7 +102,7 @@ export function ConverterPage() {
 
   function handleFiles(selected: File[]) {
     if (selected.length === 0) return
-    if (isLocalhost() && selected.length > 1 && !isPro) {
+    if (selected.length > 1 && !isPro) {
       setPendingFiles(selected)
       setShowUpgrade(true)
       return

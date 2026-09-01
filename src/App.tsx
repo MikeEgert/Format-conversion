@@ -5,7 +5,6 @@ import { LandingPage } from './components/Landing'
 import { LegalNoticePage, PrivacyPage, TermsPage } from './components/Legal'
 import { UpgradeModal } from './components/UpgradeModal'
 import { usePro } from './pro/usePro'
-import { isLocalhost } from './lib/isLocalhost'
 
 function App() {
   const { isPro } = usePro()
@@ -37,14 +36,13 @@ function App() {
         </a>
         <div className="header-actions">
           <span className="badge">Private &amp; secure</span>
-          {isLocalhost() &&
-            (isPro ? (
+          {isPro ? (
               <span className="badge badge-pro">Pro</span>
             ) : (
               <button type="button" className="upgrade-link" onClick={() => setShowUpgrade(true)}>
                 Upgrade
               </button>
-            ))}
+            )}
         </div>
       </header>
 
