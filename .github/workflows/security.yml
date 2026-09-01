@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -27,4 +27,24 @@ jobs:
         run: npm ci
 
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        run: |
+          npm audit --json > /tmp/audit.json || true
+          node -e "
+            const report = require('/tmp/audit.json')
+            // Known, accepted advisories on the npm-line xlsx build (see AGENTS.md):
+            // prototype pollution GHSA-4r6h-8v6p-xvw6, ReDoS GHSA-5pgg-2g8v-p4x9.
+            const allowed = new Set([
+              'https://github.com/advisories/GHSA-4r6h-8v6p-xvw6',
+              'https://github.com/advisories/GHSA-5pgg-2g8v-p4x9',
+            ])
+            const urls = new Set()
+            for (const v of Object.values(report.vulnerabilities || {})) {
+              for (const a of v.via || []) if (typeof a === 'object' && a.url) urls.add(a.url)
+            }
+            const blocking = [...urls].filter((u) => !allowed.has(u))
+            if (blocking.length) {
+              console.error('Blocking advisories: ' + blocking.join(', '))
+              process.exit(1)
+            }
+            console.log('Audit OK (' + (urls.size || 'no') + ' advisory(ies), all allowlisted)')
+          "
