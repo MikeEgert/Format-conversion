@@ -14,6 +14,13 @@ browser — files never leave the device (privacy is the core selling point).
   Pro is unlocked via a license key validated by the worker (`src/pro/license.ts`).
 - **Error reporting**: converters detect *why* a file fails and show an actionable
   hint (e.g. "old .doc, re-save as .docx").
+- **Batch progress + cancel**: while converting, the UI shows an overall progress bar plus a
+  per-file status list (waiting → converting → done/failed) and a Cancel button. Cancel works
+  via an `AbortSignal` threaded into `mapWithConcurrency` (`src/lib/batch.ts`): it stops
+  scheduling new files and discards partial results. Caveat: an already in-flight single file
+  (e.g. a big HEIC WASM decode, which is synchronous) can't be killed mid-decode — cancel
+  returns to the drop zone immediately and the stray worker finishes in the background with its
+  result discarded. Batch concurrency is currently 1.
 
 ## License validation (payment) — DEPLOYED
 Real Pro key validation via Lemon Squeezy (merchant of record; they issue keys and
