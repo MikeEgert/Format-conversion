@@ -62,6 +62,13 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+export function formatSizeSavings(sourceSize: number, outputSize: number): string | null {
+  if (!(sourceSize > 0)) return null
+  const pct = Math.round(((outputSize - sourceSize) / sourceSize) * 100)
+  if (pct === 0) return '0%'
+  return `${pct > 0 ? '+' : ''}${pct}%`
+}
+
 export function isHeicFile(buffer: ArrayBuffer): boolean {
   if (buffer.byteLength < 12) return false
   const bytes = new Uint8Array(buffer, 0, 12)

@@ -3,6 +3,7 @@ import {
   assertFileSize,
   assertImageDimensions,
   formatBytes,
+  formatSizeSavings,
   isHeicFile,
   isZipFile,
   MAX_FILE_BYTES,
@@ -58,6 +59,29 @@ describe('formatBytes', () => {
     expect(formatBytes(1023)).toBe('1023 B')
     expect(formatBytes(1024)).toBe('1.0 KB')
     expect(formatBytes(1048576)).toBe('1.0 MB')
+  })
+})
+
+describe('formatSizeSavings', () => {
+  it('returns null when there is no meaningful source size', () => {
+    expect(formatSizeSavings(0, 10)).toBeNull()
+    expect(formatSizeSavings(-1, 10)).toBeNull()
+  })
+
+  it('shows a negative percentage when the output is smaller', () => {
+    expect(formatSizeSavings(1_000_000, 100_000)).toBe('-90%')
+  })
+
+  it('shows a positive percentage when the output is larger', () => {
+    expect(formatSizeSavings(100_000, 1_000_000)).toBe('+900%')
+  })
+
+  it('shows 0% for negligible changes', () => {
+    expect(formatSizeSavings(1000, 1004)).toBe('0%')
+  })
+
+  it('rounds percentages to whole numbers', () => {
+    expect(formatSizeSavings(1000, 666)).toBe('-33%')
   })
 })
 

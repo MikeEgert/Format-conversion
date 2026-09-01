@@ -11,6 +11,7 @@ export class ConversionError extends Error {
 export interface ConversionResult {
   blob: Blob
   filename: string
+  sourceSize?: number
 }
 
 export type ImageFormat = 'jpg' | 'png' | 'webp'
