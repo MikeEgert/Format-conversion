@@ -95,6 +95,7 @@ async function decodeHeicToJpeg(
 export const heicToJpg: Converter = {
   id: 'heic-to-jpg',
   name: 'HEIC to JPG',
+  category: 'Images',
   fromLabel: 'HEIC',
   toLabel: 'JPG',
   description: 'Convert iPhone HEIC photos to universally-supported JPG.',

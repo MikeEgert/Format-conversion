@@ -347,6 +347,33 @@ body {
   gap: 14px;
 }
 
+.converters-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.converter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.converter-group-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.converter-group-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
 .converter-card {
   display: flex;
   flex-direction: column;
@@ -1641,6 +1668,10 @@ body {
 
 @media (max-width: 720px) {
   .converters {
+    grid-template-columns: 1fr;
+  }
+
+  .converter-group-grid {
     grid-template-columns: 1fr;
   }
 

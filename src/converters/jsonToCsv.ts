@@ -66,6 +66,7 @@ export function tableToCsv(table: CsvTable): string {
 export const jsonToCsv: Converter = {
   id: 'json-to-csv',
   name: 'JSON to CSV',
+  category: 'Data',
   fromLabel: 'JSON',
   toLabel: 'CSV',
   description: 'Turn JSON data into a spreadsheet-ready CSV file.',

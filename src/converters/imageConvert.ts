@@ -13,6 +13,7 @@ const HEADER_BYTES = 64 * 1024
 export const imageConvert: Converter = {
   id: 'image',
   name: 'Image',
+  category: 'Images',
   fromLabel: 'Image',
   toLabel: 'JPG/PNG/WebP',
   description: 'Convert PNG, JPG, and WebP images between formats.',

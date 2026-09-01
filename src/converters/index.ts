@@ -1,4 +1,4 @@
-import { ConversionError, type Converter } from './types'
+import { ConversionError, type Converter, type ConverterCategory } from './types'
 import { csvToJson } from './csvToJson'
 import { docxToMarkdown } from './docxToMarkdown'
 import { epubToPdf } from './epubToPdf'
@@ -6,6 +6,7 @@ import { heicToJpg } from './heicToJpg'
 import { imageConvert } from './imageConvert'
 import { jsonToCsv } from './jsonToCsv'
 import { pdfToDocx } from './pdfToDocx'
+import { csvToXlsx, jsonToXlsx, xlsxToCsv, xlsxToJson } from './xlsx'
 
 export const converters: Converter[] = [
   imageConvert,
@@ -15,8 +16,41 @@ export const converters: Converter[] = [
   epubToPdf,
   csvToJson,
   jsonToCsv,
+  xlsxToCsv,
+  csvToXlsx,
+  xlsxToJson,
+  jsonToXlsx,
 ]
 
-export { csvToJson, docxToMarkdown, epubToPdf, heicToJpg, imageConvert, jsonToCsv, pdfToDocx }
+export {
+  csvToJson,
+  csvToXlsx,
+  docxToMarkdown,
+  epubToPdf,
+  heicToJpg,
+  imageConvert,
+  jsonToCsv,
+  jsonToXlsx,
+  pdfToDocx,
+  xlsxToCsv,
+  xlsxToJson,
+}
+export const CATEGORY_ORDER: ConverterCategory[] = ['Images', 'Documents', 'E-books', 'Data']
+
+export function groupConvertersByCategory(
+  list: Converter[],
+): { category: ConverterCategory; converters: Converter[] }[] {
+  return CATEGORY_ORDER.map((category) => ({
+    category,
+    converters: list.filter((c) => c.category === category),
+  })).filter((group) => group.converters.length > 0)
+}
+
 export { ConversionError }
-export type { Converter, ConversionResult, ImageFormat, ImageFormatOption } from './types'
+export type {
+  Converter,
+  ConverterCategory,
+  ConversionResult,
+  ImageFormat,
+  ImageFormatOption,
+} from './types'

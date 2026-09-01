@@ -17,6 +17,7 @@ import { DEFAULT_PAGE_CONFIG, layoutBlocks, type FontMetrics, type Page } from '
 export const epubToPdf: Converter = {
   id: 'epub-to-pdf',
   name: 'EPUB to PDF',
+  category: 'E-books',
   fromLabel: 'EPUB',
   toLabel: 'PDF',
   description: 'Convert e-books into selectable, print-ready PDF files.',

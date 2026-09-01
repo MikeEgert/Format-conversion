@@ -9,7 +9,8 @@ browser — files never leave the device (privacy is the core selling point).
 ## What's built
 - **Converters**: Image (PNG/JPG/WebP ↔ any), HEIC→JPG (`libheif-js` WASM), DOCX→Markdown
   (`mammoth` + `turndown`), EPUB→PDF (`pdf-lib` + `@pdf-lib/fontkit`), CSV→JSON and
-  JSON→CSV (`papaparse`). Heavy libs are code-split via dynamic `import()`.
+  JSON→CSV (`papaparse`), and Excel support — XLSX/XLS→CSV, CSV→XLSX, XLSX→JSON,
+  JSON→XLSX (`xlsx`/SheetJS). Heavy libs are code-split via dynamic `import()`.
 - **Freemium**: free = single file; Pro = batch convert + "Download as ZIP".
   Pro is unlocked via a license key validated by the worker (`src/pro/license.ts`).
 - **Error reporting**: converters detect *why* a file fails and show an actionable
@@ -59,6 +60,12 @@ handle sales tax). Built in 3 pieces, all done:
 - `vite.config.ts` sets `base: '/'` (serves at the domain root).
 
 ## Open decisions / next steps
+- No spend cap is configured — and none is currently needed. Cloudflare (app + license
+  worker) runs on the free tier (no credit card, 100k req/day throttle, not billed on
+  overage), and Lemon Squeezy only bills per completed sale (validation calls are free).
+  The worker's rate limiter (30 req/min/IP, `worker/src/index.js`) already guards against
+  abuse. Revisit: add a hard budget alert if we ever move off Cloudflare free tier or add
+  a paid API (e.g. hosted PDF/AI service). Caps live in the dashboards, not in code.
 - Legal pages (`src/components/Legal.tsx`, routes `#/terms`, `#/privacy`, `#/legal-notice`)
   contain `[placeholder]` fields (name, address, contact, VAT ID) that must be filled in
   before launch. Content is a draft — have it reviewed by a lawyer, especially the
@@ -88,7 +95,9 @@ handle sales tax). Built in 3 pieces, all done:
   wrong-file guards or stubbed globals.
 
 ## Working conventions
-- State your plan briefly before editing (files touched, why) for anything beyond a trivial fix.
+- Before writing any code: inspect the relevant files and explain the implementation plan.
+  Identify which files need to be modified, what changes will be done, and any potential
+  risks. Refrain from editing anything until the plan is approved. Don't be sycophant.
 - After changes: run `npm run lint` and `npm run build`; fix any errors before calling a task done.
 - New converters: implement the `Converter` interface in `src/converters/`, register it,
   code-split any heavy parsing library via dynamic `import()` (see existing converters for pattern).
@@ -124,5 +133,12 @@ handle sales tax). Built in 3 pieces, all done:
   (`sanitizeForFont`). CJK/emoji are not covered.
 - Don't commit secrets/env values, and don't run `wrangler deploy` or touch `worker/` deploy
   config without asking first.
+- `xlsx` is pinned to `0.18.5` (npm registry), which carries two known advisories with no fix
+  on the npm line: prototype pollution (CVE-2023-30533) and a formula-parsing ReDoS
+  (CVE-2024-22363), both fixed only in the CDN-hosted 0.19.3+/0.20.x builds. Accepted because
+  parsing happens client-side on the user's own file, the app has no XSS sink, and the
+  XLSX→JSON path re-keys rows via `setOwn` (guarding `__proto__`). Prefer the SheetJS CDN build
+  if this ever becomes a shared/trusted-input surface. `.xlsx`/`.xls` inputs are format-sniffed
+  (ZIP or OLE2 magic) before parsing; plain text is rejected.
 - Prefer small, focused diffs. No unrelated refactors.
 - No tests exist yet — if you add non-trivial logic, add a test alongside it rather than leaving it untested.

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { converters } from '../converters'
+import { converters, groupConvertersByCategory } from '../converters'
 import type { Converter } from '../converters'
 import { Showcase } from './Showcase'
 
@@ -50,24 +50,31 @@ export function LandingPage() {
         <p className="section-sub">Pick a conversion — it all happens in your browser, nothing is uploaded.</p>
       </section>
 
-      <section className="converters" aria-label="What you can convert">
-        {converters.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            className="converter-card"
-            onClick={() => setDetail(c)}
-          >
-            <span className="converter-badges">
-              <span className="from">{c.fromLabel}</span>
-              <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className="to">{c.toLabel}</span>
-            </span>
-            <span className="converter-name">{c.name}</span>
-            <span className="converter-desc">{c.description}</span>
-          </button>
+      <section className="converters-groups" aria-label="What you can convert">
+        {groupConvertersByCategory(converters).map((group) => (
+          <div key={group.category} className="converter-group">
+            <h3 className="converter-group-title">{group.category}</h3>
+            <div className="converter-group-grid">
+              {group.converters.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className="converter-card"
+                  onClick={() => setDetail(c)}
+                >
+                  <span className="converter-badges">
+                    <span className="from">{c.fromLabel}</span>
+                    <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span className="to">{c.toLabel}</span>
+                  </span>
+                  <span className="converter-name">{c.name}</span>
+                  <span className="converter-desc">{c.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </section>
 

@@ -174,6 +174,7 @@ async function extractPdfText(data: ArrayBuffer): Promise<string[][]> {
 export const pdfToDocx: Converter = {
   id: 'pdf-to-docx',
   name: 'PDF to DOCX',
+  category: 'Documents',
   fromLabel: 'PDF',
   toLabel: 'DOCX',
   description: 'Turn PDFs into editable Word documents.',

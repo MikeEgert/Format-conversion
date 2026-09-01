@@ -45,6 +45,7 @@ export async function htmlToMarkdown(html: string): Promise<string> {
 export const docxToMarkdown: Converter = {
   id: 'docx-to-markdown',
   name: 'DOCX to Markdown',
+  category: 'Documents',
   fromLabel: 'DOCX',
   toLabel: 'MD',
   description: 'Convert Word documents into clean Markdown for notes and blogs.',

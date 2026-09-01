@@ -23,7 +23,7 @@ export function typeCsvValue(value: string): unknown {
   return value === '' ? null : value
 }
 
-function dedupeHeaders(headers: string[]): string[] {
+export function dedupeHeaders(headers: string[]): string[] {
   const used = new Set<string>()
   const counts = new Map<string, number>()
   return headers.map((raw) => {
@@ -90,6 +90,7 @@ export function parseCsv(text: string): Record<string, unknown>[] {
 export const csvToJson: Converter = {
   id: 'csv-to-json',
   name: 'CSV to JSON',
+  category: 'Data',
   fromLabel: 'CSV',
   toLabel: 'JSON',
   description: 'Turn spreadsheet rows into clean, nested JSON objects.',

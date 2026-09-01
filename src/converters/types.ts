@@ -14,6 +14,8 @@ export interface ConversionResult {
   sourceSize?: number
 }
 
+export type ConverterCategory = 'Images' | 'Documents' | 'E-books' | 'Data'
+
 export type ImageFormat = 'jpg' | 'png' | 'webp'
 
 export interface ImageFormatOption {
@@ -37,6 +39,7 @@ export interface ConverterDetail {
 export interface Converter {
   id: string
   name: string
+  category: ConverterCategory
   fromLabel: string
   toLabel: string
   description: string
