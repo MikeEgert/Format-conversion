@@ -101,27 +101,3 @@ export function scaledSize(
     height: Math.max(1, Math.round(height * scale)),
   }
 }
-
-export async function resizeImage(
-  blob: Blob,
-  maxDimension: number,
-  mime: string,
-  quality: number,
-): Promise<Blob> {
-  const bitmap = await createImageBitmap(blob)
-  assertImageDimensions(bitmap.width, bitmap.height)
-  const { width, height } = scaledSize(bitmap.width, bitmap.height, maxDimension)
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
-  const ctx = canvas.getContext('2d')
-  if (!ctx) {
-    bitmap.close()
-    throw new Error('Canvas is not available in this browser.')
-  }
-  ctx.drawImage(bitmap, 0, 0, width, height)
-  bitmap.close()
-  const out = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, mime, quality))
-  if (!out) throw new Error('Could not encode the resized image.')
-  return out
-}

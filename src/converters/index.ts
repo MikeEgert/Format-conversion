@@ -22,20 +22,7 @@ export const converters: Converter[] = [
   jsonToXlsx,
 ]
 
-export {
-  csvToJson,
-  csvToXlsx,
-  docxToMarkdown,
-  epubToPdf,
-  heicToJpg,
-  imageConvert,
-  jsonToCsv,
-  jsonToXlsx,
-  pdfToDocx,
-  xlsxToCsv,
-  xlsxToJson,
-}
-export const CATEGORY_ORDER: ConverterCategory[] = ['Images', 'Documents', 'E-books', 'Data']
+const CATEGORY_ORDER: ConverterCategory[] = ['Images', 'Documents', 'E-books', 'Data']
 
 export function groupConvertersByCategory(
   list: Converter[],
