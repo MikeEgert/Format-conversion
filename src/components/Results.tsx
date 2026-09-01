@@ -1,5 +1,6 @@
 import { downloadResult, formatBytes } from '../converters/helpers'
 import type { ConversionResult } from '../converters/types'
+import { SizeSavings } from './SizeSavings'
 
 interface ResultsProps {
   results: ConversionResult[]
@@ -33,7 +34,17 @@ export function Results({ results, onDownloadAll, onReset }: ResultsProps) {
           <li key={result.filename} className="results-item">
             <div className="result-file">
               <span className="result-name">{result.filename}</span>
-              <span className="result-size">{formatBytes(result.blob.size)}</span>
+              <span className="result-size">
+                {result.sourceSize != null ? (
+                  <>
+                    {formatBytes(result.sourceSize)} <span className="size-arrow">&rarr;</span>{' '}
+                    <span className="size-out">{formatBytes(result.blob.size)}</span>{' '}
+                    <SizeSavings sourceSize={result.sourceSize} outputSize={result.blob.size} />
+                  </>
+                ) : (
+                  formatBytes(result.blob.size)
+                )}
+              </span>
             </div>
             <button
               type="button"

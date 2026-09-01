@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { downloadResult, formatBytes } from '../converters/helpers'
 import type { ConversionResult } from '../converters/types'
+import { SizeSavings } from './SizeSavings'
 
 interface ResultCardProps {
   result: ConversionResult
-  sourceSize?: number
   onReset: () => void
 }
 
-export function ResultCard({ result, sourceSize, onReset }: ResultCardProps) {
+export function ResultCard({ result, onReset }: ResultCardProps) {
   const isImage = result.blob.type.startsWith('image/')
   const isPdf = result.blob.type === 'application/pdf'
   const isText = !isImage && !isPdf
@@ -58,10 +58,11 @@ export function ResultCard({ result, sourceSize, onReset }: ResultCardProps) {
           <span className="result-name">{result.filename}</span>
           <span className="result-size">
             {dims ? `${dims.width} × ${dims.height} · ` : ''}
-            {sourceSize != null ? (
+            {result.sourceSize != null ? (
               <>
-                {formatBytes(sourceSize)} <span className="size-arrow">&rarr;</span>{' '}
-                <span className="size-out">{formatBytes(result.blob.size)}</span>
+                {formatBytes(result.sourceSize)} <span className="size-arrow">&rarr;</span>{' '}
+                <span className="size-out">{formatBytes(result.blob.size)}</span>{' '}
+                <SizeSavings sourceSize={result.sourceSize} outputSize={result.blob.size} />
               </>
             ) : (
               formatBytes(result.blob.size)

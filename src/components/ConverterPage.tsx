@@ -100,6 +100,7 @@ export function ConverterPage() {
         try {
           assertFileSize(file)
           const result = await converter.convert(file, { quality, format, maxDimension })
+          result.sourceSize = file.size
           return { ok: true, result }
         } catch (err) {
           return {
@@ -199,11 +200,7 @@ export function ConverterPage() {
                 )}
               </>
             )}
-            <ResultCard
-              result={results[0]}
-              sourceSize={files.length === 1 ? files[0].size : undefined}
-              onReset={reset}
-            />
+            <ResultCard result={results[0]} onReset={reset} />
           </>
         ) : status === 'done' ? (
           <Results results={results} onDownloadAll={handleDownloadAll} onReset={reset} />
