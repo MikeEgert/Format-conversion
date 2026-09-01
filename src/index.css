@@ -162,6 +162,15 @@ body {
   padding: 8px 14px;
 }
 
+a.hero-pill {
+  text-decoration: none;
+}
+
+a.hero-pill:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
 .landing-hero h1 {
   margin: 0;
   font-size: clamp(40px, 6.5vw, 58px);

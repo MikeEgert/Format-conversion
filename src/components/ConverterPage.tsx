@@ -9,8 +9,6 @@ import { QualityPicker } from './QualityPicker'
 import { ResizePicker } from './ResizePicker'
 import { ResultCard } from './ResultCard'
 import { Results } from './Results'
-import { UpgradeModal } from './UpgradeModal'
-import { usePro } from '../pro/usePro'
 
 type Status = 'idle' | 'working' | 'done' | 'error'
 
@@ -46,7 +44,6 @@ function getInitialConverterId(): string {
 }
 
 export function ConverterPage() {
-  const { isPro } = usePro()
   const [converterId, setConverterId] = useState(getInitialConverterId)
   const [files, setFiles] = useState<File[]>([])
   const [status, setStatus] = useState<Status>('idle')
@@ -60,8 +57,6 @@ export function ConverterPage() {
   const [quality, setQuality] = useState(0.9)
   const [format, setFormat] = useState<ImageFormat>('jpg')
   const [maxDimension, setMaxDimension] = useState(0)
-  const [showUpgrade, setShowUpgrade] = useState(false)
-  const [pendingFiles, setPendingFiles] = useState<File[]>([])
 
   const converter = converters.find((c) => c.id === converterId) ?? converters[0]
   const formatOption = converter.formats?.find((f) => f.id === format)
@@ -102,17 +97,7 @@ export function ConverterPage() {
 
   function handleFiles(selected: File[]) {
     if (selected.length === 0) return
-    if (selected.length > 1 && !isPro) {
-      setPendingFiles(selected)
-      setShowUpgrade(true)
-      return
-    }
     void run(selected)
-  }
-
-  function handleUnlocked() {
-    setShowUpgrade(false)
-    if (pendingFiles.length) void run(pendingFiles)
   }
 
   async function run(selected: File[]) {
@@ -330,10 +315,6 @@ export function ConverterPage() {
           </p>
         )}
       </section>
-
-      {showUpgrade && (
-        <UpgradeModal onClose={() => setShowUpgrade(false)} onUnlocked={handleUnlocked} />
-      )}
     </main>
   )
 }

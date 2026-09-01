@@ -2,7 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { ProProvider } from './pro/ProProvider.tsx'
 
 if (window.top && window.top !== window.self) {
   document.documentElement.style.display = 'none'
@@ -15,8 +14,6 @@ if (window.top && window.top !== window.self) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ProProvider>
-      <App />
-    </ProProvider>
+    <App />
   </StrictMode>,
 )

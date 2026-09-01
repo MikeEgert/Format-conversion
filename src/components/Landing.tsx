@@ -19,6 +19,14 @@ export function LandingPage() {
           <span className="hero-pill">100% free</span>
           <span className="hero-pill">No signup</span>
           <span className="hero-pill">No uploads</span>
+          <a
+            className="hero-pill"
+            href="https://github.com/MikeEgert/Format-conversion"
+            target="_blank"
+            rel="noreferrer"
+          >
+            100% open source
+          </a>
         </div>
         <h1>Convert files in your browser. Privately.</h1>
         <p className="hero-sub">

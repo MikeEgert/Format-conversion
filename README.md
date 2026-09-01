@@ -5,6 +5,8 @@ Convert files right in your browser — nothing gets uploaded.
 No ads, no watermarks, no "enter your email" step. The file stays on your computer the whole
 time, so it's safe even for private documents like medical or legal records.
 
+This project is open source (MIT). See [LICENSE](LICENSE).
+
 ## What it can do
 
 | Convert | To | Why you'd use it |
