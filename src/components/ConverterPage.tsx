@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { converters, ConversionError } from '../converters'
 import type { ConversionResult, ImageFormat } from '../converters'
 import { mapWithConcurrency, zipResults } from '../lib/batch'
@@ -14,6 +14,21 @@ import { usePro } from '../pro/usePro'
 import { isLocalhost } from '../lib/isLocalhost'
 
 type Status = 'idle' | 'working' | 'done' | 'error'
+
+type FileStatus = 'pending' | 'working' | 'done' | 'failed'
+
+function fileStatusLabel(status: FileStatus): string {
+  switch (status) {
+    case 'working':
+      return 'Converting…'
+    case 'done':
+      return 'Done'
+    case 'failed':
+      return 'Failed'
+    default:
+      return 'Waiting'
+  }
+}
 
 interface FailedFile {
   name: string
@@ -38,9 +53,11 @@ export function ConverterPage() {
   const [status, setStatus] = useState<Status>('idle')
   const [results, setResults] = useState<ConversionResult[]>([])
   const [failed, setFailed] = useState<FailedFile[]>([])
+  const [fileStatuses, setFileStatuses] = useState<FileStatus[]>([])
   const [error, setError] = useState<string | null>(null)
   const [errorHint, setErrorHint] = useState<string | null>(null)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
   const [quality, setQuality] = useState(0.9)
   const [format, setFormat] = useState<ImageFormat>('jpg')
   const [maxDimension, setMaxDimension] = useState(0)
@@ -54,13 +71,28 @@ export function ConverterPage() {
   const isImageEditor = Boolean(converter.formats || converter.supportsResize)
 
   function reset() {
+    abortRef.current?.abort()
+    abortRef.current = null
     setFiles([])
     setResults([])
     setFailed([])
+    setFileStatuses([])
     setError(null)
     setErrorHint(null)
     setStatus('idle')
     setProgress(null)
+  }
+
+  function cancel() {
+    abortRef.current?.abort()
+    abortRef.current = null
+    setStatus('idle')
+    setProgress(null)
+    setResults([])
+    setFailed([])
+    setFileStatuses([])
+    setError(null)
+    setErrorHint(null)
   }
 
   function selectConverter(id: string) {
@@ -85,9 +117,14 @@ export function ConverterPage() {
   }
 
   async function run(selected: File[]) {
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+
     setFiles(selected)
     setResults([])
     setFailed([])
+    setFileStatuses(selected.map(() => 'pending'))
     setError(null)
     setErrorHint(null)
     setStatus('working')
@@ -96,13 +133,28 @@ export function ConverterPage() {
     const outcomes = await mapWithConcurrency<File, Outcome>(
       selected,
       1,
-      async (file) => {
+      async (file, i) => {
+        setFileStatuses((prev) => {
+          const next = [...prev]
+          next[i] = 'working'
+          return next
+        })
         try {
           assertFileSize(file)
           const result = await converter.convert(file, { quality, format, maxDimension })
           result.sourceSize = file.size
+          setFileStatuses((prev) => {
+            const next = [...prev]
+            next[i] = 'done'
+            return next
+          })
           return { ok: true, result }
         } catch (err) {
+          setFileStatuses((prev) => {
+            const next = [...prev]
+            next[i] = 'failed'
+            return next
+          })
           return {
             ok: false,
             name: file.name,
@@ -115,7 +167,10 @@ export function ConverterPage() {
         }
       },
       (done, total) => setProgress({ done, total }),
+      controller.signal,
     )
+
+    if (controller.signal.aborted) return
 
     const converted = outcomes.filter((o): o is Extract<Outcome, { ok: true }> => o.ok)
     const failures = outcomes.filter((o): o is Extract<Outcome, { ok: false }> => !o.ok)
@@ -175,14 +230,43 @@ export function ConverterPage() {
             <span className="spinner" aria-hidden="true" />
             <div className="working-text">
               <p>
-                Converting {progress ? `${progress.done + 1} of ${progress.total}` : ''}…
+                Converting{' '}
+                {progress && progress.total > 0
+                  ? `${Math.min(progress.done + 1, progress.total)} of ${progress.total}`
+                  : ''}
+                …
               </p>
               <div className="progress">
                 <div
                   className="progress-bar"
-                  style={{ width: progress ? `${(progress.done / progress.total) * 100}%` : '0%' }}
+                  style={{
+                    width:
+                      progress && progress.total > 0
+                        ? `${(progress.done / progress.total) * 100}%`
+                        : '0%',
+                  }}
                 />
               </div>
+              <ul className="working-files">
+                {files.map((file, i) => (
+                  <li
+                    key={i}
+                    className={`working-file working-file-${fileStatuses[i] ?? 'pending'}`}
+                  >
+                    <span className="working-file-name">{file.name}</span>
+                    <span className="working-file-status">
+                      {fileStatusLabel(fileStatuses[i] ?? 'pending')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                className="btn btn-ghost btn-small working-cancel"
+                onClick={cancel}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         ) : status === 'done' && results.length === 1 ? (

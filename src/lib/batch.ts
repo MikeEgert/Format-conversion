@@ -6,13 +6,14 @@ export async function mapWithConcurrency<T, R>(
   limit: number,
   fn: (item: T, index: number) => Promise<R>,
   onProgress?: (done: number, total: number) => void,
+  signal?: AbortSignal,
 ): Promise<R[]> {
   const results: R[] = new Array(items.length)
   let next = 0
   let completed = 0
 
   async function worker() {
-    while (next < items.length) {
+    while (next < items.length && !signal?.aborted) {
       const i = next
       next += 1
       results[i] = await fn(items[i], i)

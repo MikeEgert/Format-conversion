@@ -542,6 +542,54 @@ body {
   transition: width 0.2s ease;
 }
 
+.working-text {
+  max-width: 440px;
+  width: 100%;
+}
+
+.working-files {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.working-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.working-file-name {
+  color: var(--text);
+  word-break: break-all;
+  min-width: 0;
+}
+
+.working-file-status {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.working-file-done .working-file-status {
+  color: var(--success);
+}
+
+.working-file-failed .working-file-status {
+  color: var(--danger);
+}
+
+.working-cancel {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
 .spinner {
   width: 22px;
   height: 22px;
