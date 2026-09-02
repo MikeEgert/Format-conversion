@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { unzipSync } from 'fflate'
 import { strFromU8 } from 'fflate'
 import { ConversionError } from './types'
-import { itemsToLines, linesToDocx, pdfToDocx } from './pdfToDocx'
+import { itemsToLines, linesToDocx, pdfToDocx, pdfErrorToConversionError } from './pdfToDocx'
 import { isPdfFile } from './helpers'
 
 describe('isPdfFile', () => {
@@ -81,6 +81,29 @@ describe('linesToDocx', () => {
     const documentXml = strFromU8(unzipSync(bytes)['word/document.xml'])
     const pageBreaks = documentXml.split('w:type="page"').length - 1
     expect(pageBreaks).toBe(1)
+  })
+})
+
+describe('pdfErrorToConversionError', () => {
+  class PasswordException extends Error {}
+  class InvalidPDFException extends Error {}
+  const pdfjs = { PasswordException, InvalidPDFException }
+
+  it('reports password-protected PDFs', () => {
+    const err = pdfErrorToConversionError(new PasswordException('x'), pdfjs)
+    expect(err.message).toBe('This PDF is password-protected.')
+    expect(err.hint).toContain('password')
+  })
+
+  it('reports corrupted or invalid PDFs', () => {
+    const err = pdfErrorToConversionError(new InvalidPDFException('x'), pdfjs)
+    expect(err.message).toBe('This PDF is corrupted or invalid.')
+  })
+
+  it('falls back to a generic message for unknown errors', () => {
+    const err = pdfErrorToConversionError(new RangeError('out of memory'), pdfjs)
+    expect(err.message).toBe('Could not read this PDF.')
+    expect(err.hint).not.toContain('scanned')
   })
 })
 

@@ -148,6 +148,39 @@ export function linesToDocx(pages: string[][], filename: string): Uint8Array<Arr
   )
 }
 
+interface PdfExceptionClasses {
+  PasswordException: new (...args: never[]) => unknown
+  InvalidPDFException: new (...args: never[]) => unknown
+}
+
+/**
+ * Map a pdf.js load failure to a specific, actionable error. Uses `instanceof`
+ * against the exception classes pdf.js exports (available on the namespace
+ * returned by `import('pdfjs-dist')`), rather than matching their internal
+ * `name` strings.
+ */
+export function pdfErrorToConversionError(
+  err: unknown,
+  pdfjs: PdfExceptionClasses,
+): ConversionError {
+  if (err instanceof pdfjs.PasswordException) {
+    return new ConversionError(
+      'This PDF is password-protected.',
+      'Remove the password protection (or export it without a password) and try again.',
+    )
+  }
+  if (err instanceof pdfjs.InvalidPDFException) {
+    return new ConversionError(
+      'This PDF is corrupted or invalid.',
+      'The file could not be parsed. Try re-saving or re-exporting the PDF.',
+    )
+  }
+  return new ConversionError(
+    'Could not read this PDF.',
+    'It may use an unsupported feature or be too large to process. Try a smaller or re-exported PDF.',
+  )
+}
+
 async function extractPdfText(data: ArrayBuffer): Promise<string[][]> {
   const pdfjs = await import('pdfjs-dist')
   pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -155,9 +188,10 @@ async function extractPdfText(data: ArrayBuffer): Promise<string[][]> {
     import.meta.url,
   ).toString()
 
-  const loadingTask = pdfjs.getDocument({ data })
-  const doc = await loadingTask.promise
+  let loadingTask: ReturnType<typeof pdfjs.getDocument> | undefined
   try {
+    loadingTask = pdfjs.getDocument({ data })
+    const doc = await loadingTask.promise
     const pages: string[][] = []
     for (let i = 1; i <= doc.numPages; i += 1) {
       const page = await doc.getPage(i)
@@ -166,8 +200,10 @@ async function extractPdfText(data: ArrayBuffer): Promise<string[][]> {
       page.cleanup()
     }
     return pages
+  } catch (err) {
+    throw pdfErrorToConversionError(err, pdfjs)
   } finally {
-    await loadingTask.destroy()
+    if (loadingTask) await loadingTask.destroy()
   }
 }
 
@@ -199,15 +235,7 @@ export const pdfToDocx: Converter = {
       )
     }
 
-    let pages: string[][]
-    try {
-      pages = await extractPdfText(arrayBuffer)
-    } catch {
-      throw new ConversionError(
-        'Could not read this PDF.',
-        'It may be corrupted or password-protected, or it may be a scanned image with no text layer to extract.',
-      )
-    }
+    const pages = await extractPdfText(arrayBuffer)
 
     if (pages.every((page) => page.length === 0)) {
       throw new ConversionError(
