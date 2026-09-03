@@ -34,6 +34,85 @@ const COLUMN_GAP_RATIO = 0.08
 /** Each column must contain at least this many items to be treated as one. */
 const COLUMN_MIN_ITEMS = 2
 
+/** Minimum rows / columns for a run of aligned lines to count as a table. */
+const MIN_TABLE_ROWS = 2
+const MIN_TABLE_COLUMNS = 2
+/** Max horizontal drift (text units) for two cells to count as the same column. */
+const COLUMN_X_TOLERANCE = 2
+/** Max inter-column gap (in average character widths) for a run to be a table. */
+const TABLE_GUTTER_MAX_CHARS = 3
+
+/** A block of extracted content: a paragraph or a table. */
+export type PdfBlock =
+  | { type: 'paragraph'; text: string }
+  | { type: 'table'; rows: string[][] }
+
+function normalizeItems(items: PdfTextContent[]): NormalizedTextItem[] {
+  const normalized: NormalizedTextItem[] = []
+  for (const item of items) {
+    if (!('str' in item) || typeof item.str !== 'string' || item.str.length === 0) continue
+    if (!item.transform) continue
+    normalized.push({
+      x: item.transform[4],
+      y: item.transform[5],
+      width: item.width ?? 0,
+      text: item.str,
+    })
+  }
+  return normalized
+}
+
+/** A baseline group of items, ordered left-to-right by x. */
+interface LineGroup {
+  y: number
+  items: NormalizedTextItem[]
+}
+
+/** Group items by baseline (y), top-to-bottom, each group sorted by x. */
+function groupLines(items: NormalizedTextItem[], yTolerance: number): LineGroup[] {
+  const rows = new Map<number, NormalizedTextItem[]>()
+  for (const item of items) {
+    const y = item.y
+    let key = -1
+    for (const existing of rows.keys()) {
+      if (Math.abs(existing - y) <= yTolerance) {
+        key = existing
+        break
+      }
+    }
+    if (key === -1) {
+      key = y
+      rows.set(key, [])
+    }
+    rows.get(key)!.push(item)
+  }
+
+  const lines: LineGroup[] = []
+  for (const y of [...rows.keys()].sort((a, b) => b - a)) {
+    const group = rows.get(y)!
+    group.sort((a, b) => a.x - b.x)
+    lines.push({ y, items: group })
+  }
+  return lines
+}
+
+/** Join the items of one line into a single string, inserting spaces on wide gaps. */
+function joinParts(parts: NormalizedTextItem[]): string {
+  let line = ''
+  let prevEnd: number | null = null
+  let prevAvgChar = 0
+  for (const part of parts) {
+    if (prevEnd !== null) {
+      const gap = part.x - prevEnd
+      if (gap > Math.max(1, prevAvgChar)) line += ' '
+    }
+    line += part.text
+    prevEnd = part.x + part.width
+    prevAvgChar = part.width / Math.max(1, part.text.length)
+  }
+  return line.replace(/\s+/g, ' ').trim()
+}
+
 /**
  * Split items into left-to-right columns by detecting vertical whitespace
  * gutters. Items are sorted by x and any horizontal band that no item's extent
@@ -80,53 +159,149 @@ function splitColumns(items: NormalizedTextItem[]): NormalizedTextItem[][] {
   return [...splitColumns(left), ...splitColumns(right)]
 }
 
-/** Group items on the same baseline into lines, left-to-right. */
-function assembleLines(items: NormalizedTextItem[], yTolerance: number): string[] {
-  const rows = new Map<number, { x: number; text: string; width: number }[]>()
+/** Group items on the same baseline into lines, left-to-right, keeping y. */
+function assembleLines(items: NormalizedTextItem[], yTolerance: number): { y: number; text: string }[] {
+  return groupLines(items, yTolerance)
+    .map((group) => ({ y: group.y, text: joinParts(group.items) }))
+    .filter((line) => line.text.length > 0)
+}
 
-  for (const item of items) {
-    const y = item.y
-    let key = -1
-    for (const existing of rows.keys()) {
-      if (Math.abs(existing - y) <= yTolerance) {
-        key = existing
-        break
-      }
-    }
-    if (key === -1) {
-      key = y
-      rows.set(key, [])
-    }
-    rows.get(key)!.push({ x: item.x, text: item.text, width: item.width })
+/** Do two baseline groups share the same column x-positions? */
+function gridAligned(a: LineGroup, b: LineGroup, tolerance: number): boolean {
+  if (a.items.length !== b.items.length) return false
+  for (let i = 0; i < a.items.length; i += 1) {
+    if (Math.abs(a.items[i].x - b.items[i].x) > tolerance) return false
   }
+  return true
+}
 
-  const lines: string[] = []
-  for (const y of [...rows.keys()].sort((a, b) => b - a)) {
-    const row = rows.get(y)!
-    row.sort((a, b) => a.x - b.x)
-
-    let line = ''
-    let prevEnd: number | null = null
-    let prevAvgChar = 0
-    for (const part of row) {
-      if (prevEnd !== null) {
-        const gap = part.x - prevEnd
-        if (gap > Math.max(1, prevAvgChar)) line += ' '
-      }
-      line += part.text
-      prevEnd = part.x + part.width
-      prevAvgChar = part.width / Math.max(1, part.text.length)
-    }
-
-    const trimmed = line.replace(/\s+/g, ' ').trim()
-    if (trimmed.length > 0) lines.push(trimmed)
-  }
-
-  return lines
+interface DetectedTable {
+  rows: string[][]
+  y: number
+  consumed: NormalizedTextItem[]
 }
 
 /**
- * Reconstruct reading-order lines from a page's raw text items.
+ * A run of aligned lines is a table when its columns are separated by small,
+ * character-scale gaps. The wide gutters that separate page columns (which
+ * `splitColumns` is for) are far larger than a few average character widths,
+ * so this cleanly rejects multi-column text without a hard pixel threshold.
+ */
+function isTableRun(run: LineGroup[]): boolean {
+  if (run.length < MIN_TABLE_ROWS) return false
+  const first = run[0]
+  if (first.items.length < MIN_TABLE_COLUMNS) return false
+
+  let totalWidth = 0
+  let totalChars = 0
+  for (const item of first.items) {
+    totalWidth += item.width
+    totalChars += Math.max(1, item.text.length)
+  }
+  const charWidth = totalChars > 0 ? totalWidth / totalChars : 0
+  const maxGap = TABLE_GUTTER_MAX_CHARS * charWidth
+
+  for (let c = 1; c < first.items.length; c += 1) {
+    const gap = first.items[c].x - (first.items[c - 1].x + first.items[c - 1].width)
+    if (gap > maxGap) return false
+  }
+  return true
+}
+
+/**
+ * Detect simple grid tables: runs of consecutive lines with the same, x-aligned
+ * columns (≥2 rows, ≥2 columns) whose columns are separated by narrow gutters
+ * (see `isTableRun`). Cells that wrap across baselines or use mixed formatting
+ * are not reconstructed.
+ */
+function detectTables(items: NormalizedTextItem[], yTolerance: number): DetectedTable[] {
+  const lines = groupLines(items, yTolerance)
+  const tables: DetectedTable[] = []
+
+  let i = 0
+  while (i < lines.length) {
+    const first = lines[i]
+    if (first.items.length < MIN_TABLE_COLUMNS) {
+      i += 1
+      continue
+    }
+
+    const run: LineGroup[] = [first]
+    let minX = Infinity
+    let maxX = -Infinity
+    for (const item of first.items) {
+      minX = Math.min(minX, item.x)
+      maxX = Math.max(maxX, item.x + item.width)
+    }
+
+    let j = i + 1
+    while (j < lines.length) {
+      const candidate = lines[j]
+      for (const item of candidate.items) {
+        minX = Math.min(minX, item.x)
+        maxX = Math.max(maxX, item.x + item.width)
+      }
+      const tolerance = Math.max(COLUMN_X_TOLERANCE, 0.01 * (maxX - minX))
+      if (!gridAligned(first, candidate, tolerance)) break
+      run.push(candidate)
+      j += 1
+    }
+
+    if (isTableRun(run)) {
+      tables.push({
+        rows: run.map((g) => g.items.map((it) => it.text)),
+        y: first.y,
+        consumed: run.flatMap((g) => g.items),
+      })
+    }
+
+    i = j
+  }
+
+  return tables
+}
+
+/**
+ * Reconstruct reading-order blocks from a page's raw text items.
+ *
+ * Tables are detected first (see `detectTables`). The remaining text is split
+ * into side-by-side columns and assembled into paragraphs. When no tables are
+ * present the column-major reading order is preserved; when tables are present
+ * the surrounding text is treated as a single column and interleaved with the
+ * tables by vertical position.
+ */
+export function itemsToBlocks(items: PdfTextContent[], yTolerance = 3): PdfBlock[] {
+  const normalized = normalizeItems(items)
+  const tables = detectTables(normalized, yTolerance)
+
+  const consumed = new Set<NormalizedTextItem>()
+  for (const table of tables) for (const item of table.consumed) consumed.add(item)
+  const flow = normalized.filter((item) => !consumed.has(item))
+
+  if (tables.length === 0) {
+    return splitColumns(flow).flatMap((column) =>
+      assembleLines(column, yTolerance).map((line) => ({ type: 'paragraph' as const, text: line.text })),
+    )
+  }
+
+  const paragraphs = assembleLines(flow, yTolerance).map((line) => ({
+    type: 'paragraph' as const,
+    text: line.text,
+    y: line.y,
+  }))
+  const tableBlocks = tables.map((t) => ({ type: 'table' as const, rows: t.rows, y: t.y }))
+
+  return [...paragraphs, ...tableBlocks]
+    .sort((a, b) => b.y - a.y)
+    .map((block) =>
+      block.type === 'table'
+        ? { type: 'table' as const, rows: block.rows }
+        : { type: 'paragraph' as const, text: block.text },
+    )
+}
+
+/**
+ * Reconstruct reading-order lines from a page's raw text items (no tables).
  *
  * pdf.js reports text as a flat list with 2D coordinates (`transform[4]` = x,
  * `transform[5]` = y, origin bottom-left). Side-by-side columns are split
@@ -135,19 +310,9 @@ function assembleLines(items: NormalizedTextItem[], yTolerance: number): string[
  * PDF coordinates grow upward, so lines are emitted top-to-bottom.
  */
 export function itemsToLines(items: PdfTextContent[], yTolerance = 3): string[] {
-  const normalized: NormalizedTextItem[] = []
-  for (const item of items) {
-    if (!('str' in item) || typeof item.str !== 'string' || item.str.length === 0) continue
-    if (!item.transform) continue
-    normalized.push({
-      x: item.transform[4],
-      y: item.transform[5],
-      width: item.width ?? 0,
-      text: item.str,
-    })
-  }
-
-  return splitColumns(normalized).flatMap((column) => assembleLines(column, yTolerance))
+  return splitColumns(normalizeItems(items)).flatMap((column) =>
+    assembleLines(column, yTolerance).map((line) => line.text),
+  )
 }
 
 function escapeXml(text: string): string {
@@ -174,16 +339,47 @@ function paragraphXml(text: string): string {
   return `<w:p>${runs}</w:p>`
 }
 
+const TABLE_BORDERS =
+  '<w:tblBorders>' +
+  '<w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>' +
+  '<w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>' +
+  '<w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>' +
+  '<w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>' +
+  '<w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/>' +
+  '<w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/>' +
+  '</w:tblBorders>'
+
+function tableXml(rows: string[][]): string {
+  const cols = rows.reduce((max, row) => Math.max(max, row.length), 1)
+  const grid = `<w:tblGrid>${'<w:gridCol w:w="2400"/>'.repeat(cols)}</w:tblGrid>`
+  const body = rows
+    .map((row) => {
+      const cells = Array.from({ length: cols }, (_, c) => {
+        const safe = sanitizeXml(row[c] ?? '')
+        const p =
+          safe.length > 0
+            ? `<w:p><w:r><w:t xml:space="preserve">${escapeXml(safe)}</w:t></w:r></w:p>`
+            : '<w:p/>'
+        return `<w:tc><w:tcPr><w:tcW w:w="0" w:type="auto"/></w:tcPr>${p}</w:tc>`
+      }).join('')
+      return `<w:tr>${cells}</w:tr>`
+    })
+    .join('')
+  return `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/>${TABLE_BORDERS}</w:tblPr>${grid}${body}</w:tbl>`
+}
+
 const PAGE_BREAK_XML = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
 
-function documentXml(pages: string[][]): string {
-  const paragraphs: string[] = []
-  pages.forEach((lines, index) => {
-    if (index > 0) paragraphs.push(PAGE_BREAK_XML)
-    for (const line of lines) paragraphs.push(paragraphXml(line))
+function documentXml(pages: PdfBlock[][]): string {
+  const body: string[] = []
+  pages.forEach((blocks, index) => {
+    if (index > 0) body.push(PAGE_BREAK_XML)
+    for (const block of blocks) {
+      body.push(block.type === 'table' ? tableXml(block.rows) : paragraphXml(block.text))
+    }
   })
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${paragraphs.join('')}<w:sectPr/></w:body></w:document>`
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body.join('')}<w:sectPr/></w:body></w:document>`
 }
 
 const CONTENT_TYPES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -204,11 +400,11 @@ const APP_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>FoldenLoom PDF to DOCX</Application></Properties>`
 
 /**
- * Build a minimal but valid .docx (OOXML ZIP) from extracted page text.
- * Each line becomes a paragraph; a page break separates PDF pages.
+ * Build a minimal but valid .docx (OOXML ZIP) from extracted page blocks.
+ * Paragraphs and tables are written in order; a page break separates PDF pages.
  * Exported separately from the converter so the structure is unit-testable.
  */
-export function linesToDocx(pages: string[][], filename: string): Uint8Array<ArrayBuffer> {
+export function blocksToDocx(pages: PdfBlock[][], filename: string): Uint8Array<ArrayBuffer> {
   const title = filename.replace(/\.[^.]+$/, '')
   return new Uint8Array(
     zipSync({
@@ -274,7 +470,7 @@ export function pdfErrorToConversionError(
   )
 }
 
-async function extractPdfText(data: ArrayBuffer): Promise<string[][]> {
+async function extractPdfText(data: ArrayBuffer): Promise<PdfBlock[][]> {
   const pdfjs = await import('pdfjs-dist')
   pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -285,11 +481,11 @@ async function extractPdfText(data: ArrayBuffer): Promise<string[][]> {
   try {
     loadingTask = pdfjs.getDocument({ data })
     const doc = await loadingTask.promise
-    const pages: string[][] = []
+    const pages: PdfBlock[][] = []
     for (let i = 1; i <= doc.numPages; i += 1) {
       const page = await doc.getPage(i)
       const content = await page.getTextContent()
-      pages.push(itemsToLines(content.items))
+      pages.push(itemsToBlocks(content.items))
       page.cleanup()
     }
     return pages
@@ -309,7 +505,7 @@ export const pdfToDocx: Converter = {
   description: 'Turn PDFs into editable Word documents.',
   detail: {
     about:
-      'Extract the text layer of a PDF into an editable Word document. Text is re-flowed as clean paragraphs (one per line), preserving page breaks and simple multi-column layouts. Layout, images, and styling are not reconstructed, and complex tables may come out reordered — for best results use a PDF that was created digitally, not scanned.',
+      'Extract the text layer of a PDF into an editable Word document. Text is re-flowed as clean paragraphs (one per line), preserving page breaks, simple multi-column layouts, and simple grid tables. Layout, images, and styling are not reconstructed, and tables with merged or multi-line cells may come out reordered — for best results use a PDF that was created digitally, not scanned.',
     useCases: [
       'Edit text from a PDF that has no Word source',
       'Copy content from a PDF into a document you are drafting',
@@ -338,7 +534,7 @@ export const pdfToDocx: Converter = {
     }
 
     return {
-      blob: new Blob([linesToDocx(pages, file.name)], {
+      blob: new Blob([blocksToDocx(pages, file.name)], {
         type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       }),
       filename: replaceExtension(file.name, 'docx'),

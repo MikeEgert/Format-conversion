@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { unzipSync } from 'fflate'
 import { strFromU8 } from 'fflate'
 import { ConversionError } from './types'
-import { itemsToLines, linesToDocx, pdfToDocx, pdfErrorToConversionError, isOutOfMemoryError } from './pdfToDocx'
+import { itemsToLines, itemsToBlocks, blocksToDocx, pdfToDocx, pdfErrorToConversionError, isOutOfMemoryError } from './pdfToDocx'
 import { isPdfFile } from './helpers'
 
 describe('isPdfFile', () => {
@@ -88,8 +88,14 @@ describe('itemsToLines', () => {
 
 describe('linesToDocx', () => {
   it('produces a valid docx zip containing the extracted text', () => {
-    const pages = [['Hello World', 'Second line'], ['Page two']]
-    const bytes = linesToDocx(pages, 'report.pdf')
+    const pages = [
+      [
+        { type: 'paragraph' as const, text: 'Hello World' },
+        { type: 'paragraph' as const, text: 'Second line' },
+      ],
+      [{ type: 'paragraph' as const, text: 'Page two' }],
+    ]
+    const bytes = blocksToDocx(pages, 'report.pdf')
 
     const files = unzipSync(bytes)
     const documentXml = strFromU8(files['word/document.xml'])
@@ -102,16 +108,31 @@ describe('linesToDocx', () => {
   })
 
   it('escapes XML-special characters in the text', () => {
-    const bytes = linesToDocx([['Tom & Jerry <3 "quotes"']], 'x.pdf')
+    const bytes = blocksToDocx([[{ type: 'paragraph', text: 'Tom & Jerry <3 "quotes"' }]], 'x.pdf')
     const documentXml = strFromU8(unzipSync(bytes)['word/document.xml'])
     expect(documentXml).toContain('Tom &amp; Jerry &lt;3 &quot;quotes&quot;')
   })
 
   it('separates pages with a page break', () => {
-    const bytes = linesToDocx([['a'], ['b']], 'x.pdf')
+    const bytes = blocksToDocx(
+      [[{ type: 'paragraph', text: 'a' }], [{ type: 'paragraph', text: 'b' }]],
+      'x.pdf',
+    )
     const documentXml = strFromU8(unzipSync(bytes)['word/document.xml'])
     const pageBreaks = documentXml.split('w:type="page"').length - 1
     expect(pageBreaks).toBe(1)
+  })
+
+  it('renders table blocks as DOCX tables', () => {
+    const bytes = blocksToDocx(
+      [[{ type: 'table', rows: [['Name', 'Age'], ['Alice', '30']] }]],
+      'x.pdf',
+    )
+    const documentXml = strFromU8(unzipSync(bytes)['word/document.xml'])
+    expect(documentXml).toContain('<w:tbl>')
+    expect(documentXml).toContain('Name')
+    expect(documentXml).toContain('Alice')
+    expect(documentXml).toContain('<w:gridCol')
   })
 })
 
@@ -155,6 +176,57 @@ describe('isOutOfMemoryError', () => {
     expect(isOutOfMemoryError(new RangeError('Invalid array length'))).toBe(false)
     expect(isOutOfMemoryError(new Error('out of memory'))).toBe(false)
     expect(isOutOfMemoryError('out of memory')).toBe(false)
+  })
+})
+
+describe('itemsToBlocks', () => {
+  it('detects a simple grid table and emits a table block', () => {
+    const items = [
+      { str: 'Name', transform: [10, 0, 0, 10, 10, 720], width: 40 },
+      { str: 'Age', transform: [10, 0, 0, 10, 70, 720], width: 30 },
+      { str: 'Alice', transform: [10, 0, 0, 10, 10, 700], width: 40 },
+      { str: '30', transform: [10, 0, 0, 10, 70, 700], width: 20 },
+    ]
+    expect(itemsToBlocks(items)).toEqual([{ type: 'table', rows: [['Name', 'Age'], ['Alice', '30']] }])
+  })
+
+  it('leaves normal text as paragraph blocks', () => {
+    const items = [
+      { str: 'Hello', transform: [10, 0, 0, 10, 10, 720], width: 40 },
+      { str: 'World', transform: [10, 0, 0, 10, 60, 720], width: 40 },
+    ]
+    expect(itemsToBlocks(items)).toEqual([{ type: 'paragraph', text: 'Hello World' }])
+  })
+
+  it('does not treat wide-guttered side-by-side columns as a table', () => {
+    const items = [
+      { str: 'Left one', transform: [10, 0, 0, 10, 10, 720], width: 40 },
+      { str: 'Right one', transform: [10, 0, 0, 10, 300, 720], width: 40 },
+      { str: 'Left two', transform: [10, 0, 0, 10, 10, 700], width: 40 },
+      { str: 'Right two', transform: [10, 0, 0, 10, 300, 700], width: 40 },
+    ]
+    expect(itemsToBlocks(items)).toEqual([
+      { type: 'paragraph', text: 'Left one' },
+      { type: 'paragraph', text: 'Left two' },
+      { type: 'paragraph', text: 'Right one' },
+      { type: 'paragraph', text: 'Right two' },
+    ])
+  })
+
+  it('interleaves a table with surrounding paragraphs by vertical position', () => {
+    const items = [
+      { str: 'Intro', transform: [10, 0, 0, 10, 10, 760], width: 40 },
+      { str: 'Name', transform: [10, 0, 0, 10, 10, 720], width: 40 },
+      { str: 'Age', transform: [10, 0, 0, 10, 70, 720], width: 30 },
+      { str: 'Alice', transform: [10, 0, 0, 10, 10, 700], width: 40 },
+      { str: '30', transform: [10, 0, 0, 10, 70, 700], width: 20 },
+      { str: 'Footer', transform: [10, 0, 0, 10, 10, 660], width: 40 },
+    ]
+    expect(itemsToBlocks(items)).toEqual([
+      { type: 'paragraph', text: 'Intro' },
+      { type: 'table', rows: [['Name', 'Age'], ['Alice', '30']] },
+      { type: 'paragraph', text: 'Footer' },
+    ])
   })
 })
 
