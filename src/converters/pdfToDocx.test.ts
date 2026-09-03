@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { unzipSync } from 'fflate'
 import { strFromU8 } from 'fflate'
 import { ConversionError } from './types'
-import { itemsToLines, linesToDocx, pdfToDocx, pdfErrorToConversionError } from './pdfToDocx'
+import { itemsToLines, linesToDocx, pdfToDocx, pdfErrorToConversionError, isOutOfMemoryError } from './pdfToDocx'
 import { isPdfFile } from './helpers'
 
 describe('isPdfFile', () => {
@@ -101,9 +101,29 @@ describe('pdfErrorToConversionError', () => {
   })
 
   it('falls back to a generic message for unknown errors', () => {
-    const err = pdfErrorToConversionError(new RangeError('out of memory'), pdfjs)
+    const err = pdfErrorToConversionError(new Error('something else'), pdfjs)
     expect(err.message).toBe('Could not read this PDF.')
     expect(err.hint).not.toContain('scanned')
+  })
+
+  it('reports an out-of-memory error specifically', () => {
+    const err = pdfErrorToConversionError(new RangeError('out of memory'), pdfjs)
+    expect(err.message).toBe('This PDF is too large to process in your browser.')
+    expect(err.hint).toContain('memory')
+  })
+})
+
+describe('isOutOfMemoryError', () => {
+  it('detects allocation-failure RangeErrors', () => {
+    expect(isOutOfMemoryError(new RangeError('Array buffer allocation failed'))).toBe(true)
+    expect(isOutOfMemoryError(new RangeError('Invalid string length'))).toBe(true)
+    expect(isOutOfMemoryError(new RangeError('WebAssembly.Memory.grow(): Out of memory'))).toBe(true)
+  })
+
+  it('rejects non-OOM RangeErrors and other error types', () => {
+    expect(isOutOfMemoryError(new RangeError('Invalid array length'))).toBe(false)
+    expect(isOutOfMemoryError(new Error('out of memory'))).toBe(false)
+    expect(isOutOfMemoryError('out of memory')).toBe(false)
   })
 })
 

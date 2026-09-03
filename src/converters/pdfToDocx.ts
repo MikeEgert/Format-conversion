@@ -154,6 +154,20 @@ interface PdfExceptionClasses {
 }
 
 /**
+ * Detect an out-of-memory condition. JS has no dedicated OOM exception, but
+ * allocation failures surface as `RangeError` with a recognizable message
+ * (e.g. "Array buffer allocation failed", "Invalid string length",
+ * "WebAssembly.Memory.grow(): Out of memory"). Restricting to `RangeError`
+ * avoids misclassifying unrelated errors that merely mention memory.
+ */
+export function isOutOfMemoryError(err: unknown): boolean {
+  if (!(err instanceof RangeError)) return false
+  return /out of memory|allocation failed|invalid (?:typed array|string) length|memory\.grow/i.test(
+    err.message,
+  )
+}
+
+/**
  * Map a pdf.js load failure to a specific, actionable error. Uses `instanceof`
  * against the exception classes pdf.js exports (available on the namespace
  * returned by `import('pdfjs-dist')`), rather than matching their internal
@@ -173,6 +187,12 @@ export function pdfErrorToConversionError(
     return new ConversionError(
       'This PDF is corrupted or invalid.',
       'The file could not be parsed. Try re-saving or re-exporting the PDF.',
+    )
+  }
+  if (isOutOfMemoryError(err)) {
+    return new ConversionError(
+      'This PDF is too large to process in your browser.',
+      'The browser ran out of memory. Try a smaller or less complex PDF, or close other tabs to free up memory.',
     )
   }
   return new ConversionError(
