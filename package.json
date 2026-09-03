@@ -26,6 +26,9 @@
     "turndown": "^7.2.4",
     "xlsx": "^0.18.5"
   },
+  "overrides": {
+    "@xmldom/xmldom": "0.8.15"
+  },
   "devDependencies": {
     "@types/node": "^24.13.3",
     "@types/papaparse": "^5.5.2",
