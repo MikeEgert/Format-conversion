@@ -53,6 +53,37 @@ describe('itemsToLines', () => {
     ]
     expect(itemsToLines(items)).toEqual(['First', 'Second'])
   })
+
+  it('keeps side-by-side columns in reading order instead of interleaving', () => {
+    const items = [
+      { str: 'Left one', transform: [10, 0, 0, 10, 10, 720], width: 40 },
+      { str: 'Right one', transform: [10, 0, 0, 10, 300, 720], width: 40 },
+      { str: 'Left two', transform: [10, 0, 0, 10, 10, 700], width: 40 },
+      { str: 'Right two', transform: [10, 0, 0, 10, 300, 700], width: 40 },
+    ]
+    expect(itemsToLines(items)).toEqual(['Left one', 'Left two', 'Right one', 'Right two'])
+  })
+
+  it('separates three columns left to right', () => {
+    const items = [
+      { str: 'A1', transform: [10, 0, 0, 10, 10, 720], width: 20 },
+      { str: 'B1', transform: [10, 0, 0, 10, 200, 720], width: 20 },
+      { str: 'C1', transform: [10, 0, 0, 10, 400, 720], width: 20 },
+      { str: 'A2', transform: [10, 0, 0, 10, 10, 700], width: 20 },
+      { str: 'B2', transform: [10, 0, 0, 10, 200, 700], width: 20 },
+      { str: 'C2', transform: [10, 0, 0, 10, 400, 700], width: 20 },
+    ]
+    expect(itemsToLines(items)).toEqual(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'])
+  })
+
+  it('does not split on a lone far-right item (e.g. a page number)', () => {
+    const items = [
+      { str: 'Body text', transform: [10, 0, 0, 10, 10, 720], width: 80 },
+      { str: 'More body', transform: [10, 0, 0, 10, 10, 700], width: 80 },
+      { str: '1', transform: [10, 0, 0, 10, 400, 720], width: 5 },
+    ]
+    expect(itemsToLines(items)).toEqual(['Body text 1', 'More body'])
+  })
 })
 
 describe('linesToDocx', () => {

@@ -22,22 +22,70 @@ export interface PdfTextMarkedContentItem {
 
 export type PdfTextContent = PdfTextContentItem | PdfTextMarkedContentItem
 
+interface NormalizedTextItem {
+  x: number
+  y: number
+  width: number
+  text: string
+}
+
+/** A gap wider than this fraction of the page's text span is a column gutter. */
+const COLUMN_GAP_RATIO = 0.08
+/** Each column must contain at least this many items to be treated as one. */
+const COLUMN_MIN_ITEMS = 2
+
 /**
- * Reconstruct reading-order lines from a page's raw text items.
- *
- * pdf.js reports text as a flat list with 2D coordinates (`transform[4]` = x,
- * `transform[5]` = y, origin bottom-left). Items sharing a baseline (y within
- * `yTolerance`) are grouped into one line and ordered left-to-right by x.
- * PDF coordinates grow upward, so lines are emitted top-to-bottom.
+ * Split items into left-to-right columns by detecting vertical whitespace
+ * gutters. Items are sorted by x and any horizontal band that no item's extent
+ * covers, wider than `COLUMN_GAP_RATIO` of the page's text span, is a gutter.
+ * The `COLUMN_MIN_ITEMS` guard avoids splitting on stray wide items (e.g. a
+ * lone right-aligned page number). Recurses so three-or-more column layouts
+ * work. A full-width item (a title/header spanning the gutter) defeats
+ * detection and the page is treated as a single column.
  */
-export function itemsToLines(items: PdfTextContent[], yTolerance = 3): string[] {
+function splitColumns(items: NormalizedTextItem[]): NormalizedTextItem[][] {
+  if (items.length < COLUMN_MIN_ITEMS * 2) return [items]
+
+  let minX = Infinity
+  let maxX = -Infinity
+  for (const item of items) {
+    minX = Math.min(minX, item.x)
+    maxX = Math.max(maxX, item.x + item.width)
+  }
+  const span = maxX - minX
+  if (span <= 0) return [items]
+
+  const sorted = [...items].sort((a, b) => a.x - b.x)
+  let bestGap = 0
+  let bestIndex = -1
+  let runningEnd = sorted[0].x + sorted[0].width
+  for (let i = 1; i < sorted.length; i += 1) {
+    const start = sorted[i].x
+    if (start > runningEnd) {
+      const gap = start - runningEnd
+      if (gap > bestGap) {
+        bestGap = gap
+        bestIndex = i
+      }
+    }
+    runningEnd = Math.max(runningEnd, sorted[i].x + sorted[i].width)
+  }
+
+  if (bestIndex === -1 || bestGap < COLUMN_GAP_RATIO * span) return [items]
+
+  const left = sorted.slice(0, bestIndex)
+  const right = sorted.slice(bestIndex)
+  if (left.length < COLUMN_MIN_ITEMS || right.length < COLUMN_MIN_ITEMS) return [items]
+
+  return [...splitColumns(left), ...splitColumns(right)]
+}
+
+/** Group items on the same baseline into lines, left-to-right. */
+function assembleLines(items: NormalizedTextItem[], yTolerance: number): string[] {
   const rows = new Map<number, { x: number; text: string; width: number }[]>()
 
   for (const item of items) {
-    if (!('str' in item) || typeof item.str !== 'string' || item.str.length === 0) continue
-    if (!item.transform) continue
-
-    const y = item.transform[5]
+    const y = item.y
     let key = -1
     for (const existing of rows.keys()) {
       if (Math.abs(existing - y) <= yTolerance) {
@@ -49,7 +97,7 @@ export function itemsToLines(items: PdfTextContent[], yTolerance = 3): string[] 
       key = y
       rows.set(key, [])
     }
-    rows.get(key)!.push({ x: item.transform[4], text: item.str, width: item.width ?? 0 })
+    rows.get(key)!.push({ x: item.x, text: item.text, width: item.width })
   }
 
   const lines: string[] = []
@@ -75,6 +123,31 @@ export function itemsToLines(items: PdfTextContent[], yTolerance = 3): string[] 
   }
 
   return lines
+}
+
+/**
+ * Reconstruct reading-order lines from a page's raw text items.
+ *
+ * pdf.js reports text as a flat list with 2D coordinates (`transform[4]` = x,
+ * `transform[5]` = y, origin bottom-left). Side-by-side columns are split
+ * first (see `splitColumns`), then items sharing a baseline (y within
+ * `yTolerance`) are grouped into one line and ordered left-to-right by x.
+ * PDF coordinates grow upward, so lines are emitted top-to-bottom.
+ */
+export function itemsToLines(items: PdfTextContent[], yTolerance = 3): string[] {
+  const normalized: NormalizedTextItem[] = []
+  for (const item of items) {
+    if (!('str' in item) || typeof item.str !== 'string' || item.str.length === 0) continue
+    if (!item.transform) continue
+    normalized.push({
+      x: item.transform[4],
+      y: item.transform[5],
+      width: item.width ?? 0,
+      text: item.str,
+    })
+  }
+
+  return splitColumns(normalized).flatMap((column) => assembleLines(column, yTolerance))
 }
 
 function escapeXml(text: string): string {
@@ -236,7 +309,7 @@ export const pdfToDocx: Converter = {
   description: 'Turn PDFs into editable Word documents.',
   detail: {
     about:
-      'Extract the text layer of a PDF into an editable Word document. Text is re-flowed as clean paragraphs (one per line), preserving page breaks. Layout, images, and styling are not reconstructed — for best results use a PDF that was created digitally, not scanned.',
+      'Extract the text layer of a PDF into an editable Word document. Text is re-flowed as clean paragraphs (one per line), preserving page breaks and simple multi-column layouts. Layout, images, and styling are not reconstructed, and complex tables may come out reordered — for best results use a PDF that was created digitally, not scanned.',
     useCases: [
       'Edit text from a PDF that has no Word source',
       'Copy content from a PDF into a document you are drafting',
