@@ -75,9 +75,11 @@ handle sales tax). Built in 3 pieces, all done:
   bombs up front. HEIC now reads dimensions from the decoded handle (`get_width`/`get_height`,
   which come from the ISO-BMFF `ispe` metadata) *before* the pixel decode/`display` step, so
   oversized images are rejected before the expensive RGBA render.
-- Pro is validated by the deployed worker (see License validation above). Note: anyone
-  who unlocked via the old demo key (before it was removed) keeps a stale
-  `localStorage` flag and stays "Pro" until they clear site data.
+- Pro is validated by the deployed worker (see License validation above). The stored key is
+  re-verified on mount, so the legacy `'1'` demo-key flag is cleaned up and expired/disabled
+  keys are revoked. `verifyLicenseKey` marks network/5xx failures as `transient: true`, and the
+  mount effect only deletes the stored key on a *confirmed* invalid result (not on transient
+  failures), so a valid key survives an offline load or a worker blip.
 - PDF→DOCX (`src/converters/pdfToDocx.ts`) follow-ups:
   - `itemsToLines` groups text by y-baseline only, so multi-column/table PDFs come out
     jumbled (side-by-side columns interleave). Consider column detection, or at least note

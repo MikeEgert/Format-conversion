@@ -1,6 +1,7 @@
 export interface LicenseCheck {
   valid: boolean
   reason?: string
+  transient?: boolean
 }
 
 function reasonForStatus(status: string | null): string | undefined {
@@ -30,6 +31,7 @@ export async function verifyLicenseKey(key: string): Promise<LicenseCheck> {
       return {
         valid: false,
         reason: 'Could not verify the license key right now. Please try again.',
+        transient: true,
       }
     }
 
@@ -44,6 +46,7 @@ export async function verifyLicenseKey(key: string): Promise<LicenseCheck> {
     return {
       valid: false,
       reason: 'Could not verify the license key right now. Please try again.',
+      transient: true,
     }
   }
 }

@@ -6,9 +6,18 @@ const STORAGE_KEY = 'format-conversion.pro'
 
 function readStoredKey(): string | null {
   try {
-    return localStorage.getItem(STORAGE_KEY)
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored === '1' ? null : stored
   } catch {
     return null
+  }
+}
+
+function removeStoredKey(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    // ignore storage failures
   }
 }
 
@@ -16,18 +25,22 @@ export function ProProvider({ children }: { children: ReactNode }) {
   const [isPro, setIsPro] = useState<boolean>(() => readStoredKey() !== null)
 
   useEffect(() => {
+    try {
+      if (localStorage.getItem(STORAGE_KEY) === '1') {
+        localStorage.removeItem(STORAGE_KEY)
+      }
+    } catch {
+      // ignore storage failures
+    }
+
     const stored = readStoredKey()
     if (!stored) return
 
     let cancelled = false
     verifyLicenseKey(stored).then((result) => {
       if (cancelled) return
-      if (!result.valid) {
-        try {
-          localStorage.removeItem(STORAGE_KEY)
-        } catch {
-          // ignore storage failures
-        }
+      if (!result.valid && !result.transient) {
+        removeStoredKey()
         setIsPro(false)
       }
     })
@@ -51,11 +64,7 @@ export function ProProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const lock = useCallback(() => {
-    try {
-      localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // ignore storage failures
-    }
+    removeStoredKey()
     setIsPro(false)
   }, [])
 
