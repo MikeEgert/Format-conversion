@@ -61,8 +61,13 @@ function App() {
           <a href="#/privacy">Privacy Policy</a>
           <a href="#/legal-notice">Legal Notice</a>
           <a href="#/open-source">Open Source Licenses</a>
-          <a href="https://github.com/MikeEgert/Format-conversion" target="_blank" rel="noreferrer">
-            Open source
+          <a
+            href="https://github.com/MikeEgert/Format-conversion"
+            target="_blank"
+            rel="noreferrer"
+            title="Opens GitHub in a new tab"
+          >
+            Open source <span aria-hidden="true">↗</span>
           </a>
         </nav>
       </footer>

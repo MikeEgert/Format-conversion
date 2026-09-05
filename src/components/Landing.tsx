@@ -24,8 +24,9 @@ export function LandingPage() {
             href="https://github.com/MikeEgert/Format-conversion"
             target="_blank"
             rel="noreferrer"
+            title="Opens GitHub in a new tab"
           >
-            100% open source
+            100% open source <span aria-hidden="true">↗</span>
           </a>
         </div>
         <h1>Convert files in your browser. Privately.</h1>
