@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ConverterPage } from './components/ConverterPage'
 import { HowItWorksPage } from './components/HowItWorks'
 import { LandingPage } from './components/Landing'
-import { LegalNoticePage, PrivacyPage, TermsPage } from './components/Legal'
+import { LegalNoticePage, OpenSourcePage, PrivacyPage, TermsPage } from './components/Legal'
 
 function App() {
   const [route, setRoute] = useState(() => window.location.hash)
@@ -22,6 +22,7 @@ function App() {
   const isTerms = route.startsWith('#/terms')
   const isPrivacy = route.startsWith('#/privacy')
   const isLegalNotice = route.startsWith('#/legal-notice')
+  const isOpenSource = route.startsWith('#/open-source')
 
   return (
     <div className="page">
@@ -45,6 +46,8 @@ function App() {
         <PrivacyPage />
       ) : isLegalNotice ? (
         <LegalNoticePage />
+      ) : isOpenSource ? (
+        <OpenSourcePage />
       ) : (
         <LandingPage />
       )}
@@ -57,6 +60,7 @@ function App() {
           <a href="#/terms">Terms &amp; Conditions</a>
           <a href="#/privacy">Privacy Policy</a>
           <a href="#/legal-notice">Legal Notice</a>
+          <a href="#/open-source">Open Source Licenses</a>
           <a href="https://github.com/MikeEgert/Format-conversion" target="_blank" rel="noreferrer">
             Open source
           </a>

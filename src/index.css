@@ -1114,6 +1114,23 @@ a.hero-pill:hover {
   gap: 6px;
 }
 
+.legal-muted {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.legal-body pre {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--surface-2, #f6f6f7);
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
 .ph {
   background: var(--accent-soft);
   color: var(--accent-strong);
