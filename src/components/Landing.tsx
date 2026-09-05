@@ -48,6 +48,8 @@ export function LandingPage() {
         </div>
       </section>
 
+      <OfferSection />
+
       <section className="showcase-section">
         <h2 className="section-title">See it in action</h2>
         <p className="section-sub">HEIC photo in, JPG out — no upload, no account.</p>
@@ -88,7 +90,6 @@ export function LandingPage() {
       </section>
 
       <HowItWorks />
-      <OfferSection />
 
       {detail && (
         <div className="modal-backdrop" onClick={() => setDetail(null)}>
