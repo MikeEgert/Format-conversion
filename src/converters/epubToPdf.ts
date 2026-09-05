@@ -1,6 +1,7 @@
 import type { PDFDocument, PDFFont, PDFPage, RGB } from 'pdf-lib'
 import { ConversionError, type Converter } from './types'
 import { isZipFile, replaceExtension } from './helpers'
+import { getFontBaseUrl } from './fontConfig'
 import {
   assertEpubUncompressedSize,
   decodeText,
@@ -131,8 +132,8 @@ async function loadFonts(
   try {
     const fontkit = (await import('@pdf-lib/fontkit')).default
     doc.registerFontkit(fontkit)
-    const base = import.meta.env.BASE_URL
-    const load = (name: string) => fetch(`${base}fonts/${name}`).then((r) => r.arrayBuffer())
+    const load = (name: string) =>
+      fetch(`${getFontBaseUrl()}fonts/${name}`).then((r) => r.arrayBuffer())
     return {
       winAnsiOnly: false,
       fontFor: makeFontFor({
