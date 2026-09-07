@@ -6,6 +6,7 @@ import {
   formatSizeSavings,
   isHeicFile,
   isZipFile,
+  isInAppBrowser,
   MAX_FILE_BYTES,
   MAX_IMAGE_DIMENSION,
   replaceExtension,
@@ -147,6 +148,21 @@ describe('scaledSize', () => {
 
   it('returns zero dimensions unchanged', () => {
     expect(scaledSize(0, 0, 1000)).toEqual({ width: 0, height: 0 })
+  })
+})
+
+describe('isInAppBrowser', () => {
+  it('detects social-media in-app browsers', () => {
+    expect(isInAppBrowser('Mozilla/5.0 ... Snapchat/12.0.0')).toBe(true)
+    expect(isInAppBrowser('Mozilla/5.0 ... Instagram 250.0')).toBe(true)
+    expect(isInAppBrowser('Mozilla/5.0 ... FBAN/Orca-Android')).toBe(true)
+    expect(isInAppBrowser('Mozilla/5.0 ... MicroMessenger/8.0')).toBe(true)
+    expect(isInAppBrowser('Mozilla/5.0 ... TikTok 30.0.0')).toBe(true)
+  })
+
+  it('does not flag regular mobile or desktop browsers', () => {
+    expect(isInAppBrowser('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/605.1.15')).toBe(false)
+    expect(isInAppBrowser('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36')).toBe(false)
   })
 })
 

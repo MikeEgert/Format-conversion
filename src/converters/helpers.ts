@@ -45,15 +45,51 @@ export function assertImageDimensions(width: number, height: number, name?: stri
   }
 }
 
+const IN_APP_BROWSER_RE =
+  /Snapchat|Instagram|FBAN|FBAV|FB_IAB|MicroMessenger|TikTok|Line\/|Twitter/i
+
+export function isInAppBrowser(userAgent: string): boolean {
+  return IN_APP_BROWSER_RE.test(userAgent)
+}
+
+function openInNewTab(url: string): void {
+  window.open(url, '_blank')
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
+}
+
 export function downloadResult(result: ConversionResult): void {
   const url = URL.createObjectURL(result.blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = result.filename
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  const file = new File([result.blob], result.filename, { type: result.blob.type })
+
+  const canUseNativeDownload =
+    'download' in document.createElement('a') && !isInAppBrowser(navigator.userAgent)
+
+  if (canUseNativeDownload) {
+    const a = document.createElement('a')
+    a.href = url
+    a.download = result.filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    return
+  }
+
+  if (navigator.canShare?.({ files: [file] })) {
+    void navigator
+      .share({ files: [file], title: result.filename })
+      .then(() => setTimeout(() => URL.revokeObjectURL(url), 60_000))
+      .catch((err: unknown) => {
+        if (err && (err as { name?: string }).name === 'AbortError') {
+          setTimeout(() => URL.revokeObjectURL(url), 60_000)
+          return
+        }
+        openInNewTab(url)
+      })
+    return
+  }
+
+  openInNewTab(url)
 }
 
 export function formatBytes(bytes: number): string {
