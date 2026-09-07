@@ -81,6 +81,7 @@ export const jsonToCsv: Converter = {
     accepts: ['JSON'],
   },
   accept: '.json,application/json,text/plain',
+  supportsTextInput: true,
   outputType: 'text/csv',
   async convert(file) {
     const text = (await file.text()).replace(/^\uFEFF/, '')

@@ -536,6 +536,67 @@ a.hero-pill:hover {
   color: var(--accent-strong);
 }
 
+.input-mode {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.input-mode-tab {
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.input-mode-tab:hover {
+  border-color: var(--accent);
+}
+
+.input-mode-tab.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.paste-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.paste-textarea {
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  min-height: 220px;
+  resize: vertical;
+  white-space: pre;
+}
+
+.paste-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.paste-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .working {
   display: flex;
   align-items: center;

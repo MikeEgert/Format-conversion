@@ -105,6 +105,7 @@ export const csvToJson: Converter = {
     accepts: ['CSV'],
   },
   accept: '.csv,text/csv,text/plain',
+  supportsTextInput: true,
   outputType: 'application/json',
   async convert(file) {
     const text = await file.text()

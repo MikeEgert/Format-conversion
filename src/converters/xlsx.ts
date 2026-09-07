@@ -165,6 +165,7 @@ export const csvToXlsx: Converter = {
     accepts: ['CSV'],
   },
   accept: '.csv,text/csv,text/plain',
+  supportsTextInput: true,
   outputType: XLSX_MIME,
   async convert(file) {
     const XLSX = await import('xlsx')
@@ -226,6 +227,7 @@ export const jsonToXlsx: Converter = {
     accepts: ['JSON'],
   },
   accept: '.json,application/json,text/plain',
+  supportsTextInput: true,
   outputType: XLSX_MIME,
   async convert(file) {
     const XLSX = await import('xlsx')

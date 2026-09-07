@@ -57,6 +57,8 @@ export function ConverterPage() {
   const [quality, setQuality] = useState(0.9)
   const [format, setFormat] = useState<ImageFormat>('jpg')
   const [maxDimension, setMaxDimension] = useState(0)
+  const [inputMode, setInputMode] = useState<'file' | 'paste'>('file')
+  const [pasteText, setPasteText] = useState('')
 
   const converter = converters.find((c) => c.id === converterId) ?? converters[0]
   const formatOption = converter.formats?.find((f) => f.id === format)
@@ -92,12 +94,20 @@ export function ConverterPage() {
   function selectConverter(id: string) {
     if (id === converterId) return
     setConverterId(id)
+    setInputMode('file')
+    setPasteText('')
     reset()
   }
 
   function handleFiles(selected: File[]) {
     if (selected.length === 0) return
     void run(selected)
+  }
+
+  function handlePasteConvert() {
+    const ext = converter.accept.includes('.json') ? 'json' : 'csv'
+    const type = ext === 'json' ? 'application/json' : 'text/csv'
+    void run([new File([pasteText], `pasted.${ext}`, { type })])
   }
 
   async function run(selected: File[]) {
@@ -288,7 +298,63 @@ export function ConverterPage() {
             </button>
           </div>
         ) : (
-          <DropZone accept={converter.accept} onFiles={handleFiles} />
+          <>
+            {converter.supportsTextInput && (
+              <div className="input-mode" role="tablist" aria-label="Input type">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={inputMode === 'file'}
+                  className={inputMode === 'file' ? 'input-mode-tab active' : 'input-mode-tab'}
+                  onClick={() => setInputMode('file')}
+                >
+                  Upload file
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={inputMode === 'paste'}
+                  className={inputMode === 'paste' ? 'input-mode-tab active' : 'input-mode-tab'}
+                  onClick={() => setInputMode('paste')}
+                >
+                  Paste data
+                </button>
+              </div>
+            )}
+            {converter.supportsTextInput && inputMode === 'paste' ? (
+              <div className="paste-panel">
+                <textarea
+                  className="paste-textarea"
+                  value={pasteText}
+                  onChange={(e) => setPasteText(e.target.value)}
+                  spellCheck={false}
+                  placeholder={
+                    converter.accept.includes('.json')
+                      ? 'Paste JSON here, e.g.\n[{"name":"Ada","role":"Engineer"}]'
+                      : 'Paste CSV here, e.g.\nname,role\nAda,Engineer'
+                  }
+                />
+                <div className="paste-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-small"
+                    onClick={() => setPasteText('')}
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-small"
+                    onClick={handlePasteConvert}
+                  >
+                    Convert
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <DropZone accept={converter.accept} onFiles={handleFiles} />
+            )}
+          </>
         )}
 
         {status === 'done' && failed.length > 0 && (

@@ -47,6 +47,7 @@ export interface Converter {
   outputType: string
   supportsQuality?: boolean
   supportsResize?: boolean
+  supportsTextInput?: boolean
   formats?: ImageFormatOption[]
   detail?: ConverterDetail
   convert: (file: File, options?: ConversionOptions) => Promise<ConversionResult>
