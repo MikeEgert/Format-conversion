@@ -1,6 +1,7 @@
 import Papa from 'papaparse'
 import { replaceExtension, setOwn } from './helpers'
 import { ConversionError, type Converter } from './types'
+import { describeJsonError } from './validateText'
 
 type JsonRow = Record<string, unknown>
 
@@ -95,10 +96,11 @@ export const jsonToCsv: Converter = {
     let data: unknown
     try {
       data = JSON.parse(text)
-    } catch {
+    } catch (error) {
+      const detail = error instanceof SyntaxError ? describeJsonError(text) : null
       throw new ConversionError(
-        "This isn't valid JSON.",
-        'Make sure the file contains well-formed JSON. You can validate it at a JSON linter or re-export it from the source app.',
+        detail ? `This isn't valid JSON — ${detail}.` : "This isn't valid JSON.",
+        'Fix the issue above, or re-export the data from the source app.',
       )
     }
 

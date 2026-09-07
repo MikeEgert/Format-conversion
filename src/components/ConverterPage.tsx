@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { converters, ConversionError } from '../converters'
 import type { ConversionResult, ImageFormat } from '../converters'
 import { mapWithConcurrency, zipResults } from '../lib/batch'
 import { assertFileSize, downloadResult, formatBytes } from '../converters/helpers'
+import { describeCsvError, describeJsonError } from '../converters/validateText'
 import { DropZone } from './DropZone'
 import { FormatPicker } from './FormatPicker'
 import { QualityPicker } from './QualityPicker'
@@ -65,6 +66,14 @@ export function ConverterPage() {
   const showQuality =
     converter.supportsQuality && (!converter.formats || !formatOption || formatOption.lossy)
   const isImageEditor = Boolean(converter.formats || converter.supportsResize)
+  const pasteIsJson = converter.accept.includes('.json')
+  const pasteValidation = useMemo(() => {
+    if (!pasteText.trim()) return { kind: 'empty' as const }
+    const detail = pasteIsJson ? describeJsonError(pasteText) : describeCsvError(pasteText)
+    return detail
+      ? { kind: 'error' as const, message: detail }
+      : { kind: 'ok' as const }
+  }, [pasteText, pasteIsJson])
 
   function reset() {
     abortRef.current?.abort()
@@ -334,6 +343,15 @@ export function ConverterPage() {
                       : 'Paste CSV here, e.g.\nname,role\nAda,Engineer'
                   }
                 />
+                <p className={`paste-status ${pasteValidation.kind}`} role="status">
+                  {pasteValidation.kind === 'error'
+                    ? `${pasteIsJson ? 'Not valid JSON' : 'Problem with the data'}: ${pasteValidation.message}`
+                    : pasteValidation.kind === 'ok'
+                      ? pasteIsJson
+                        ? 'Valid JSON'
+                        : 'Data looks good'
+                      : 'Waiting for data…'}
+                </p>
                 <div className="paste-actions">
                   <button
                     type="button"
@@ -345,6 +363,7 @@ export function ConverterPage() {
                   <button
                     type="button"
                     className="btn btn-primary btn-small"
+                    disabled={pasteValidation.kind === 'error'}
                     onClick={handlePasteConvert}
                   >
                     Convert

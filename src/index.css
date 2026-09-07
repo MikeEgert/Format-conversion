@@ -597,6 +597,20 @@ a.hero-pill:hover {
   gap: 10px;
 }
 
+.paste-status {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.paste-status.ok {
+  color: var(--success);
+}
+
+.paste-status.error {
+  color: var(--danger);
+}
+
 .working {
   display: flex;
   align-items: center;
@@ -877,6 +891,11 @@ a.hero-pill:hover {
 
 .btn-ghost:hover {
   background: var(--surface-2);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .result-preview {
