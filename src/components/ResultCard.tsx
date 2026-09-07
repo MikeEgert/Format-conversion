@@ -8,12 +8,19 @@ interface ResultCardProps {
   onReset: () => void
 }
 
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+const MAX_PREVIEW_ROWS = 100
+
 export function ResultCard({ result, onReset }: ResultCardProps) {
   const isImage = result.blob.type.startsWith('image/')
   const isPdf = result.blob.type === 'application/pdf'
-  const isText = !isImage && !isPdf
+  const isSpreadsheet = result.blob.type === XLSX_MIME
+  const isText = !isImage && !isPdf && !isSpreadsheet
   const [text, setText] = useState<string | null>(null)
   const [dims, setDims] = useState<{ width: number; height: number } | null>(null)
+  const [sheet, setSheet] = useState<unknown[][] | null>(null)
+  const [totalRows, setTotalRows] = useState<number | null>(null)
+  const [previewFailed, setPreviewFailed] = useState(false)
 
   const imageUrl = useMemo(
     () => (isImage ? URL.createObjectURL(result.blob) : null),
@@ -51,6 +58,37 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
     }
   }, [result, isText])
 
+  useEffect(() => {
+    if (!isSpreadsheet) return
+    let cancelled = false
+    void (async () => {
+      try {
+        const XLSX = await import('xlsx')
+        const buffer = await result.blob.arrayBuffer()
+        const wb = XLSX.read(buffer, { type: 'array' })
+        const name = wb.SheetNames[0]
+        const sheetObj = name != null ? wb.Sheets[name] : undefined
+        if (!sheetObj) {
+          if (!cancelled) setSheet([])
+          return
+        }
+        const rows = XLSX.utils.sheet_to_json(sheetObj, {
+          header: 1,
+          raw: false,
+          defval: '',
+        }) as unknown[][]
+        if (cancelled) return
+        setTotalRows(rows.length)
+        setSheet(rows.slice(0, MAX_PREVIEW_ROWS))
+      } catch {
+        if (!cancelled) setPreviewFailed(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [result, isSpreadsheet])
+
   return (
     <div className="result">
       <div className="result-meta">
@@ -86,6 +124,42 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
       ) : isPdf ? (
         <div className="result-preview">
           <p className="pdf-note">PDF ready &mdash; download to view it.</p>
+        </div>
+      ) : isSpreadsheet ? (
+        <div className="result-preview">
+          {previewFailed ? (
+            <p className="pdf-note">Spreadsheet ready &mdash; download to open it.</p>
+          ) : sheet && sheet.length > 0 ? (
+            <>
+              <table className="sheet-table">
+                <tbody>
+                  {sheet.map((row, ri) => (
+                    <tr key={ri}>
+                      {row.map((cell, ci) =>
+                        ri === 0 ? (
+                          <th key={ci} scope="col">
+                            {String(cell)}
+                          </th>
+                        ) : (
+                          <td key={ci}>{String(cell)}</td>
+                        ),
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {totalRows != null && totalRows > MAX_PREVIEW_ROWS && (
+                <p className="pdf-note">
+                  Showing the first {MAX_PREVIEW_ROWS} of {totalRows} rows &mdash; download for
+                  the full file.
+                </p>
+              )}
+            </>
+          ) : sheet ? (
+            <p className="pdf-note">This spreadsheet has no rows to preview.</p>
+          ) : (
+            <p className="pdf-note">Loading preview&hellip;</p>
+          )}
         </div>
       ) : (
         <div className="result-preview">
