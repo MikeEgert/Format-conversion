@@ -32,6 +32,14 @@ function App() {
           FoldenLoom
         </a>
         <div className="header-actions">
+          <nav className="header-nav" aria-label="Primary">
+            <a className="nav-link" href="#/tool">
+              Convert
+            </a>
+            <a className="nav-link" href="#/how-it-works">
+              How it works
+            </a>
+          </nav>
           <span className="badge">Private &amp; secure</span>
         </div>
       </header>
