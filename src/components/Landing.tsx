@@ -178,7 +178,7 @@ const OFFERS = [
   },
   {
     title: 'No signup',
-    text: 'No accounts, no tracking, no ads. Just convert.',
+    text: 'No accounts, no cookies, no ads. Just convert.',
     icon: (
       <svg className="offer-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />

@@ -123,6 +123,10 @@ handle sales tax). Built in 3 pieces, all done:
   contained: the app has no XSS sink (output is auto-escaped `<pre>` or `blob:` images).
   The license worker origin is allowed in the CSP's `connect-src` in `public/_headers`
   (keep it in sync with the `ALLOWED_ORIGINS` in `worker/src/index.js` if it changes).
+  Cloudflare Web Analytics (`beacon.min.js`) is allowed in `script-src`/`connect-src` and loaded
+  in `index.html` with a `data-cf-beacon` token — it's cookieless/aggregate and never touches
+  files or conversion activity. The site copy says "no cookies / no cross-site tracking", not
+  "no analytics".
   The JS frame-busting guard in `src/main.tsx` is kept as redundant defense-in-depth.
 - Files over 100 MB (`MAX_FILE_BYTES`) are rejected up front (`assertFileSize`) to avoid
   freezing the tab on a huge/malicious input. Raise it only deliberately.

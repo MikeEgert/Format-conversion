@@ -28,7 +28,7 @@ but you don't need to know any of that to use the site.
 
 - Files are read and converted locally in your browser.
 - Nothing is sent to a server.
-- There are no analytics or trackers.
+- Only cookieless, aggregate Cloudflare Web Analytics for anonymous page-view counts.
 
 ## Try it
 

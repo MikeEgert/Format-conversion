@@ -101,7 +101,7 @@ function App() {
 
       <footer className="footer">
         <p>Convert files privately, right in your browser.</p>
-        <p className="footer-sub">Nothing is uploaded. No accounts, no tracking.</p>
+        <p className="footer-sub">Nothing is uploaded. No accounts, no cookies.</p>
         <nav className="footer-links" aria-label="Legal">
           <a href="#/how-it-works">How it works</a>
           <a href="#/terms">Terms &amp; Conditions</a>

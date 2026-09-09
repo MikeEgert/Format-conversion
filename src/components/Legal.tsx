@@ -99,7 +99,8 @@ export function PrivacyPage() {
       <h2>3. What we do not process</h2>
       <ul>
         <li>We do not collect, upload, or see the files you convert.</li>
-        <li>We do not require accounts, and we do not use cookies, analytics, tracking, or advertising.</li>
+        <li>We do not require accounts, and we do not use cookies, advertising, or third-party tracking.</li>
+        <li>For anonymous visitor statistics (page views) we use Cloudflare Web Analytics, a cookieless service that does not collect personal data. It never sees your files or your conversion activity.</li>
         <li>We do not currently process payments or payment data on this site.</li>
         <li>We do not tie your license key to your conversion activity.</li>
       </ul>

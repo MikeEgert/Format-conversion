@@ -93,7 +93,7 @@ export function HowItWorksPage() {
         <div className="privacy">
           <ul className="privacy-list">
             <li>No accounts, no sign-in, no cookies.</li>
-            <li>No analytics, no tracking, no advertising.</li>
+            <li>No cookies, no cross-site tracking, no advertising.</li>
             <li>We never receive, see, or store your files.</li>
             <li>
               The only thing saved locally is a license-key flag in your browser&apos;s
