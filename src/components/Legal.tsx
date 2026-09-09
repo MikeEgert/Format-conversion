@@ -102,34 +102,18 @@ export function PrivacyPage() {
         <li>We do not require accounts, and we do not use cookies, advertising, or third-party tracking.</li>
         <li>For anonymous visitor statistics (page views) we use Cloudflare Web Analytics, a cookieless service that does not collect personal data. It never sees your files or your conversion activity.</li>
         <li>We do not currently process payments or payment data on this site.</li>
-        <li>We do not tie your license key to your conversion activity.</li>
       </ul>
 
-      <h2>4. Browser storage and license validation</h2>
-      <p>
-        If you activate a license key, it is stored locally in your browser&apos;s storage
-        (localStorage) on your device so that Pro features stay unlocked on future visits. This is
-        not a cookie. To check whether the key is valid, the key itself is transmitted to our
-        license-validation service (a Cloudflare Worker) and to the license provider Lemon Squeezy
-        (Lemon Squeezy, LLC), solely for the purpose of validation. The key is not used for
-        tracking, profiling, or advertising, and it is never linked to your conversion activity.
-        You can remove it at any time by clearing your browser&apos;s site data or by locking Pro in
-        the app.
-      </p>
-
-      <h2>5. Hosting and services we use</h2>
+      <h2>4. Hosting and services we use</h2>
       <p>
         The website is delivered as static files via the Cloudflare network (Cloudflare, Inc.). As
         is standard for any website, the hosting provider&apos;s servers may log technical data
         necessary to deliver the page (such as your IP address). These logs are created and held by
         the hosting provider, not by us. Your files themselves are never transmitted to the hosting
-        provider, because all conversion happens locally in your browser. License validation is
-        handled by a Cloudflare Worker and by Lemon Squeezy&apos;s license API; when you enter or
-        hold a license key, only the key (not your files) is sent to these services to confirm its
-        validity.
+        provider, because all conversion happens locally in your browser.
       </p>
 
-      <h2>6. Your rights</h2>
+      <h2>5. Your rights</h2>
       <p>
         Because the Service processes essentially no personal data, most data-subject requests
         (such as access or erasure) will simply confirm that we hold no data about you. If you have
