@@ -12,6 +12,14 @@ if (window.top && window.top !== window.self) {
   }
 }
 
+try {
+  if (localStorage.getItem('theme') === 'light') {
+    document.documentElement.dataset.theme = 'light'
+  }
+} catch {
+  /* storage unavailable — keep default dark theme */
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

@@ -1,21 +1,21 @@
 :root {
-  --bg: #f3f8f9;
-  --surface: #ffffff;
-  --surface-2: #f4f5f7;
-  --text: #111827;
-  --text-muted: #6b7280;
-  --border: #e5e7eb;
-  --accent: #2563eb;
-  --accent-strong: #1d4ed8;
-  --accent-soft: rgba(37, 99, 235, 0.08);
-  --danger: #dc2626;
-  --danger-soft: rgba(220, 38, 38, 0.08);
-  --success: #15803d;
-  --success-soft: rgba(21, 128, 61, 0.1);
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #334155;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --accent: #3b82f6;
+  --accent-strong: #60a5fa;
+  --accent-soft: rgba(59, 130, 246, 0.16);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.14);
+  --success: #4ade80;
+  --success-soft: rgba(74, 222, 128, 0.14);
 
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
-  color-scheme: light dark;
+  color-scheme: dark;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -24,22 +24,22 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --surface-2: #334155;
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --border: #334155;
-    --accent: #3b82f6;
-    --accent-strong: #60a5fa;
-    --accent-soft: rgba(59, 130, 246, 0.16);
-    --danger: #f87171;
-    --danger-soft: rgba(248, 113, 113, 0.14);
-    --success: #4ade80;
-    --success-soft: rgba(74, 222, 128, 0.14);
-  }
+:root[data-theme='light'] {
+  --bg: #e8f0f6;
+  --surface: #ffffff;
+  --surface-2: #dfe9f0;
+  --text: #0b1220;
+  --text-muted: #44546a;
+  --border: #ccd9e4;
+  --accent: #1d6ae0;
+  --accent-strong: #1657b8;
+  --accent-soft: rgba(29, 106, 224, 0.1);
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.1);
+  --success: #15803d;
+  --success-soft: rgba(21, 128, 61, 0.12);
+
+  color-scheme: light;
 }
 
 * {
@@ -153,6 +153,35 @@ body {
 
 .nav-link:hover {
   color: var(--accent-strong);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  background: var(--accent-soft);
+}
+
+.theme-toggle:active {
+  transform: scale(0.92);
+}
+
+.theme-toggle svg {
+  width: 19px;
+  height: 19px;
 }
 
 @media (max-width: 720px) {
@@ -1865,6 +1894,11 @@ a.hero-pill:hover {
 
   .header {
     flex-wrap: wrap;
+  }
+
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
   }
 
   .converters-select {

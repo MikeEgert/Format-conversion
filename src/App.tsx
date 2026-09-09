@@ -6,6 +6,9 @@ import { LegalNoticePage, OpenSourcePage, PrivacyPage, TermsPage } from './compo
 
 function App() {
   const [route, setRoute] = useState(() => window.location.hash)
+  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
+    document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
+  )
 
   useEffect(() => {
     const onChange = () => setRoute(window.location.hash)
@@ -24,6 +27,19 @@ function App() {
   const isLegalNotice = route.startsWith('#/legal-notice')
   const isOpenSource = route.startsWith('#/open-source')
 
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    document.documentElement.dataset.theme = next
+    try {
+      localStorage.setItem('theme', next)
+    } catch {
+      /* storage unavailable — theme still applies for this session */
+    }
+    setTheme(next)
+  }
+
+  const isDark = theme === 'dark'
+
   return (
     <div className="page">
       <header className="header">
@@ -40,6 +56,30 @@ function App() {
               How it works
             </a>
           </nav>
+          <button
+            className="theme-toggle"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2" />
+                <path d="M12 20v2" />
+                <path d="m4.93 4.93 1.41 1.41" />
+                <path d="m17.66 17.66 1.41 1.41" />
+                <path d="M2 12h2" />
+                <path d="M20 12h2" />
+                <path d="m6.34 17.66-1.41 1.41" />
+                <path d="m19.07 4.93-1.41 1.41" />
+              </svg>
+            )}
+          </button>
         </div>
       </header>
 
