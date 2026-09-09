@@ -1,7 +1,9 @@
 import * as XLSX from 'xlsx'
 import { describe, expect, it } from 'vitest'
+import { strToU8, zipSync } from 'fflate'
 import { ConversionError } from './types'
 import {
+  assertXlsxUncompressedSize,
   csvToWorkbook,
   jsonToXlsx,
   readWorkbook,
@@ -99,6 +101,23 @@ describe('readWorkbook', () => {
     expect(() => readWorkbook(new TextEncoder().encode('not a spreadsheet').buffer, XLSX)).toThrowError(
       ConversionError,
     )
+  })
+})
+
+describe('assertXlsxUncompressedSize', () => {
+  it('allows a zip under the cap', () => {
+    const zip = zipSync({ 'a.bin': strToU8('hello world') })
+    expect(() => assertXlsxUncompressedSize(zip)).not.toThrow()
+  })
+
+  it('rejects a zip that expands beyond the cap', () => {
+    const zip = zipSync({ 'a.bin': strToU8('hello world') })
+    expect(() => assertXlsxUncompressedSize(zip, 10)).toThrowError(ConversionError)
+  })
+
+  it('rejects a corrupt zip', () => {
+    const bad = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0, 0, 0, 0])
+    expect(() => assertXlsxUncompressedSize(bad)).toThrowError(ConversionError)
   })
 })
 

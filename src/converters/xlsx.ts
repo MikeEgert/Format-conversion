@@ -1,3 +1,4 @@
+import { unzipSync, type UnzipFileInfo } from 'fflate'
 import Papa from 'papaparse'
 import type { WorkBook, WorkSheet } from 'xlsx'
 import { dedupeHeaders } from './csvToJson'
@@ -9,6 +10,8 @@ import { describeJsonError } from './validateText'
 type XlsxModule = typeof import('xlsx')
 
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+export const MAX_XLSX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024
 
 function isOleFile(buffer: ArrayBuffer): boolean {
   if (buffer.byteLength < 8) return false
@@ -31,12 +34,43 @@ function assertWorkbookHasSheet(wb: WorkBook): WorkSheet {
   return sheet
 }
 
+export function assertXlsxUncompressedSize(
+  data: Uint8Array,
+  maxBytes = MAX_XLSX_UNCOMPRESSED_BYTES,
+): void {
+  let total = 0
+  try {
+    unzipSync(data, {
+      filter(file: UnzipFileInfo) {
+        total += file.originalSize
+        return false
+      },
+    })
+  } catch {
+    throw new ConversionError(
+      "This isn't a readable spreadsheet.",
+      'Make sure the file is a real .xlsx or .xls file. Old or renamed files may not work — open it in Excel or Google Sheets and re-save it.',
+    )
+  }
+
+  if (total > maxBytes) {
+    const limit = Math.floor(maxBytes / (1024 * 1024))
+    throw new ConversionError(
+      `This spreadsheet expands to over ${limit} MB, which is too large to convert.`,
+      'Try removing unused sheets or splitting the file.',
+    )
+  }
+}
+
 export function readWorkbook(buffer: ArrayBuffer, XLSX: XlsxModule): WorkBook {
   if (!isZipFile(buffer) && !isOleFile(buffer)) {
     throw new ConversionError(
       "This isn't a readable spreadsheet.",
       'Make sure the file is a real .xlsx or .xls file. Old or renamed files may not work — open it in Excel or Google Sheets and re-save it.',
     )
+  }
+  if (isZipFile(buffer)) {
+    assertXlsxUncompressedSize(new Uint8Array(buffer))
   }
   try {
     const wb = XLSX.read(buffer, { type: 'array', cellDates: true })
