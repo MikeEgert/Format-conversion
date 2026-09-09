@@ -1896,6 +1896,11 @@ a.hero-pill:hover {
     flex-wrap: wrap;
   }
 
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
   .theme-toggle {
     width: 40px;
     height: 40px;
