@@ -40,7 +40,6 @@ function App() {
               How it works
             </a>
           </nav>
-          <span className="badge">Private &amp; secure</span>
         </div>
       </header>
 
