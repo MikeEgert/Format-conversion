@@ -9,6 +9,7 @@ const ALLOWED_ORIGINS = [
 ]
 
 const MAX_KEY_LENGTH = 200
+const MAX_BODY_BYTES = 4096
 const RATE_LIMIT_WINDOW_MS = 60_000
 const RATE_LIMIT_MAX = 30
 const CACHE_TTL_VALID_SECONDS = 300
@@ -95,6 +96,11 @@ export default {
 
     if (rateLimited(request)) {
       return respond({ valid: false, error: 'Too many requests' }, 429, headers)
+    }
+
+    const contentLength = Number(request.headers.get('Content-Length') ?? 0)
+    if (contentLength > MAX_BODY_BYTES) {
+      return respond({ valid: false, error: 'Request body too large' }, 413, headers)
     }
 
     let licenseKey

@@ -68,6 +68,11 @@ describe('resolveHref', () => {
   it('strips fragments and query strings', () => {
     expect(resolveHref('OEBPS', 'ch1.xhtml#part')).toBe('OEBPS/ch1.xhtml')
   })
+
+  it('tolerates a malformed percent-encoding', () => {
+    expect(() => resolveHref('OEBPS', 'ch%1.xhtml')).not.toThrow()
+    expect(resolveHref('OEBPS', 'ch%1.xhtml')).toBe('OEBPS/ch%1.xhtml')
+  })
 })
 
 describe('assertNotDrm', () => {

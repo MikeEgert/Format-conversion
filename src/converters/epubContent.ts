@@ -112,7 +112,13 @@ export function dirOf(path: string): string {
 }
 
 export function resolveHref(baseDir: string, href: string): string {
-  const clean = decodeURIComponent(href).split('#')[0].split('?')[0]
+  let clean: string
+  try {
+    clean = decodeURIComponent(href)
+  } catch {
+    clean = href
+  }
+  clean = clean.split('#')[0].split('?')[0]
   const segments = `${baseDir}/${clean}`.split('/')
   const out: string[] = []
   for (const seg of segments) {
