@@ -59,3 +59,24 @@ and security headers live in `public/_headers`.
 ## Roadmap
 
 - More conversions (e.g. ODT, ODS, and other formats)
+
+## Changelog
+
+### 2026-09-10
+- README updated to reflect the converters that are now shipped (PDF → DOCX, EPUB → PDF,
+  XLSX/XLS ↔ CSV/JSON).
+
+### 2026-09-09
+- Hardened archive/text parsing: XLSX uncompressed-size cap, URI decode guard, and a worker
+  request-body cap.
+- Added cookieless Cloudflare Web Analytics and updated the privacy policy accordingly.
+- Added a light/dark theme toggle (dark by default) and mobile header tweaks.
+
+### 2026-09-08
+- Added primary header navigation with accessible focus states.
+- Disabled pinch-zoom on the mobile viewport.
+
+### 2026-09-07
+- Fall back to the share sheet for downloads in in-app browsers.
+- Show specific validation errors for pasted JSON/CSV data.
+- Added a table preview for XLSX results and a paste-text input for text-based converters.
