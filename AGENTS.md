@@ -60,6 +60,15 @@ handle sales tax). Built in 3 pieces, all done:
 - `vite.config.ts` sets `base: '/'` (serves at the domain root).
 
 ## Open decisions / next steps
+- Usage instrumentation: the site only tracks cookieless page-view counts today — no conversion
+  events, per-converter usage, or drop-off data. If we want to know whether people actually use
+  the site (and where they bail), add a lightweight privacy-preserving (still aggregate,
+  cookieless) event counter. Deferred — noted as a candidate for when usage becomes a goal.
+- Per-conversion landing pages for SEO (e.g. `/heic-to-jpg`, `/docx-to-markdown`): the privacy
+  wedge ("convert without uploading") is the only realistically winnable keyword angle, but the
+  SPA's hash routing blocks indexing. Would need real paths + per-route meta/prerendering first,
+  and should start as a single experiment (HEIC→JPG) with a defined success metric, not a
+  10-page buildout. Deferred.
 - No spend cap is configured — and none is currently needed. Cloudflare (app + license
   worker) runs on the free tier (no credit card, 100k req/day throttle, not billed on
   overage), and Lemon Squeezy only bills per completed sale (validation calls are free).
@@ -67,9 +76,8 @@ handle sales tax). Built in 3 pieces, all done:
   abuse. Revisit: add a hard budget alert if we ever move off Cloudflare free tier or add
   a paid API (e.g. hosted PDF/AI service). Caps live in the dashboards, not in code.
 - Legal pages (`src/components/Legal.tsx`, routes `#/terms`, `#/privacy`, `#/legal-notice`)
-  contain `[placeholder]` fields (name, address, contact, VAT ID) that must be filled in
-  before launch. Content is a draft — have it reviewed by a lawyer, especially the
-  Impressum (§ 5 TMG / § 18 MStV).
+  exist and the Impressum is filled in (name, address, email). Content is a draft — have it
+  reviewed by a lawyer, especially the Impressum (§ 5 DDG / § 18 MStV).
 - Security follow-up (HEIC only): PNG/JPEG/WebP sniff dimensions from the file header
   *before* decoding (`src/converters/imageHeaders.ts` `readImageDimensions`), rejecting decode
   bombs up front. HEIC now reads dimensions from the decoded handle (`get_width`/`get_height`,
