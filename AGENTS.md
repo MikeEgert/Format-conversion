@@ -80,15 +80,19 @@ handle sales tax). Built in 3 pieces, all done:
   keys are revoked. `verifyLicenseKey` marks network/5xx failures as `transient: true`, and the
   mount effect only deletes the stored key on a *confirmed* invalid result (not on transient
   failures), so a valid key survives an offline load or a worker blip.
-- PDF→DOCX (`src/converters/pdfToDocx.ts`) follow-ups:
-  - `itemsToLines` groups text by y-baseline only, so multi-column/table PDFs come out
-    jumbled (side-by-side columns interleave). Consider column detection, or at least note
-    the limitation in `detail.about`.
-  - The catch-all in `extractPdfText` maps *every* failure (including OOM) to the
-    "corrupted/password/scanned" hint — slightly imprecise.
-  - (Resolved) `content.items as PdfTextItem[]` was a loose cast; `itemsToLines` now takes a
-    structural mirror of pdf.js's `TextItem | TextMarkedContent` union and narrows it with
-    `'str' in item`, so `content.items` passes through with no cast.
+- PDF→DOCX (`src/converters/pdfToDocx.ts`) — all previous follow-ups resolved:
+  - Multi-column layouts are split left-to-right by gutter detection
+    (`splitColumns`), then assembled per column (`itemsToLines`/`itemsToBlocks`),
+    so side-by-side columns no longer interleave. Simple grid tables are detected
+    (`detectTables`, runs of x-aligned lines with character-scale column gutters)
+    and emitted as real DOCX tables. `detail.about` documents the remaining
+    limitation: merged or multi-line cells may come out reordered.
+  - `extractPdfText` maps failures specifically: password (`PasswordException`),
+    corrupted (`InvalidPDFException`), out-of-memory (`isOutOfMemoryError`),
+    and a generic fallback — no more blanket "corrupted/password/scanned" hint.
+  - `content.items` passes through with no cast: `itemsToLines`/`itemsToBlocks` take
+    a structural mirror of pdf.js's `TextItem | TextMarkedContent` union and narrow
+    it with `'str' in item`.
 
 ## Tests
 - Vitest (`npm test`) with unit tests in `src/converters/*.test.ts`. Pure logic is
