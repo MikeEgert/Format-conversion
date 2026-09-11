@@ -174,6 +174,10 @@ export function HowItWorksPage() {
 
         <h2>Honest limitations</h2>
         <ul>
+          <li>
+            Works in the latest versions of Chrome, Edge, Firefox, and Safari (desktop and mobile).
+            HEIC conversion uses WebAssembly, which all of them support.
+          </li>
           <li>Files over 100&nbsp;MB are rejected up front to keep the tab responsive.</li>
           <li>Images are limited to 16,384 pixels on their longest side.</li>
           <li>

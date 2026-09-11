@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { converters, groupConvertersByCategory } from '../converters'
 import type { Converter } from '../converters'
+import { MAX_FILE_BYTES, MAX_IMAGE_DIMENSION } from '../converters/helpers'
 import { Showcase } from './Showcase'
 
 const STEPS = [
@@ -47,6 +48,8 @@ export function LandingPage() {
           </button>
         </div>
       </section>
+
+      <SpecsStrip />
 
       <OfferSection />
 
@@ -204,6 +207,25 @@ function OfferSection() {
           </div>
         ))}
       </div>
+    </section>
+  )
+}
+
+const SPECS = [
+  { value: `${MAX_FILE_BYTES / (1024 * 1024)} MB`, label: 'max file size' },
+  { value: `${MAX_IMAGE_DIMENSION.toLocaleString()} px`, label: 'max image side' },
+  { value: 'All browsers', label: 'Chrome, Edge, Firefox, Safari' },
+]
+
+function SpecsStrip() {
+  return (
+    <section className="specs" aria-label="Limits and requirements">
+      {SPECS.map((spec) => (
+        <div className="spec" key={spec.label}>
+          <span className="spec-value">{spec.value}</span>
+          <span className="spec-label">{spec.label}</span>
+        </div>
+      ))}
     </section>
   )
 }

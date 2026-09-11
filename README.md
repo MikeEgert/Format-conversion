@@ -7,6 +7,20 @@ time, so it's safe even for private documents like medical or legal records.
 
 This project is open source (MIT). See [LICENSE](LICENSE).
 
+## Screenshots
+
+![Format Converter landing page](docs/screenshots/landing.png)
+
+![Format Converter tool — drop a file and convert](docs/screenshots/tool.png)
+
+## Specs & requirements
+
+- **File size**: up to 100 MB per file.
+- **Image size**: up to 16,384 px on the longest side.
+- **Browsers**: the latest versions of Chrome, Edge, Firefox, and Safari (desktop and mobile).
+  HEIC conversion uses WebAssembly, which all of these support.
+- **Privacy**: everything runs locally — see [Your data stays on your device](#your-data-stays-on-your-device).
+
 ## What it can do
 
 | Convert | To | Why you'd use it |
@@ -61,6 +75,10 @@ and security headers live in `public/_headers`.
 - More conversions (e.g. ODT, ODS, and other formats)
 
 ## Changelog
+
+### 2026-09-11
+- Added screenshots, specs, and browser-support info to the README.
+- Added a limits/specs strip to the landing page.
 
 ### 2026-09-10
 - README updated to reflect the converters that are now shipped (PDF → DOCX, EPUB → PDF,
