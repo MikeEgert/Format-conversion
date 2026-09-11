@@ -9,7 +9,13 @@ This project is open source (MIT). See [LICENSE](LICENSE).
 
 ## Screenshots
 
+### Landing page
+Hero, specs strip, and the interactive HEIC → JPG demo.
+
 ![Format Converter landing page](docs/screenshots/landing.png)
+
+### Conversion tool
+The converter with the format picker and drop zone.
 
 ![Format Converter tool — drop a file and convert](docs/screenshots/tool.png)
 
