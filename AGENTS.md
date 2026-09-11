@@ -76,8 +76,9 @@ handle sales tax). Built in 3 pieces, all done:
   abuse. Revisit: add a hard budget alert if we ever move off Cloudflare free tier or add
   a paid API (e.g. hosted PDF/AI service). Caps live in the dashboards, not in code.
 - Legal pages (`src/components/Legal.tsx`, routes `#/terms`, `#/privacy`, `#/legal-notice`)
-  exist and the Impressum is filled in (name, address, email). Content is a draft — have it
-  reviewed by a lawyer, especially the Impressum (§ 5 DDG / § 18 MStV).
+  exist and the Impressum fields are filled in (name, address, email) — but the content is
+  still a draft and has NOT been reviewed by a lawyer. Get it approved before launch,
+  especially the Impressum (§ 5 DDG / § 18 MStV).
 - Security follow-up (HEIC only): PNG/JPEG/WebP sniff dimensions from the file header
   *before* decoding (`src/converters/imageHeaders.ts` `readImageDimensions`), rejecting decode
   bombs up front. HEIC now reads dimensions from the decoded handle (`get_width`/`get_height`,
