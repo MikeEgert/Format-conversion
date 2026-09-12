@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { ConverterPage } from './components/ConverterPage'
+import { ConverterLanding } from './components/ConverterLanding'
 import { HowItWorksPage } from './components/HowItWorks'
 import { LandingPage } from './components/Landing'
 import { LegalNoticePage, OpenSourcePage, PrivacyPage, TermsPage } from './components/Legal'
+import { getLandingPageByPath } from './seo/landingPages'
 
 function App() {
   const [route, setRoute] = useState(() => window.location.hash)
@@ -26,6 +28,7 @@ function App() {
   const isPrivacy = route.startsWith('#/privacy')
   const isLegalNotice = route.startsWith('#/legal-notice')
   const isOpenSource = route.startsWith('#/open-source')
+  const landingPage = getLandingPageByPath(window.location.pathname)
 
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark'
@@ -95,6 +98,8 @@ function App() {
         <LegalNoticePage />
       ) : isOpenSource ? (
         <OpenSourcePage />
+      ) : landingPage && route === '' ? (
+        <ConverterLanding page={landingPage} />
       ) : (
         <LandingPage />
       )}

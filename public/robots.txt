@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://format-conversion.maidemikkegert.workers.dev/sitemap.xml
