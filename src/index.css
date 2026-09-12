@@ -2008,6 +2008,10 @@ a.hero-pill:hover {
   }
 }
 
+.landing-back {
+  align-self: flex-start;
+}
+
 .landing-section {
   display: flex;
   flex-direction: column;

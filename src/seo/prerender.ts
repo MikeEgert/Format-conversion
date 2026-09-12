@@ -180,6 +180,7 @@ export function buildLandingPageHtml({
   const body = [
     '<body>',
     '<div id="root">',
+    '<a class="btn btn-ghost landing-back" href="#/">&larr; Back</a>',
     heroMarkup(page),
     stepsMarkup(page),
     benefitsMarkup(page),

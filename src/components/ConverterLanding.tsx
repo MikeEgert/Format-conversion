@@ -40,6 +40,9 @@ export function ConverterLanding({ page }: Props) {
 
   return (
     <main className="main">
+      <a className="btn btn-ghost landing-back" href="#/">
+        &larr; Back
+      </a>
       <section className="landing-hero">
         <div className="hero-pills">
           <span className="hero-pill">100% free</span>
