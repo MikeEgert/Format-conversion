@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { converters, groupConvertersByCategory } from '../converters'
 import type { Converter } from '../converters'
 import { MAX_FILE_BYTES, MAX_IMAGE_DIMENSION } from '../converters/helpers'
+import { getLandingPage } from '../seo/landingPages'
 import { Showcase } from './Showcase'
 
 const STEPS = [
@@ -9,6 +10,22 @@ const STEPS = [
   { title: 'Drop your file', text: 'Drag and drop, or click to browse. Files never leave your device.' },
   { title: 'Download', text: 'Get your converted file instantly — saved only in your browser.' },
 ]
+
+function ConverterCardContent({ c }: { c: Converter }) {
+  return (
+    <>
+      <span className="converter-badges">
+        <span className="from">{c.fromLabel}</span>
+        <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span className="to">{c.toLabel}</span>
+      </span>
+      <span className="converter-name">{c.name}</span>
+      <span className="converter-desc">{c.description}</span>
+    </>
+  )
+}
 
 export function LandingPage() {
   const [detail, setDetail] = useState<Converter | null>(null)
@@ -69,24 +86,23 @@ export function LandingPage() {
           <div key={group.category} className="converter-group">
             <h3 className="converter-group-title">{group.category}</h3>
             <div className="converter-group-grid">
-              {group.converters.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  className="converter-card"
-                  onClick={() => setDetail(c)}
-                >
-                  <span className="converter-badges">
-                    <span className="from">{c.fromLabel}</span>
-                    <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span className="to">{c.toLabel}</span>
-                  </span>
-                  <span className="converter-name">{c.name}</span>
-                  <span className="converter-desc">{c.description}</span>
-                </button>
-              ))}
+              {group.converters.map((c) => {
+                const landing = getLandingPage(c.id)
+                return landing ? (
+                  <a key={c.id} className="converter-card" href={landing.path}>
+                    <ConverterCardContent c={c} />
+                  </a>
+                ) : (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className="converter-card"
+                    onClick={() => setDetail(c)}
+                  >
+                    <ConverterCardContent c={c} />
+                  </button>
+                )
+              })}
             </div>
           </div>
         ))}
