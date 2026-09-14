@@ -378,9 +378,14 @@ body {
   font-size: 15px;
   font-weight: 600;
   color: var(--accent-strong);
-  background: var(--accent-soft);
+  background: var(--surface);
   border-radius: 999px;
   padding: 8px 14px;
+}
+
+:root[data-theme='light'] .hero-pill {
+  background: #b4bfcd;
+  color: #273446;
 }
 
 a.hero-pill {
