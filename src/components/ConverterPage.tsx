@@ -206,6 +206,19 @@ export function ConverterPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [format, quality, maxDimension])
 
+  useEffect(() => {
+    const onHashChange = () => {
+      const match = window.location.hash.match(/[?&]converter=([^&]+)/)
+      if (match && converters.some((c) => c.id === match[1])) {
+        selectConverter(match[1])
+      }
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+    // selectConverter is intentionally read via closure; only converterId needs to stay fresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [converterId])
+
   async function handleDownloadAll() {
     const zip = await zipResults(results)
     downloadResult({ blob: zip, filename: 'converted-files.zip' })
