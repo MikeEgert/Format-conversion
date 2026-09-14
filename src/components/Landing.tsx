@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { converters, groupConvertersByCategory } from '../converters'
 import type { Converter } from '../converters'
 import { MAX_FILE_BYTES, MAX_IMAGE_DIMENSION } from '../converters/helpers'
+import { MAX_DOCX_UNCOMPRESSED_BYTES } from '../converters/docxToMarkdown'
 import { getLandingPage } from '../seo/landingPages'
 import { Showcase } from './Showcase'
 
@@ -66,49 +67,55 @@ export function LandingPage() {
         </div>
       </section>
 
-      <SpecsStrip />
-
       <OfferSection />
 
-      <section className="showcase-section">
-        <h2 className="section-title">See it in action</h2>
-        <p className="section-sub">HEIC photo in, JPG out — no upload, no account.</p>
-        <Showcase />
-      </section>
-
-      <section className="formats-section">
-        <h2 className="section-title">What you can do</h2>
-        <p className="section-sub">Pick a conversion — it all happens in your browser, nothing is uploaded.</p>
-      </section>
-
-      <section className="converters-groups" aria-label="What you can convert">
-        {groupConvertersByCategory(converters).map((group) => (
-          <div key={group.category} className="converter-group">
-            <h3 className="converter-group-title">{group.category}</h3>
-            <div className="converter-group-grid">
-              {group.converters.map((c) => {
-                const landing = getLandingPage(c.id)
-                return landing ? (
-                  <a key={c.id} className="converter-card" href={landing.path}>
-                    <ConverterCardContent c={c} />
-                  </a>
-                ) : (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className="converter-card"
-                    onClick={() => setDetail(c)}
-                  >
-                    <ConverterCardContent c={c} />
-                  </button>
-                )
-              })}
-            </div>
+      <section className="how" id="how">
+        <h2 className="section-title">How it works</h2>
+        <p className="section-sub">Three steps. No account, no uploads.</p>
+        <div className="how-showcase">
+          <div className="how-steps">
+            {STEPS.map((step, i) => (
+              <div className="how-step" key={step.title}>
+                <span className="how-step-num">{i + 1}</span>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </div>
+            ))}
           </div>
-        ))}
+          <Showcase />
+        </div>
       </section>
 
-      <HowItWorks />
+      <section className="formats-section" aria-label="What you can convert">
+        <h2 className="section-title">What you can convert</h2>
+        <p className="section-sub">Pick a conversion — it all happens in your browser, nothing is uploaded.</p>
+        <div className="converters-groups">
+          {groupConvertersByCategory(converters).map((group) => (
+            <div key={group.category} className="converter-group">
+              <h3 className="converter-group-title">{group.category}</h3>
+              <div className="converter-group-grid">
+                {group.converters.map((c) => {
+                  const landing = getLandingPage(c.id)
+                  return landing ? (
+                    <a key={c.id} className="converter-card" href={landing.path}>
+                      <ConverterCardContent c={c} />
+                    </a>
+                  ) : (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className="converter-card"
+                      onClick={() => setDetail(c)}
+                    >
+                      <ConverterCardContent c={c} />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {detail && (
         <div className="modal-backdrop" onClick={() => setDetail(null)}>
@@ -153,24 +160,6 @@ export function LandingPage() {
         </div>
       )}
     </main>
-  )
-}
-
-function HowItWorks() {
-  return (
-    <section className="how" id="how">
-      <h2 className="section-title">How it works</h2>
-      <p className="section-sub">Three steps. No account, no uploads.</p>
-      <div className="how-steps">
-        {STEPS.map((step, i) => (
-          <div className="how-step" key={step.title}>
-            <span className="how-step-num">{i + 1}</span>
-            <h3>{step.title}</h3>
-            <p>{step.text}</p>
-          </div>
-        ))}
-      </div>
-    </section>
   )
 }
 
@@ -223,25 +212,45 @@ function OfferSection() {
           </div>
         ))}
       </div>
+      <div className="specs-block">
+        <h3 className="specs-title">Good to know</h3>
+        <p className="specs-sub">
+          Honest limits — they keep conversions fast and stop a big or malicious file from
+          freezing your tab.
+        </p>
+        <div className="specs">
+          {SPECS.map((spec) => (
+            <div className="spec" key={spec.label}>
+              <span className="spec-value">{spec.value}</span>
+              <span className="spec-label">{spec.label}</span>
+              <span className="spec-detail">{spec.detail}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </section>
   )
 }
 
 const SPECS = [
-  { value: `${MAX_FILE_BYTES / (1024 * 1024)} MB`, label: 'max file size' },
-  { value: `${MAX_IMAGE_DIMENSION.toLocaleString()} px`, label: 'max image side' },
-  { value: 'All browsers', label: 'Chrome, Edge, Firefox, Safari' },
+  {
+    value: `${MAX_FILE_BYTES / (1024 * 1024)} MB`,
+    label: 'max file size',
+    detail: 'Kept so the tab stays responsive — larger files would exhaust the browser memory.',
+  },
+  {
+    value: `${MAX_IMAGE_DIMENSION.toLocaleString()} px`,
+    label: 'max image side',
+    detail: 'An anti-freeze guard: image dimensions are checked before any pixels are decoded.',
+  },
+  {
+    value: `${MAX_DOCX_UNCOMPRESSED_BYTES / (1024 * 1024)} MB`,
+    label: 'docs & e-books, uncompressed',
+    detail: 'DOCX and EPUB are also capped by total uncompressed size, stopping zip-bombs.',
+  },
+  {
+    value: 'All browsers',
+    label: 'Chrome, Edge, Firefox, Safari',
+    detail: 'No install needed. HEIC decoding uses WebAssembly, supported by all four.',
+  },
 ]
-
-function SpecsStrip() {
-  return (
-    <section className="specs" aria-label="Limits and requirements">
-      {SPECS.map((spec) => (
-        <div className="spec" key={spec.label}>
-          <span className="spec-value">{spec.value}</span>
-          <span className="spec-label">{spec.label}</span>
-        </div>
-      ))}
-    </section>
-  )
-}

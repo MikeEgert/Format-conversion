@@ -1,9 +1,71 @@
 import { useEffect, useState } from 'react'
+import { converters, groupConvertersByCategory } from './converters'
 import { ConverterPage } from './components/ConverterPage'
 import { HowItWorksPage } from './components/HowItWorks'
 import { LandingPage } from './components/Landing'
 import { LegalNoticePage, OpenSourcePage, PrivacyPage, TermsPage } from './components/Legal'
-import { getLandingPageByPath } from './seo/landingPages'
+import { getLandingPage, getLandingPageByPath } from './seo/landingPages'
+
+function ConvertersDropdown() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div
+      className={`nav-dropdown${open ? ' is-open' : ''}`}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+    >
+      <div
+        className="nav-dropdown-trigger"
+        tabIndex={0}
+        role="button"
+        aria-haspopup="true"
+        aria-expanded={open}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') setOpen(false)
+        }}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="4" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <rect x="13" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <rect x="4" y="13" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+          <rect x="13" y="13" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
+        </svg>
+        <span>Converters</span>
+        <svg className="caret" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+      <div className="nav-dropdown-menu" role="menu" aria-label="Converters">
+        {groupConvertersByCategory(converters).map((group) => (
+          <div className="nav-dropdown-group" key={group.category}>
+            <span className="nav-dropdown-group-title">{group.category}</span>
+            {group.converters.map((c) => {
+              const landing = getLandingPage(c.id)
+              return (
+                <a
+                  key={c.id}
+                  className="nav-dropdown-item"
+                  href={landing ? landing.path : `#/tool?converter=${c.id}`}
+                  role="menuitem"
+                  onClick={() => setOpen(false)}
+                >
+                  <span className="ndi-from">{c.fromLabel}</span>
+                  <svg className="ndi-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span className="ndi-to">{c.toLabel}</span>
+                </a>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 function App() {
   const [route, setRoute] = useState(() => window.location.hash)
@@ -51,9 +113,7 @@ function App() {
         </a>
         <div className="header-actions">
           <nav className="header-nav" aria-label="Primary">
-            <a className="nav-link" href="#/tool">
-              Convert
-            </a>
+            <ConvertersDropdown />
             <a className="nav-link" href="#/how-it-works">
               How it works
             </a>

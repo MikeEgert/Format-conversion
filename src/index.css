@@ -159,6 +159,160 @@ body {
   color: var(--accent-strong);
 }
 
+.nav-dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+.nav-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 16px;
+  font-weight: 550;
+  color: var(--text);
+  padding: 4px 2px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.nav-dropdown-trigger:hover,
+.nav-dropdown.is-open .nav-dropdown-trigger {
+  color: var(--accent-strong);
+}
+
+.nav-dropdown-trigger > svg {
+  width: 17px;
+  height: 17px;
+}
+
+.nav-dropdown-trigger .caret {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.nav-dropdown.is-open .nav-dropdown-trigger .caret {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  min-width: 260px;
+  max-width: min(320px, calc(100vw - 32px));
+  max-height: min(420px, 60vh);
+  overflow-y: auto;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.22);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(5px);
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+  z-index: 60;
+}
+
+.nav-dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+
+.nav-dropdown.is-open .nav-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.nav-dropdown-menu::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-dropdown-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-dropdown-group + .nav-dropdown-group {
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  padding-top: 6px;
+}
+
+.nav-dropdown-group-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 4px 10px 4px;
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--text);
+  text-decoration: none;
+  padding: 7px 10px;
+  border-radius: 8px;
+}
+
+.nav-dropdown-item:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.nav-dropdown-item .ndi-from,
+.nav-dropdown-item .ndi-to {
+  white-space: nowrap;
+}
+
+.nav-dropdown-item .ndi-from {
+  color: var(--text-muted);
+}
+
+.nav-dropdown-item:hover .ndi-from {
+  color: inherit;
+}
+
+.nav-dropdown-item .ndi-arrow {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  transition: transform 0.15s ease;
+}
+
+.nav-dropdown-item:hover .ndi-arrow {
+  color: var(--accent-strong);
+  transform: translateX(2px);
+}
+
+.nav-dropdown-item .ndi-to {
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .nav-dropdown-trigger {
+    font-size: 15px;
+  }
+}
+
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -270,7 +424,7 @@ a.hero-pill:hover {
 
 .specs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
 }
 
@@ -295,6 +449,33 @@ a.hero-pill:hover {
 .spec-label {
   font-size: 15px;
   color: var(--text-muted);
+}
+
+.spec-detail {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.specs-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.specs-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.specs-sub {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 15px;
 }
 
 .section-title {
@@ -335,6 +516,13 @@ a.hero-pill:hover {
 
 .how-steps.two {
   grid-template-columns: repeat(2, 1fr);
+}
+
+.how-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 8px;
 }
 
 .how-step-num {
@@ -1926,7 +2114,7 @@ a.hero-pill:hover {
   }
 
   .specs {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .header {
