@@ -19,19 +19,21 @@ export function QualityPicker({ value, onChange }: QualityPickerProps) {
   return (
     <div className="picker">
       <span className="picker-label">Quality</span>
-      <div className="picker-options" role="group" aria-label="Image quality">
-        {PRESETS.map((preset) => (
-          <button
-            key={preset.label}
-            type="button"
-            className={preset.value === value ? 'picker-option active' : 'picker-option'}
-            aria-pressed={preset.value === value}
-            onClick={() => onChange(preset.value)}
-          >
-            {preset.label}
-            <span className="picker-option-value">{Math.round(preset.value * 100)}%</span>
-          </button>
-        ))}
+      <div className="picker-select">
+        <select
+          value={value}
+          aria-label="Image quality"
+          onChange={(e) => onChange(Number(e.target.value))}
+        >
+          {PRESETS.map((preset) => (
+            <option key={preset.label} value={preset.value}>
+              {preset.label} · {Math.round(preset.value * 100)}%
+            </option>
+          ))}
+        </select>
+        <svg className="picker-chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </div>
     </div>
   )

@@ -634,10 +634,56 @@ a.hero-pill:hover {
   background: var(--accent);
 }
 
-.converters {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+.converters-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.converter-pill {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.converter-pill:hover {
+  border-color: var(--accent);
+}
+
+.converter-pill.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.converter-pill .from {
+  color: var(--text-muted);
+}
+
+.converter-pill.active .from {
+  color: var(--accent-strong);
+  opacity: 0.85;
+}
+
+.converter-pill .to {
+  color: var(--accent);
+}
+
+.converter-pill .arrow {
+  width: 13px;
+  height: 13px;
+  color: var(--text-muted);
 }
 
 .converters-groups {
@@ -767,57 +813,63 @@ a.hero-pill:hover {
   font-size: 16px;
 }
 
-.picker {
+.options {
   display: flex;
-  align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 26px;
+}
+
+.picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .picker-label {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-muted);
 }
 
-.picker-options {
+.picker-select {
+  position: relative;
   display: inline-flex;
-  gap: 8px;
 }
 
-.picker-option {
+.picker-select select {
   font: inherit;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 550;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 8px 14px;
+  padding: 8px 34px 8px 12px;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: border-color 0.15s, background 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
 }
 
-.picker-option:hover {
+.picker-select select:hover {
   border-color: var(--accent);
 }
 
-.picker-option.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+.picker-select select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
-.picker-option-value {
-  font-size: 14px;
+.picker-chevron {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
   color: var(--text-muted);
-}
-
-.picker-option.active .picker-option-value {
-  color: var(--accent-strong);
+  pointer-events: none;
 }
 
 .input-mode {
@@ -2157,15 +2209,15 @@ a.hero-pill:hover {
     -webkit-overflow-scrolling: touch;
     padding-bottom: 8px;
     scrollbar-width: none;
+    flex-wrap: nowrap;
   }
 
   .converters-select::-webkit-scrollbar {
     display: none;
   }
 
-  .converters-select .converter-card {
-    flex: 0 0 80%;
-    scroll-snap-align: start;
+  .converters-select .converter-pill {
+    flex: 0 0 auto;
   }
 }
 
@@ -2181,10 +2233,6 @@ a.hero-pill:hover {
 
   .hero-actions .btn {
     width: 100%;
-  }
-
-  .picker-option {
-    padding: 10px 16px;
   }
 
   .result-actions {

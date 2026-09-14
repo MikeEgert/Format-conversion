@@ -19,19 +19,21 @@ export function ResizePicker({ value, onChange }: ResizePickerProps) {
   return (
     <div className="picker">
       <span className="picker-label">Size</span>
-      <div className="picker-options" role="group" aria-label="Image size">
-        {PRESETS.map((preset) => (
-          <button
-            key={preset.label}
-            type="button"
-            className={preset.value === value ? 'picker-option active' : 'picker-option'}
-            aria-pressed={preset.value === value}
-            onClick={() => onChange(preset.value)}
-          >
-            {preset.label}
-            {preset.value > 0 && <span className="picker-option-value">{preset.value}px</span>}
-          </button>
-        ))}
+      <div className="picker-select">
+        <select
+          value={value}
+          aria-label="Image size"
+          onChange={(e) => onChange(Number(e.target.value))}
+        >
+          {PRESETS.map((preset) => (
+            <option key={preset.label} value={preset.value}>
+              {preset.value > 0 ? `${preset.label} · ${preset.value}px` : preset.label}
+            </option>
+          ))}
+        </select>
+        <svg className="picker-chevron" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </div>
     </div>
   )

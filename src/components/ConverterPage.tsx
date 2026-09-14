@@ -71,6 +71,8 @@ export function ConverterPage() {
   const showQuality =
     converter.supportsQuality && (!converter.formats || !formatOption || formatOption.lossy)
   const isImageEditor = Boolean(converter.formats || converter.supportsResize)
+  const showImageOptions =
+    isImageEditor && (status === 'idle' || (status === 'done' && results.length === 1))
   const pasteIsJson = converter.accept.includes('.json')
   const pasteValidation = useMemo(() => {
     if (!pasteText.trim()) return { kind: 'empty' as const }
@@ -211,28 +213,37 @@ export function ConverterPage() {
 
   return (
     <main className="main">
-      <section className="converters converters-select" aria-label="Choose a conversion">
+      <section className="converters-select" aria-label="Choose a conversion">
         {converters.map((c) => (
           <button
             key={c.id}
             type="button"
-            className={c.id === converterId ? 'converter-card active' : 'converter-card'}
+            className={c.id === converterId ? 'converter-pill active' : 'converter-pill'}
             onClick={() => selectConverter(c.id)}
+            title={c.name}
           >
-            <span className="converter-badges">
-              <span className="from">{c.fromLabel}</span>
-              <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className="to">{c.toLabel}</span>
-            </span>
-            <span className="converter-name">{c.name}</span>
-            <span className="converter-desc">{c.description}</span>
+            <span className="from">{c.fromLabel}</span>
+            <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span className="to">{c.toLabel}</span>
           </button>
         ))}
       </section>
 
       <section id="tool">
+        {showImageOptions && (
+          <div className="options">
+            {converter.formats && (
+              <FormatPicker formats={converter.formats} value={format} onChange={setFormat} />
+            )}
+            {converter.supportsResize && (
+              <ResizePicker value={maxDimension} onChange={setMaxDimension} />
+            )}
+            {showQuality && <QualityPicker value={quality} onChange={setQuality} />}
+          </div>
+        )}
+
         {status === 'working' ? (
           <div className="working">
             <span className="spinner" aria-hidden="true" />
@@ -278,22 +289,7 @@ export function ConverterPage() {
             </div>
           </div>
         ) : status === 'done' && results.length === 1 ? (
-          <>
-            {isImageEditor && (
-              <>
-                {converter.formats && (
-                  <FormatPicker formats={converter.formats} value={format} onChange={setFormat} />
-                )}
-                {converter.supportsResize && (
-                  <ResizePicker value={maxDimension} onChange={setMaxDimension} />
-                )}
-                {showQuality && (
-                  <QualityPicker value={quality} onChange={setQuality} />
-                )}
-              </>
-            )}
-            <ResultCard result={results[0]} onReset={reset} />
-          </>
+          <ResultCard result={results[0]} onReset={reset} />
         ) : status === 'done' ? (
           <Results results={results} onDownloadAll={handleDownloadAll} onReset={reset} />
         ) : status === 'error' ? (
