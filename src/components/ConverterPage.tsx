@@ -4,6 +4,7 @@ import type { ConversionResult, ImageFormat } from '../converters'
 import { mapWithConcurrency, zipResults } from '../lib/batch'
 import { assertFileSize, downloadResult, formatBytes } from '../converters/helpers'
 import { describeCsvError, describeJsonError } from '../converters/validateText'
+import { getLandingPageByPath } from '../seo/landingPages'
 import { DropZone } from './DropZone'
 import { FormatPicker } from './FormatPicker'
 import { QualityPicker } from './QualityPicker'
@@ -40,6 +41,10 @@ function getInitialConverterId(): string {
   const match = window.location.hash.match(/[?&]converter=([^&]+)/)
   if (match && converters.some((c) => c.id === match[1])) {
     return match[1]
+  }
+  const landing = getLandingPageByPath(window.location.pathname)
+  if (landing && converters.some((c) => c.id === landing.id)) {
+    return landing.id
   }
   return converters[0].id
 }

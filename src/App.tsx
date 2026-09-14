@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { ConverterPage } from './components/ConverterPage'
-import { ConverterLanding } from './components/ConverterLanding'
 import { HowItWorksPage } from './components/HowItWorks'
 import { LandingPage } from './components/Landing'
 import { LegalNoticePage, OpenSourcePage, PrivacyPage, TermsPage } from './components/Legal'
@@ -99,7 +98,7 @@ function App() {
       ) : isOpenSource ? (
         <OpenSourcePage />
       ) : landingPage && route === '' ? (
-        <ConverterLanding page={landingPage} />
+        <ConverterPage />
       ) : (
         <LandingPage />
       )}
