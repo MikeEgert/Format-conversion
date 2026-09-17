@@ -988,6 +988,7 @@ a.hero-pill:hover {
 
 .progress-bar {
   height: 100%;
+  width: var(--progress, 0%);
   background: var(--accent);
   border-radius: 999px;
   transition: width 0.2s ease;
@@ -1701,6 +1702,8 @@ a.hero-pill:hover {
   position: absolute;
   width: 28px;
   height: 28px;
+  left: var(--x, 50%);
+  top: var(--y, 50%);
   pointer-events: none;
   z-index: 10;
   transform: translate(-4px, -2px);
@@ -1718,6 +1721,8 @@ a.hero-pill:hover {
   position: absolute;
   width: 16px;
   height: 16px;
+  left: var(--x, 50%);
+  top: var(--y, 50%);
   border-radius: 50%;
   background: var(--accent);
   transform: translate(-50%, -50%);

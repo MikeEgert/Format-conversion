@@ -271,11 +271,13 @@ export function ConverterPage() {
               <div className="progress">
                 <div
                   className="progress-bar"
-                  style={{
-                    width:
+                  ref={(el) => {
+                    el?.style.setProperty(
+                      '--progress',
                       progress && progress.total > 0
                         ? `${(progress.done / progress.total) * 100}%`
                         : '0%',
+                    )
                   }}
                 />
               </div>

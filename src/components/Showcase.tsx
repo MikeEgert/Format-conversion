@@ -111,6 +111,13 @@ export function Showcase() {
   const [fading, setFading] = useState(false)
   const [epoch, setEpoch] = useState(0)
 
+  const setPosProps = (el: HTMLElement | null) => {
+    if (el) {
+      el.style.setProperty('--x', `${pos.x}%`)
+      el.style.setProperty('--y', `${pos.y}%`)
+    }
+  }
+
   useLayoutEffect(() => {
     if (!target) return
     const body = bodyRef.current
@@ -207,17 +214,10 @@ export function Showcase() {
           )}
 
           {clickKey > 0 && (
-            <span
-              className="showcase-ripple"
-              key={clickKey}
-              style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-            />
+            <span className="showcase-ripple" key={clickKey} ref={setPosProps} />
           )}
 
-          <span
-            className="showcase-cursor"
-            style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-          >
+          <span className="showcase-cursor" ref={setPosProps}>
             <svg viewBox="0 0 28 28" aria-hidden="true">
               <path
                 d="M4 2 L4 24 L10 18 L14 26 L17 24.5 L13 16.5 L21 16.5 Z"

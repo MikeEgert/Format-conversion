@@ -141,6 +141,11 @@ handle sales tax). Built in 3 pieces, all done:
   files or conversion activity. The site copy says "no cookies / no cross-site tracking", not
   "no analytics".
   The JS frame-busting guard in `src/main.tsx` is kept as redundant defense-in-depth.
+  Because the CSP's `style-src 'self'` has no `style-src-attr`, inline `style="..."`
+  attributes are BLOCKED in production (dev has no CSP, so breakage is prod-only).
+  Never use the JSX `style={{...}}` prop — dynamic styling goes through CSS custom
+  properties set imperatively via `el.style.setProperty()` (see the progress bar in
+  `ConverterPage.tsx` and the Showcase cursor), which CSP does not restrict.
 - Files over 100 MB (`MAX_FILE_BYTES`) are rejected up front (`assertFileSize`) to avoid
   freezing the tab on a huge/malicious input. Raise it only deliberately.
 - DOCX files are also capped by total uncompressed size (`MAX_DOCX_UNCOMPRESSED_BYTES`, 256 MB,
