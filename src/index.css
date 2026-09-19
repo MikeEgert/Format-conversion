@@ -443,25 +443,39 @@ a.hero-pill:hover {
   gap: 4px;
 }
 
-.specs {
+.specs-band {
+  margin-top: 6px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  gap: 28px 40px;
 }
 
 .spec {
-  padding: 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   align-items: flex-start;
 }
 
+.spec-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spec-icon {
+  width: 22px;
+  height: 22px;
+  color: #fff;
+  flex: 0 0 auto;
+}
+
+:root[data-theme='light'] .spec-icon {
+  color: var(--accent-strong);
+}
+
 .spec-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--accent-strong);
@@ -469,7 +483,8 @@ a.hero-pill:hover {
 
 .spec-label {
   font-size: 15px;
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--text);
 }
 
 .spec-detail {
@@ -477,26 +492,6 @@ a.hero-pill:hover {
   font-size: 14px;
   line-height: 1.45;
   color: var(--text-muted);
-}
-
-.specs-block {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.specs-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-}
-
-.specs-sub {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 15px;
 }
 
 .section-title {
@@ -2205,11 +2200,11 @@ a.hero-pill:hover {
     grid-template-columns: 1fr;
   }
 
-  .offer-grid {
+  .specs-band {
     grid-template-columns: 1fr;
   }
 
-  .specs {
+  .offer-grid {
     grid-template-columns: 1fr;
   }
 

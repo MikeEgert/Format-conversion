@@ -214,21 +214,17 @@ function OfferSection() {
           </div>
         ))}
       </div>
-      <div className="specs-block">
-        <h3 className="specs-title">Good to know</h3>
-        <p className="specs-sub">
-          Honest limits — they keep conversions fast and stop a big or malicious file from
-          freezing your tab.
-        </p>
-        <div className="specs">
-          {SPECS.map((spec) => (
-            <div className="spec" key={spec.label}>
+      <div className="specs-band">
+        {SPECS.map((spec) => (
+          <div className="spec" key={spec.label}>
+            <span className="spec-head">
               <span className="spec-value">{spec.value}</span>
-              <span className="spec-label">{spec.label}</span>
-              <span className="spec-detail">{spec.detail}</span>
-            </div>
-          ))}
-        </div>
+              {spec.icon}
+            </span>
+            <span className="spec-label">{spec.label}</span>
+            <span className="spec-detail">{spec.detail}</span>
+          </div>
+        ))}
       </div>
     </section>
   )
@@ -239,20 +235,47 @@ const SPECS = [
     value: `${MAX_FILE_BYTES / (1024 * 1024)} MB`,
     label: 'max file size',
     detail: 'Kept so the tab stays responsive — larger files would exhaust the browser memory.',
+    icon: (
+      <svg className="spec-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M7 3h7l5 5v13H7Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M14 3v5h5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M12 12v4m0 0 2-2m-2 2-2-2" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
   },
   {
     value: `${MAX_IMAGE_DIMENSION.toLocaleString()} px`,
     label: 'max image side',
     detail: 'An anti-freeze guard: image dimensions are checked before any pixels are decoded.',
+    icon: (
+      <svg className="spec-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <path d="m4 17 5-4 4 3 3-2 4 3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <circle cx="9" cy="10" r="1.6" fill="currentColor" />
+      </svg>
+    ),
   },
   {
     value: `${MAX_DOCX_UNCOMPRESSED_BYTES / (1024 * 1024)} MB`,
     label: 'docs & e-books, uncompressed',
     detail: 'DOCX and EPUB are also capped by total uncompressed size, stopping zip-bombs.',
+    icon: (
+      <svg className="spec-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M14 3v5h5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M8 13h8m-8 3h5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    ),
   },
   {
     value: 'All browsers',
     label: 'Chrome, Edge, Firefox, Safari',
     detail: 'No install needed. HEIC decoding uses WebAssembly, supported by all four.',
+    icon: (
+      <svg className="spec-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M3.5 9h17M3.5 15h17M12 3c2.5 2.4 3.8 5.6 3.8 9s-1.3 6.6-3.8 9c-2.5-2.4-3.8-5.6-3.8-9S9.5 5.4 12 3Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      </svg>
+    ),
   },
 ]
