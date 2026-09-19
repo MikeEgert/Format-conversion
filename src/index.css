@@ -1622,7 +1622,7 @@ a.hero-pill:hover {
   height: 465px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 4px;
   box-shadow: 0 16px 40px rgba(11, 30, 37, 0.1);
   overflow: hidden;
   display: flex;
@@ -1674,7 +1674,7 @@ a.hero-pill:hover {
   color: var(--text-muted);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 4px 10px;
   white-space: nowrap;
   overflow: hidden;
@@ -1774,7 +1774,7 @@ a.hero-pill:hover {
 }
 
 .showcase-brand img {
-  border-radius: 5px;
+  border-radius: 2px;
 }
 
 .showcase-hero-title {
@@ -1797,7 +1797,7 @@ a.hero-pill:hover {
   font-weight: 600;
   font-size: 16px;
   padding: 9px 18px;
-  border-radius: 9px;
+  border-radius: 3px;
   border: 1px solid transparent;
 }
 
@@ -1827,7 +1827,7 @@ a.hero-pill:hover {
   padding: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 3px;
   font-size: 14px;
   color: var(--text-muted);
 }
@@ -1852,7 +1852,7 @@ a.hero-pill:hover {
 
 .showcase-drop {
   border: 2px dashed var(--border);
-  border-radius: 12px;
+  border-radius: 3px;
   background: var(--surface);
   position: absolute;
   inset: 22px;
@@ -1882,7 +1882,7 @@ a.hero-pill:hover {
   margin-top: 10px;
   padding: 7px 12px;
   border: 1px solid var(--border);
-  border-radius: 9px;
+  border-radius: 3px;
   background: var(--surface-2);
   font-size: 15px;
   font-weight: 600;
@@ -1972,7 +1972,7 @@ a.hero-pill:hover {
   font-weight: 600;
   padding: 6px 9px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 3px;
   background: var(--surface);
   color: var(--text);
   white-space: nowrap;
@@ -2010,7 +2010,7 @@ a.hero-pill:hover {
   max-width: 320px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 3px;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
@@ -2046,7 +2046,7 @@ a.hero-pill:hover {
   width: 100%;
   padding: 9px 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 2px;
   background: none;
   font: inherit;
   font-size: 15px;
@@ -2086,7 +2086,7 @@ a.hero-pill:hover {
   font-size: 14px;
   font-weight: 600;
   padding: 8px 14px;
-  border-radius: 7px;
+  border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
@@ -2105,7 +2105,7 @@ a.hero-pill:hover {
   padding: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 3px;
 }
 
 .showcase-result-meta {
@@ -2131,7 +2131,7 @@ a.hero-pill:hover {
 }
 
 .showcase-result-preview {
-  border-radius: 8px;
+  border-radius: 2px;
   background: var(--surface-2);
   display: flex;
   justify-content: center;
@@ -2144,7 +2144,7 @@ a.hero-pill:hover {
   max-width: 100%;
   max-height: 150px;
   height: auto;
-  border-radius: 6px;
+  border-radius: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
