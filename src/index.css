@@ -678,9 +678,13 @@ a.hero-pill:hover {
 }
 
 .converter-pill.active {
-  border-color: var(--accent);
+  border-color: #fff;
   background: var(--accent-soft);
   color: var(--accent-strong);
+}
+
+:root[data-theme='light'] .converter-pill.active {
+  border-color: var(--accent);
 }
 
 .converter-pill .from {
