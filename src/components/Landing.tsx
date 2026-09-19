@@ -34,37 +34,40 @@ export function LandingPage() {
   return (
     <main className="main">
       <section className="landing-hero">
-        <div className="hero-pills">
-          <span className="hero-pill">100% free</span>
-          <span className="hero-pill">No signup</span>
-          <span className="hero-pill">No uploads</span>
-          <a
-            className="hero-pill"
-            href="https://github.com/MikeEgert/Format-conversion"
-            target="_blank"
-            rel="noreferrer"
-            title="Opens GitHub in a new tab"
-          >
-            100% open source <span aria-hidden="true">↗</span>
-          </a>
-        </div>
         <h1>Convert files in your browser. Privately.</h1>
-        <p className="hero-sub">
-          Images, HEIC photos, Word documents, e-books, and spreadsheets — converted right in
-          your browser. Nothing is uploaded, and nothing ever leaves your device.
-        </p>
-        <div className="hero-actions">
-          <a href="#/tool" className="btn btn-primary">
-            Start converting
-          </a>
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={() => document.getElementById('how')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            How it works
-          </button>
+        <div className="hero-copy">
+          <div className="hero-pills">
+            <span className="hero-pill">100% free</span>
+            <span className="hero-pill">No signup</span>
+            <span className="hero-pill">No uploads</span>
+            <a
+              className="hero-pill"
+              href="https://github.com/MikeEgert/Format-conversion"
+              target="_blank"
+              rel="noreferrer"
+              title="Opens GitHub in a new tab"
+            >
+              100% open source <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <p className="hero-sub">
+            Images, HEIC photos, Word documents, e-books, and spreadsheets — converted right in
+            your browser. Nothing is uploaded, and nothing ever leaves your device.
+          </p>
+          <div className="hero-actions">
+            <a href="#/tool" className="btn btn-primary">
+              Start converting
+            </a>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={() => document.getElementById('how')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              How it works
+            </button>
+          </div>
         </div>
+        <Showcase />
       </section>
 
       <OfferSection />
@@ -82,7 +85,6 @@ export function LandingPage() {
               </div>
             ))}
           </div>
-          <Showcase />
         </div>
       </section>
 
