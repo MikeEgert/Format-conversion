@@ -799,13 +799,18 @@ a.hero-pill:hover {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  min-height: 280px;
   padding: 52px 24px;
   background: var(--surface);
-  border: 2px dashed var(--border);
-  border-radius: 12px;
+  border: 0.01px solid #fff;
+  border-radius: 10px;
   cursor: pointer;
   text-align: center;
   transition: border-color 0.15s, background 0.15s;
+}
+
+:root[data-theme='light'] .dropzone {
+  border-color: var(--border);
 }
 
 .dropzone:hover,
@@ -838,6 +843,7 @@ a.hero-pill:hover {
   flex-wrap: wrap;
   align-items: center;
   gap: 10px 26px;
+  margin-bottom: 28px;
 }
 
 .picker {
