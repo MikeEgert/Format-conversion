@@ -3,7 +3,6 @@ import { converters, groupConvertersByCategory } from '../converters'
 import type { Converter } from '../converters'
 import { MAX_FILE_BYTES, MAX_IMAGE_DIMENSION } from '../converters/helpers'
 import { MAX_DOCX_UNCOMPRESSED_BYTES } from '../converters/docxToMarkdown'
-import { getLandingPage } from '../seo/landingPages'
 import { Showcase } from './Showcase'
 
 const STEPS = [
@@ -96,23 +95,16 @@ export function LandingPage() {
             <div key={group.category} className="converter-group">
               <h3 className="converter-group-title">{group.category}</h3>
               <div className="converter-group-grid">
-                {group.converters.map((c) => {
-                  const landing = getLandingPage(c.id)
-                  return landing ? (
-                    <a key={c.id} className="converter-card" href={landing.path}>
-                      <ConverterCardContent c={c} />
-                    </a>
-                  ) : (
-                    <button
-                      key={c.id}
-                      type="button"
-                      className="converter-card"
-                      onClick={() => setDetail(c)}
-                    >
-                      <ConverterCardContent c={c} />
-                    </button>
-                  )
-                })}
+                {group.converters.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className="converter-card"
+                    onClick={() => setDetail(c)}
+                  >
+                    <ConverterCardContent c={c} />
+                  </button>
+                ))}
               </div>
             </div>
           ))}
