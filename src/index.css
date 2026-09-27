@@ -515,6 +515,101 @@ a.hero-pill:hover {
   font-size: 16px;
 }
 
+.landing-how-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.landing-how-steps .how-step {
+  min-width: 0;
+  padding: 22px;
+  gap: 8px;
+  border-radius: 16px;
+}
+
+.how-example {
+  width: 100%;
+  min-height: 112px;
+  margin-bottom: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  font-size: 13px;
+}
+
+.how-format {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-weight: 700;
+}
+
+.how-format-result,
+.how-example-arrow {
+  color: var(--accent-strong);
+}
+
+.how-example-arrow {
+  font-size: 22px;
+}
+
+.how-file-drop {
+  width: 100%;
+  padding: 18px 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed var(--accent-strong);
+  border-radius: 8px;
+}
+
+.how-example svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: var(--accent-strong);
+}
+
+.how-example-3 {
+  background: var(--success-soft);
+}
+
+.how-file-ready {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.how-ready-check {
+  color: var(--success);
+  font-size: 22px;
+}
+
+.how-file-ready small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.how-file-ready svg {
+  color: var(--success);
+}
+
+.how-step-label {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 /* ---- What we offer ---- */
 
 .offer {

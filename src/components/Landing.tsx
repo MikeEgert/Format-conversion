@@ -4,9 +4,9 @@ import type { Converter } from '../converters'
 import { Showcase } from './Showcase'
 
 const STEPS = [
-  { title: 'Choose a format', text: 'Pick the conversion you need — image, HEIC, document, or data.' },
-  { title: 'Drop your file', text: 'Drag and drop, or click to browse. Files never leave your device.' },
-  { title: 'Download', text: 'Get your converted file instantly — saved only in your browser.' },
+  { title: 'Choose a format', text: 'Pick what you want to convert, like an iPhone photo to JPG.' },
+  { title: 'Drop your file', text: 'Drag in a file or browse your device. Conversion happens in your browser.' },
+  { title: 'Download', text: 'Save the converted file to your device. Your original stays untouched.' },
 ]
 
 function ConverterCardContent({ c }: { c: Converter }) {
@@ -73,15 +73,39 @@ export function LandingPage() {
         <h2 className="section-title">How it works</h2>
         <p className="section-sub">Three steps. No account, no uploads.</p>
         <div className="how-showcase">
-          <div className="how-steps">
+          <ol className="how-steps landing-how-steps">
             {STEPS.map((step, i) => (
-              <div className="how-step" key={step.title}>
-                <span className="how-step-num">{i + 1}</span>
+              <li className="how-step" key={step.title}>
+                <div className={`how-example how-example-${i + 1}`} aria-hidden="true">
+                  {i === 0 ? (
+                    <>
+                      <span className="how-format">HEIC</span>
+                      <span className="how-example-arrow">→</span>
+                      <span className="how-format how-format-result">JPG</span>
+                    </>
+                  ) : i === 1 ? (
+                    <div className="how-file-drop">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 3H6v18h12V7l-4-4Z M14 3v5h4 M9 13h6 M9 17h4" />
+                      </svg>
+                      <span>photo.heic</span>
+                    </div>
+                  ) : (
+                    <div className="how-file-ready">
+                      <span className="how-ready-check">✓</span>
+                      <span>photo.jpg<small>Ready to save</small></span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 3v12m-4-4 4 4 4-4M5 17v4h14v-4" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <span className="how-step-label">Step {i + 1}</span>
                 <h3>{step.title}</h3>
                 <p>{step.text}</p>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
