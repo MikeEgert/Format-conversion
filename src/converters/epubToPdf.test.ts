@@ -7,6 +7,7 @@ import {
   htmlToBlocks,
   parseEpub,
   resolveHref,
+  resolveImage,
   sanitizeForFont,
 } from './epubContent'
 import { DEFAULT_PAGE_CONFIG, layoutBlocks, type FontMetrics } from './epubLayout'
@@ -58,6 +59,45 @@ function minimalEpub(chapterHtml = '<h1>Chapter</h1><p>Hello world.</p>'): Uint8
 const monospaceMeasure: FontMetrics = {
   width: (text, size) => text.length * size * 0.5,
 }
+
+function pngBytes(width: number, height: number): Uint8Array<ArrayBuffer> {
+  const b = new Uint8Array(24)
+  b.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0)
+  b.set([0, 0, 0, 13], 8)
+  b.set([0x49, 0x48, 0x44, 0x52], 12)
+  b.set([(width >>> 24) & 0xff, (width >>> 16) & 0xff, (width >>> 8) & 0xff, width & 0xff], 16)
+  b.set([(height >>> 24) & 0xff, (height >>> 16) & 0xff, (height >>> 8) & 0xff, height & 0xff], 20)
+  return b
+}
+
+describe('resolveImage', () => {
+  it('resolves a normal PNG', () => {
+    const img = resolveImage(
+      { 'OEBPS/images/cover.png': pngBytes(800, 600) },
+      'OEBPS',
+      'images/cover.png',
+    )
+    expect(img).not.toBeNull()
+    expect(img).toMatchObject({ mime: 'image/png', width: 800, height: 600 })
+  })
+
+  it('returns null for a missing file', () => {
+    expect(resolveImage({}, 'OEBPS', 'images/missing.png')).toBeNull()
+  })
+
+  it('returns null for a non-image file type', () => {
+    expect(resolveImage({ 'OEBPS/img.gif': pngBytes(10, 10) }, 'OEBPS', 'img.gif')).toBeNull()
+  })
+
+  it('returns null for an image over the pixel cap to avoid decoding it', () => {
+    const img = resolveImage(
+      { 'OEBPS/images/big.png': pngBytes(10000, 10000) },
+      'OEBPS',
+      'images/big.png',
+    )
+    expect(img).toBeNull()
+  })
+})
 
 describe('resolveHref', () => {
   it('resolves relative to a base directory', () => {

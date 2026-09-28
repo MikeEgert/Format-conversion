@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { ConversionError } from './types'
 import {
   assertFileSize,
   assertImageDimensions,
@@ -9,6 +10,7 @@ import {
   isInAppBrowser,
   MAX_FILE_BYTES,
   MAX_IMAGE_DIMENSION,
+  MAX_IMAGE_PIXELS,
   replaceExtension,
   sanitizeFilename,
   scaledSize,
@@ -185,9 +187,10 @@ describe('assertFileSize', () => {
 })
 
 describe('assertImageDimensions', () => {
-  it('allows images at or under the dimension limit', () => {
-    expect(() => assertImageDimensions(MAX_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION)).not.toThrow()
+  it('allows images within both the dimension and pixel limits', () => {
+    expect(() => assertImageDimensions(MAX_IMAGE_DIMENSION, 1000)).not.toThrow()
     expect(() => assertImageDimensions(100, 100)).not.toThrow()
+    expect(() => assertImageDimensions(8000, 6250)).not.toThrow()
   })
 
   it('rejects images exceeding the dimension limit with a hint', () => {
@@ -199,5 +202,23 @@ describe('assertImageDimensions', () => {
       expect((err as Error).message).toContain('too large')
       expect((err as { hint?: string }).hint).toBeTruthy()
     }
+  })
+
+  it('rejects images with too many pixels even when each side is under the dimension limit', () => {
+    try {
+      assertImageDimensions(10000, 10000, 'huge.png')
+      expect.unreachable()
+    } catch (err) {
+      expect((err as Error).name).toBe('ConversionError')
+      expect((err as Error).message).toContain('megapixels')
+      expect((err as Error).message).toContain('too large')
+      expect((err as { hint?: string }).hint).toBeTruthy()
+    }
+  })
+
+  it('rejects an image just past the pixel cap but under the dimension cap', () => {
+    expect(() => assertImageDimensions(8000, 6250)).not.toThrow()
+    expect(() => assertImageDimensions(8000, 6251)).toThrowError(ConversionError)
+    expect(MAX_IMAGE_PIXELS).toBe(50_000_000)
   })
 })

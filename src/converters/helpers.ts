@@ -3,6 +3,7 @@ import type { ConversionResult } from './types'
 
 export const MAX_FILE_BYTES = 100 * 1024 * 1024
 export const MAX_IMAGE_DIMENSION = 16384
+export const MAX_IMAGE_PIXELS = 50_000_000
 
 export function assertFileSize(file: { size: number; name?: string }): void {
   if (file.size > MAX_FILE_BYTES) {
@@ -41,6 +42,12 @@ export function assertImageDimensions(width: number, height: number, name?: stri
     throw new ConversionError(
       `${name ?? 'The image'} is ${width} × ${height} px, which is too large to convert in the browser.`,
       `Resize it so its longest side is under ${MAX_IMAGE_DIMENSION} px, then try again.`,
+    )
+  }
+  if (width * height > MAX_IMAGE_PIXELS) {
+    throw new ConversionError(
+      `${name ?? 'The image'} is ${width} × ${height} px (${Math.round((width * height) / 1_000_000)} megapixels), which is too large to convert in the browser.`,
+      `Resize it so it has under ${MAX_IMAGE_PIXELS / 1_000_000} megapixels, then try again.`,
     )
   }
 }

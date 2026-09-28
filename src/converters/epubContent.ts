@@ -2,7 +2,7 @@ import { parseDocument } from 'htmlparser2'
 import * as DomUtils from 'domutils'
 import { isTag, isText, type AnyNode, type Element } from 'domhandler'
 import { unzipSync } from 'fflate'
-import { isZipFile } from './helpers'
+import { isZipFile, MAX_IMAGE_DIMENSION, MAX_IMAGE_PIXELS } from './helpers'
 import { readImageDimensions } from './imageHeaders'
 import { ConversionError } from './types'
 
@@ -525,6 +525,13 @@ export function resolveImage(
   const head = bytes.slice(0, 64 * 1024)
   const dims = readImageDimensions(head.buffer as ArrayBuffer)
   if (!dims) return null
+  if (
+    dims.width > MAX_IMAGE_DIMENSION ||
+    dims.height > MAX_IMAGE_DIMENSION ||
+    dims.width * dims.height > MAX_IMAGE_PIXELS
+  ) {
+    return null
+  }
 
   return { bytes, mime, width: dims.width, height: dims.height }
 }

@@ -47,4 +47,13 @@ describe('imageConvert.convert', () => {
     await expect(imageConvert.convert(file)).rejects.toThrowError(/too large/)
     expect(createImageBitmapMock).not.toHaveBeenCalled()
   })
+
+  it('rejects an oversized-pixel image from its header before decoding', async () => {
+    const createImageBitmapMock = vi.fn()
+    vi.stubGlobal('createImageBitmap', createImageBitmapMock)
+
+    const file = new File([pngHeader(10000, 10000)], 'huge.png')
+    await expect(imageConvert.convert(file)).rejects.toThrowError(/megapixels/)
+    expect(createImageBitmapMock).not.toHaveBeenCalled()
+  })
 })
