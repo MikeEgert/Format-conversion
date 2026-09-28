@@ -1,4 +1,5 @@
 import { createRateLimiter } from './rateLimit.js'
+import { createLicenseCache } from './licenseCache.js'
 
 const LS_ENDPOINT = 'https://api.lemonsqueezy.com/v1/licenses/validate'
 
@@ -19,6 +20,8 @@ const rateLimiter = createRateLimiter({
   windowMs: RATE_LIMIT_WINDOW_MS,
   max: RATE_LIMIT_MAX,
 })
+
+const licenseCache = createLicenseCache()
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin')
@@ -43,41 +46,6 @@ function respond(body, status = 200, headers = {}) {
     status,
     headers: { 'Content-Type': 'application/json', ...headers },
   })
-}
-
-async function cacheUrlFor(licenseKey) {
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(licenseKey),
-  )
-  const hex = [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-  return `https://license-cache.local/${hex}`
-}
-
-async function readCached(cacheUrl) {
-  try {
-    const cached = await caches.default.match(cacheUrl)
-    if (cached) return await cached.json()
-  } catch {
-    // fall through on cache failure
-  }
-  return null
-}
-
-async function writeCached(cacheUrl, body, ttlSeconds) {
-  try {
-    const response = new Response(JSON.stringify(body), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': `max-age=${ttlSeconds}`,
-      },
-    })
-    await caches.default.put(cacheUrl, response)
-  } catch {
-    // caching is best-effort
-  }
 }
 
 export default {
@@ -119,10 +87,9 @@ export default {
       return respond({ valid: false, error: 'License key is too long' }, 422, headers)
     }
 
-    const cacheUrl = await cacheUrlFor(licenseKey)
-    const cached = await readCached(cacheUrl)
+    const cached = await licenseCache.read(licenseKey)
     if (cached) {
-      return respond(cached, 200, headers)
+      return respond({ valid: cached.valid === true, status: cached.status ?? null }, 200, headers)
     }
 
     const upstream = await fetch(LS_ENDPOINT, {
@@ -160,8 +127,8 @@ export default {
       valid: data.valid === true,
       status: data.license_key?.status ?? null,
     }
-    await writeCached(
-      cacheUrl,
+    await licenseCache.write(
+      licenseKey,
       body,
       body.valid ? CACHE_TTL_VALID_SECONDS : CACHE_TTL_INVALID_SECONDS,
     )
