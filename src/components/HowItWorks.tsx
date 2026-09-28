@@ -96,8 +96,9 @@ export function HowItWorksPage() {
             <li>No cookies, no cross-site tracking, no advertising.</li>
             <li>We never receive, see, or store your files.</li>
             <li>
-              The only thing saved locally is a license-key flag in your browser&apos;s
-              localStorage &mdash; and it never leaves your device.
+              The only things saved locally are your theme preference and an optional
+              analytics opt-out flag in your browser&apos;s localStorage &mdash; and they
+              never leave your device.
             </li>
           </ul>
         </div>

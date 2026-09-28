@@ -25,7 +25,7 @@ function LegalLayout({
 
 export function TermsPage() {
   return (
-    <LegalLayout title="Terms &amp; Conditions" updated="22 August 2026">
+    <LegalLayout title="Terms &amp; Conditions" updated="28 September 2026">
       <h2>1. Service</h2>
       <p>
         FoldenLoom (&ldquo;the Service&rdquo;) is a web application that converts files
@@ -42,9 +42,9 @@ export function TermsPage() {
 
       <h2>3. Use of the Service</h2>
       <p>
-        Basic conversion is free for single files. Additional features (such as batch conversion
-        and ZIP download) may require a license key. A license key grants access to those features
-        and does not transfer any ownership of the Service or its software.
+        FoldenLoom is free to use. All conversions — including batch conversion and ZIP
+        downloads — are available at no cost and without an account. Using the Service does
+        not grant you any ownership of the Service or its software.
       </p>
 
       <h2>4. No warranty</h2>
