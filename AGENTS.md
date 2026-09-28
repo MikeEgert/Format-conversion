@@ -36,6 +36,10 @@ handle sales tax). Built in 3 pieces, all done:
   limiting rule in the dashboard rather than relying on it. Note: Lemon Squeezy
   returns HTTP 404 for an unknown key, so the worker maps LS 4xx responses to
   `200 {valid:false}` (invalid key) and only 5xx/network failures to a 502.
+  Valid/invalid results are cached in `caches.default` with a real expiry timestamp
+  stored in the cached body (`worker/src/licenseCache.js` `createLicenseCache`) —
+  the Cache API does not honor `Cache-Control` `max-age`, so TTLs are enforced
+  manually on read.
 - **Piece 2 (DONE)**: `src/pro/license.ts` `verifyLicenseKey()` calls the worker via
   `VITE_LICENSE_URL`, defaulting to
   `https://format-conversion-license.maidemikkegert.workers.dev` if unset (the URL is
@@ -150,7 +154,10 @@ handle sales tax). Built in 3 pieces, all done:
   freezing the tab on a huge/malicious input. Raise it only deliberately.
 - DOCX files are also capped by total uncompressed size (`MAX_DOCX_UNCOMPRESSED_BYTES`, 256 MB,
   read from the ZIP central directory without decompressing) to stop zip bombs. Images are
-  capped by pixel dimensions (`MAX_IMAGE_DIMENSION`) plus pre-decode header sniffing.
+  capped by pixel dimensions (`MAX_IMAGE_DIMENSION`, 16384) AND by total pixels
+  (`MAX_IMAGE_PIXELS`, 50 MP) via `assertImageDimensions`, plus pre-decode header sniffing
+  (`readImageDimensions`). The EPUB path applies the same caps in `resolveImage` and skips
+  oversized images instead of decoding them.
 - EPUB files are capped the same way (`MAX_EPUB_UNCOMPRESSED_BYTES`, 256 MB). EPUB→PDF embeds
   Noto Serif (Latin/Greek/Cyrillic) from `public/fonts/` (lazy-loaded via `@pdf-lib/fontkit`);
   if it can't load, it falls back to WinAnsi standard fonts with a character-normalization pass
