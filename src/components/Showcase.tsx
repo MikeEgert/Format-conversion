@@ -73,11 +73,12 @@ function centerOf(el: HTMLElement, body: HTMLElement): { x: number; y: number } 
 }
 
 export function Showcase() {
+  const frameRef = useRef<HTMLDivElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
   const heroBtnRef = useRef<HTMLSpanElement>(null)
   const heicCardRef = useRef<HTMLDivElement>(null)
   const dropZoneRef = useRef<HTMLDivElement>(null)
-  const fileDogRef = useRef<HTMLButtonElement>(null)
+  const fileDogRef = useRef<HTMLSpanElement>(null)
   const sizeMediumRef = useRef<HTMLSpanElement>(null)
   const qualityBalancedRef = useRef<HTMLSpanElement>(null)
   const downloadRef = useRef<HTMLSpanElement>(null)
@@ -110,6 +111,7 @@ export function Showcase() {
   const [downloaded, setDownloaded] = useState(() => prefersReducedMotion())
   const [fading, setFading] = useState(false)
   const [epoch, setEpoch] = useState(0)
+  const [inView, setInView] = useState(false)
 
   const setPosProps = (el: HTMLElement | null) => {
     if (el) {
@@ -127,6 +129,29 @@ export function Showcase() {
 
   useEffect(() => {
     if (prefersReducedMotion()) return
+    const frame = frameRef.current
+    if (!frame || !('IntersectionObserver' in window)) {
+      setInView(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setInView(entry.isIntersecting)
+      if (!entry.isIntersecting) {
+        setPhase('hero')
+        setTarget(null)
+        setSize('original')
+        setQuality('high')
+        setDownloaded(false)
+        setFading(false)
+      }
+    }, { threshold: 0.25 })
+    observer.observe(frame)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (prefersReducedMotion() || !inView) return
 
     let cancelled = false
     let timer = 0
@@ -171,11 +196,11 @@ export function Showcase() {
       cancelled = true
       window.clearTimeout(timer)
     }
-  }, [epoch])
+  }, [epoch, inView])
 
   return (
     <div className="showcase" aria-hidden="true">
-      <div className="showcase-frame">
+      <div ref={frameRef} className="showcase-frame">
         <div className="showcase-chrome">
           <span className="showcase-dots">
             <i />
@@ -293,7 +318,7 @@ function Drop({ dropZoneRef }: { dropZoneRef: { current: HTMLDivElement | null }
   )
 }
 
-function FileDialog({ fileDogRef }: { fileDogRef: { current: HTMLButtonElement | null } }) {
+function FileDialog({ fileDogRef }: { fileDogRef: { current: HTMLSpanElement | null } }) {
   return (
     <div className="showcase-dialog">
       <div className="showcase-dialog-window">
@@ -304,7 +329,7 @@ function FileDialog({ fileDogRef }: { fileDogRef: { current: HTMLButtonElement |
           Select a file
         </div>
         <div className="showcase-dialog-list">
-          <button className="showcase-file" type="button">
+          <span className="showcase-file">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
               <circle cx="9" cy="10" r="1.6" fill="currentColor" />
@@ -312,8 +337,8 @@ function FileDialog({ fileDogRef }: { fileDogRef: { current: HTMLButtonElement |
             </svg>
             IMG_2456.heic
             <span className="showcase-file-meta">2.1 MB</span>
-          </button>
-          <button className="showcase-file" type="button">
+          </span>
+          <span className="showcase-file">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
               <circle cx="9" cy="10" r="1.6" fill="currentColor" />
@@ -321,8 +346,8 @@ function FileDialog({ fileDogRef }: { fileDogRef: { current: HTMLButtonElement |
             </svg>
             cat.jpg
             <span className="showcase-file-meta">1.4 MB</span>
-          </button>
-          <button ref={fileDogRef} className="showcase-file selected" type="button">
+          </span>
+          <span ref={fileDogRef} className="showcase-file selected">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
               <circle cx="9" cy="10" r="1.6" fill="currentColor" />
@@ -330,8 +355,8 @@ function FileDialog({ fileDogRef }: { fileDogRef: { current: HTMLButtonElement |
             </svg>
             dog.heic
             <span className="showcase-file-meta">394 KB</span>
-          </button>
-          <button className="showcase-file" type="button">
+          </span>
+          <span className="showcase-file">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M7 3h7l5 5v13H7Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
               <path d="M14 3v5h5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
@@ -339,7 +364,7 @@ function FileDialog({ fileDogRef }: { fileDogRef: { current: HTMLButtonElement |
             </svg>
             notes.docx
             <span className="showcase-file-meta">18 KB</span>
-          </button>
+          </span>
         </div>
         <div className="showcase-dialog-actions">
           <span className="showcase-dialog-btn">Cancel</span>
