@@ -1,233 +1,184 @@
-import { useState } from 'react'
 import { converters, groupConvertersByCategory } from '../converters'
 import type { Converter } from '../converters'
 import { Showcase } from './Showcase'
 
-const STEPS = [
-  { title: 'Choose a format', text: 'Pick what you want to convert, like an iPhone photo to JPG.' },
-  { title: 'Drop your file', text: 'Drag in a file or browse your device. Conversion happens in your browser.' },
-  { title: 'Download', text: 'Save the converted file to your device. Your original stays untouched.' },
-]
+const featuredIds = ['heic-to-jpg', 'pdf-to-docx', 'image', 'csv-to-json']
+const featuredConverters = featuredIds
+  .map((id) => converters.find((converter) => converter.id === id))
+  .filter((converter): converter is Converter => Boolean(converter))
+const converterGroups = groupConvertersByCategory(converters)
 
-function ConverterCardContent({ c }: { c: Converter }) {
+function Arrow({ diagonal = false }: { diagonal?: boolean }) {
   return (
-    <>
-      <span className="converter-badges">
-        <span className="from">{c.fromLabel}</span>
-        <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        <span className="to">{c.toLabel}</span>
-      </span>
-      <span className="converter-name">{c.name}</span>
-      <span className="converter-desc">{c.description}</span>
-    </>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {diagonal ? <path d="M5 19 19 5M8 5h11v11" /> : <path d="M4 12h16m-6-6 6 6-6 6" />}
+    </svg>
+  )
+}
+
+function ConverterRow({ converter }: { converter: Converter }) {
+  const detail = converter.detail
+
+  return (
+    <li className="landing-converter">
+      <a className="landing-converter-link" href={`#/tool?converter=${converter.id}`}>
+        <span className="landing-format-pair">
+          {converter.fromLabel} <span aria-hidden="true">→</span> {converter.toLabel}
+        </span>
+        <span className="landing-converter-summary">
+          <strong>{converter.name}</strong>
+          <span>{converter.description}</span>
+        </span>
+        <Arrow />
+      </a>
+      {detail && (
+        <details className="landing-converter-detail">
+          <summary aria-label={`Details about ${converter.name}`}>Details</summary>
+          <div>
+            <p>{detail.about}</p>
+            {detail.useCases && detail.useCases.length > 0 && (
+              <ul>
+                {detail.useCases.map((useCase) => <li key={useCase}>{useCase}</li>)}
+              </ul>
+            )}
+            {detail.accepts && detail.accepts.length > 0 && (
+              <p className="landing-accepts">Accepts: {detail.accepts.join(', ')}</p>
+            )}
+          </div>
+        </details>
+      )}
+    </li>
+  )
+}
+
+function ConverterGroup({ group }: { group: (typeof converterGroups)[number] }) {
+  return (
+    <section className="landing-category" aria-labelledby={`landing-category-${group.category}`}>
+      <h3 id={`landing-category-${group.category}`}>
+        {group.category} <span>{String(group.converters.length).padStart(2, '0')}</span>
+      </h3>
+      <ul className="landing-converter-list">
+        {group.converters.map((converter) => (
+          <ConverterRow key={converter.id} converter={converter} />
+        ))}
+      </ul>
+    </section>
   )
 }
 
 export function LandingPage() {
-  const [detail, setDetail] = useState<Converter | null>(null)
-
   return (
-    <main className="main">
-      <section className="landing-hero">
-        <h1>Convert files in your browser. Privately.</h1>
-        <div className="hero-copy">
-          <div className="hero-pills">
-            <span className="hero-pill">100% free</span>
-            <span className="hero-pill">No signup</span>
-            <span className="hero-pill">No uploads</span>
-            <a
-              className="hero-pill"
-              href="https://github.com/MikeEgert/Format-conversion"
-              target="_blank"
-              rel="noreferrer"
-              title="Opens GitHub in a new tab"
-            >
-              100% open source <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-          <p className="hero-sub">
-            Images, HEIC photos, Word documents, e-books, and spreadsheets — converted right in
-            your browser. Nothing is uploaded, and nothing ever leaves your device.
+    <main className="main landing-page">
+      <section className="landing-intro" aria-labelledby="landing-title">
+        <div className="landing-intro-main">
+          <span className="landing-eyebrow">Private file conversion</span>
+          <h1 id="landing-title">Convert files without uploading them.</h1>
+          <p className="landing-lead">
+            Turn photos, documents, e-books, and data into the format you need. Your file is
+            processed in your browser and stays on your device.
           </p>
-          <div className="hero-actions">
-            <a href="#/tool" className="btn btn-primary">
-              Start converting
-            </a>
+          <div className="landing-actions">
             <button
               type="button"
-              className="btn btn-ghost"
-              onClick={() => document.getElementById('how')?.scrollIntoView({ behavior: 'smooth' })}
+              className="landing-primary-action"
+              onClick={() => document.getElementById('conversions')?.scrollIntoView({
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+              })}
             >
-              How it works
+              Choose a conversion <Arrow />
             </button>
+            <a href="#/how-it-works" className="landing-text-link">See how it works</a>
           </div>
+          <p className="landing-intro-note">Single files are free. No account, ads, or watermarks.</p>
+        </div>
+
+        <aside className="landing-quick" aria-labelledby="landing-quick-title">
+          <span className="landing-eyebrow">Start here</span>
+          <h2 id="landing-quick-title">Common conversions</h2>
+          <ul>
+            {featuredConverters.map((converter) => (
+              <li key={converter.id}>
+                <a href={`#/tool?converter=${converter.id}`}>
+                  <span>{converter.id === 'image' ? 'PNG, JPG & WebP' : converter.name}</span>
+                  <Arrow diagonal />
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p>Select a format, choose your file, then save the result.</p>
+        </aside>
+      </section>
+
+      <section className="landing-directory" id="conversions" aria-labelledby="conversions-title">
+        <div className="landing-section-heading">
+          <span className="landing-eyebrow">All tools / {converters.length} conversions</span>
+          <h2 id="conversions-title">Choose a conversion.</h2>
+          <p>Choose a conversion to open the tool. You can check its details before you begin.</p>
+        </div>
+        <div className="landing-categories">
+          <div className="landing-category-column">
+            {converterGroups.filter((group) => group.category !== 'Data').map((group) => (
+              <ConverterGroup key={group.category} group={group} />
+            ))}
+          </div>
+          <div className="landing-category-column">
+            {converterGroups.filter((group) => group.category === 'Data').map((group) => (
+              <ConverterGroup key={group.category} group={group} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-demo" aria-labelledby="landing-demo-title">
+        <div className="landing-demo-copy">
+          <span className="landing-eyebrow">See it in action</span>
+          <h2 id="landing-demo-title">A photo, converted from start to finish.</h2>
+          <p>
+            Watch an iPhone photo turn from HEIC into JPG. Choose the format, select the file,
+            adjust the result, and save it — all in the browser.
+          </p>
+          <a href="#/tool?converter=heic-to-jpg" className="landing-inline-link">
+            Try HEIC to JPG <Arrow diagonal />
+          </a>
         </div>
         <Showcase />
       </section>
 
-      <OfferSection />
-
-      <section className="how" id="how">
-        <h2 className="section-title">How it works</h2>
-        <p className="section-sub">Three steps. No account, no uploads.</p>
-        <div className="how-showcase">
-          <ol className="how-steps landing-how-steps">
-            {STEPS.map((step, i) => (
-              <li className="how-step" key={step.title}>
-                <div className={`how-example how-example-${i + 1}`} aria-hidden="true">
-                  {i === 0 ? (
-                    <>
-                      <span className="how-format">HEIC</span>
-                      <span className="how-example-arrow">→</span>
-                      <span className="how-format how-format-result">JPG</span>
-                    </>
-                  ) : i === 1 ? (
-                    <div className="how-file-drop">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M14 3H6v18h12V7l-4-4Z M14 3v5h4 M9 13h6 M9 17h4" />
-                      </svg>
-                      <span>photo.heic</span>
-                    </div>
-                  ) : (
-                    <div className="how-file-ready">
-                      <span className="how-ready-check">✓</span>
-                      <span>photo.jpg<small>Ready to save</small></span>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 3v12m-4-4 4 4 4-4M5 17v4h14v-4" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-                <span className="how-step-label">Step {i + 1}</span>
-                <h3>{step.title}</h3>
-                <p>{step.text}</p>
-              </li>
-            ))}
-          </ol>
+      <section className="landing-process" aria-labelledby="landing-process-title">
+        <div>
+          <span className="landing-eyebrow">Your file, your device</span>
+          <h2 id="landing-process-title">No upload step. No server copy.</h2>
+          <p>
+            Conversion happens inside your browser tab. We never receive or store your file, and
+            the downloaded result comes from your device's memory.
+          </p>
+          <a href="#/how-it-works" className="landing-inline-link">
+            Read how local conversion works <Arrow diagonal />
+          </a>
         </div>
+        <ol className="landing-process-steps">
+          <li><span>01</span><div><strong>Choose a format</strong><p>Pick the result you need.</p></div></li>
+          <li><span>02</span><div><strong>Select your file</strong><p>Your browser reads and converts it locally.</p></div></li>
+          <li><span>03</span><div><strong>Save the result</strong><p>Download the new file. Your original stays untouched.</p></div></li>
+        </ol>
       </section>
 
-      <section className="formats-section" aria-label="What you can convert">
-        <h2 className="section-title">What you can convert</h2>
-        <p className="section-sub">Pick a conversion — it all happens in your browser, nothing is uploaded.</p>
-        <div className="converters-groups">
-          {groupConvertersByCategory(converters).map((group) => (
-            <div key={group.category} className="converter-group">
-              <h3 className="converter-group-title">{group.category}</h3>
-              <div className="converter-group-grid">
-                {group.converters.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className="converter-card"
-                    onClick={() => setDetail(c)}
-                  >
-                    <ConverterCardContent c={c} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
+      <section className="landing-practical" aria-labelledby="landing-practical-title">
+        <div className="landing-section-heading">
+          <span className="landing-eyebrow">The practical details</span>
+          <h2 id="landing-practical-title">Good to know before you start.</h2>
         </div>
-      </section>
-
-      {detail && (
-        <div className="modal-backdrop" onClick={() => setDetail(null)}>
-          <div
-            className="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label={detail.name}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="converter-badges">
-              <span className="from">{detail.fromLabel}</span>
-              <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span className="to">{detail.toLabel}</span>
-            </span>
-            <h2>{detail.name}</h2>
-            <p className="modal-copy">{detail.detail?.about}</p>
-            {detail.detail?.useCases && detail.detail.useCases.length > 0 && (
-              <>
-                <h3 className="modal-heading">When to use it</h3>
-                <ul className="modal-list">
-                  {detail.detail.useCases.map((useCase) => (
-                    <li key={useCase}>{useCase}</li>
-                  ))}
-                </ul>
-              </>
-            )}
-            {detail.detail?.accepts && detail.detail.accepts.length > 0 && (
-              <p className="modal-hint">Accepts: {detail.detail.accepts.join(', ')}</p>
-            )}
-            <div className="modal-actions">
-              <button type="button" className="btn btn-ghost" onClick={() => setDetail(null)}>
-                Close
-              </button>
-              <a href={`#/tool?converter=${detail.id}`} className="btn btn-primary">
-                Start converting
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-    </main>
-  )
-}
-
-const shieldIcon = (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M12 3 5 6v5c0 4.4 3 8.4 7 9.5 4-1.1 7-5.1 7-9.5V6l-7-3Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
-const sparkleIcon = (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6l1.4 1.4m10 10 1.4 1.4M5.6 18.4 7 17m10-10 1.4-1.4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    <circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-  </svg>
-)
-
-const boltIcon = (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-  </svg>
-)
-
-const OFFERS = [
-  { title: 'Private by design', text: 'Your files never leave your device. Everything is converted right in your browser.', tint: 'tint-blue', icon: shieldIcon },
-  { title: 'Free forever', text: 'No signup, no ads, no watermarks. Convert single files for free.', tint: 'tint-green', icon: sparkleIcon },
-  { title: 'Instant results', text: 'No upload queue, no waiting for a server. Conversion runs at your machine’s speed.', tint: 'tint-violet', icon: boltIcon },
-]
-
-function OfferSection() {
-  return (
-    <section className="offer">
-      <div className="offer-head">
-        <span className="offer-eyebrow">Privacy-first file conversion</span>
-        <h2 className="section-title">What we offer</h2>
-        <p className="section-sub">
-          Convert images, documents, e-books, and spreadsheets — right in your browser, nothing
-          uploaded.
+        <dl className="landing-facts">
+          <div><dt>Free use</dt><dd>Convert one file at a time, with no signup, ads, or watermarks.</dd></div>
+          <div><dt>Pro</dt><dd>Batch conversion and ZIP downloads are available with a license key.</dd></div>
+          <div><dt>File limits</dt><dd>Up to 100 MB per file. Images are capped at 16,384 px per side and 50 megapixels.</dd></div>
+          <div><dt>Browsers</dt><dd>Current Chrome, Edge, Firefox, and Safari on desktop and mobile.</dd></div>
+        </dl>
+        <p className="landing-practical-note">
+          This project is <a href="https://github.com/MikeEgert/Format-conversion" target="_blank" rel="noreferrer">open source <span aria-hidden="true">↗</span></a>.
+          We use cookieless, aggregate page-view analytics; file contents and conversion activity are not tracked.
         </p>
-      </div>
-
-      <div className="offer-grid">
-        {OFFERS.map((o) => (
-          <article className="offer-card" key={o.title}>
-            <span className={`offer-icon-badge ${o.tint}`} aria-hidden="true">
-              {o.icon}
-            </span>
-            <h3>{o.title}</h3>
-            <p>{o.text}</p>
-          </article>
-        ))}
-      </div>
-    </section>
+      </section>
+    </main>
   )
 }
