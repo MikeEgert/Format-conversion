@@ -10,7 +10,7 @@ This project is open source (MIT). See [LICENSE](LICENSE).
 ## Screenshots
 
 ### Landing page
-Hero, specs strip, and the interactive HEIC → JPG demo.
+Direct conversion links, a HEIC → JPG animation, local-processing explanation, and practical limits.
 
 ![Format Converter landing page](docs/screenshots/landing.png)
 
