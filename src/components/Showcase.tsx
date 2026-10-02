@@ -11,6 +11,10 @@ type Phase =
   | 'menu'
   | 'reworking'
   | 'final'
+  | 'downloadApproach'
+  | 'downloadHover'
+  | 'downloadClick'
+  | 'saved'
 
 const STEPS: { phase: Phase; delay: number }[] = [
   { phase: 'lift', delay: 1000 },
@@ -22,7 +26,11 @@ const STEPS: { phase: Phase; delay: number }[] = [
   { phase: 'menu', delay: 850 },
   { phase: 'reworking', delay: 1150 },
   { phase: 'final', delay: 1450 },
-  { phase: 'finder', delay: 2600 },
+  { phase: 'downloadApproach', delay: 950 },
+  { phase: 'downloadHover', delay: 450 },
+  { phase: 'downloadClick', delay: 850 },
+  { phase: 'saved', delay: 350 },
+  { phase: 'finder', delay: 1900 },
 ]
 
 function prefersReducedMotion(): boolean {
@@ -46,9 +54,11 @@ export function Showcase() {
   const ghostRef = useRef<HTMLDivElement>(null)
   const qualityRef = useRef<HTMLSpanElement>(null)
   const balancedRef = useRef<HTMLSpanElement>(null)
+  const previewRef = useRef<HTMLImageElement>(null)
+  const downloadRef = useRef<HTMLSpanElement>(null)
   const pointerRef = useRef<HTMLDivElement>(null)
   const [phase, setPhase] = useState<Phase>(() =>
-    prefersReducedMotion() ? 'final' : 'finder',
+    prefersReducedMotion() ? 'saved' : 'finder',
   )
   const [inView, setInView] = useState(false)
 
@@ -105,10 +115,16 @@ export function Showcase() {
   }, [phase])
 
   useLayoutEffect(() => {
-    if (phase !== 'settings' && phase !== 'menu') return
+    if (phase !== 'settings' && phase !== 'menu' && phase !== 'downloadApproach' && phase !== 'downloadHover' && phase !== 'downloadClick') return
 
     const updatePosition = () => {
-      const target = phase === 'settings' ? qualityRef.current : balancedRef.current
+      const target = phase === 'settings'
+        ? qualityRef.current
+        : phase === 'menu'
+          ? balancedRef.current
+          : phase === 'downloadApproach'
+            ? previewRef.current
+            : downloadRef.current
       const body = bodyRef.current
       const pointer = pointerRef.current
       if (!target || !body || !pointer) return
@@ -126,7 +142,9 @@ export function Showcase() {
   const dragging = phase === 'lift' || phase === 'drag' || phase === 'hover'
   const overDrop = phase === 'hover'
   const showResult = phase === 'done' || phase === 'settings' || phase === 'menu' || phase === 'final'
+    || phase === 'downloadApproach' || phase === 'downloadHover' || phase === 'downloadClick' || phase === 'saved'
   const balancedQuality = phase === 'reworking' || phase === 'final'
+    || phase === 'downloadApproach' || phase === 'downloadHover' || phase === 'downloadClick' || phase === 'saved'
 
   return (
     <div className="showcase" aria-hidden="true">
@@ -187,10 +205,16 @@ export function Showcase() {
               ) : showResult ? (
                 <div className="showcase-result">
                   <div className="showcase-result-head">
-                    <div><strong>dog.webp</strong><span>800 × 450 · Ready to download</span></div>
-                    <span className="showcase-download">Download</span>
+                    <div><strong>dog.webp</strong><span>800 × 450 · {phase === 'saved' ? 'Saved to your device' : 'Ready to download'}</span></div>
+                    <span
+                      ref={downloadRef}
+                      className={phase === 'saved' ? 'showcase-download is-saved' : phase === 'downloadClick' ? 'showcase-download is-pressed' : 'showcase-download'}
+                    >
+                      {phase === 'saved' ? 'Saved' : 'Download'}
+                      {phase === 'downloadClick' && <span className="showcase-download-ripple" />}
+                    </span>
                   </div>
-                  <img src="/demo-dog.jpg" alt="" width="800" height="450" />
+                  <img ref={previewRef} src="/demo-dog.jpg" alt="" width="800" height="450" />
                 </div>
               ) : (
                 <div ref={dropRef} className={overDrop ? 'showcase-drop is-over' : 'showcase-drop'}>
@@ -274,7 +298,7 @@ export function Showcase() {
             </div>
           )}
 
-          {(phase === 'settings' || phase === 'menu') && (
+          {(phase === 'settings' || phase === 'menu' || phase === 'downloadApproach' || phase === 'downloadHover' || phase === 'downloadClick') && (
             <div ref={pointerRef} className="showcase-settings-pointer">
               <svg viewBox="0 0 28 28" aria-hidden="true">
                 <path d="M4 2 L4 24 L10 18 L14 26 L17 24.5 L13 16.5 L21 16.5 Z" fill="#fff" stroke="#000" strokeWidth="1.5" strokeLinejoin="round" />

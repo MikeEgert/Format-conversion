@@ -2608,12 +2608,38 @@ a.hero-pill:hover {
 }
 
 .showcase-download {
+  position: relative;
   padding: 6px 8px;
   background: var(--accent);
   border-radius: 4px;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.showcase-download.is-pressed {
+  transform: scale(0.94);
+}
+
+.showcase-download.is-saved {
+  background: #168a48;
+}
+
+.showcase-download-ripple {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: showcase-download-click 0.45s ease-out forwards;
+}
+
+@keyframes showcase-download-click {
+  from { opacity: 0.55; transform: translate(-50%, -50%) scale(0.4); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(3.2); }
 }
 
 .showcase-result > img {
@@ -2707,6 +2733,11 @@ a.hero-pill:hover {
 
   .showcase-progress > span {
     animation: none;
+  }
+
+  .showcase-download-ripple {
+    animation: none;
+    opacity: 0;
   }
 }
 
