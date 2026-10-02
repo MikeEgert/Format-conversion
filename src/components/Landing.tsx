@@ -54,9 +54,13 @@ function ConverterRow({ converter }: { converter: Converter }) {
 function ConverterGroup({ group }: { group: (typeof converterGroups)[number] }) {
   return (
     <section className="landing-category" aria-labelledby={`landing-category-${group.category}`}>
-      <h3 id={`landing-category-${group.category}`}>
-        {group.category} <span>{String(group.converters.length).padStart(2, '0')}</span>
-      </h3>
+      <div className="landing-category-heading">
+        <span className="landing-category-label">File type</span>
+        <h3 id={`landing-category-${group.category}`}>{group.category}</h3>
+        <span className="landing-category-count">
+          {group.converters.length} {group.converters.length === 1 ? 'conversion' : 'conversions'}
+        </span>
+      </div>
       <ul className="landing-converter-list">
         {group.converters.map((converter) => (
           <ConverterRow key={converter.id} converter={converter} />
@@ -116,16 +120,9 @@ export function LandingPage() {
           <p>Choose a conversion to open the tool. You can check its details before you begin.</p>
         </div>
         <div className="landing-categories">
-          <div className="landing-category-column">
-            {converterGroups.filter((group) => group.category !== 'Data').map((group) => (
-              <ConverterGroup key={group.category} group={group} />
-            ))}
-          </div>
-          <div className="landing-category-column">
-            {converterGroups.filter((group) => group.category === 'Data').map((group) => (
-              <ConverterGroup key={group.category} group={group} />
-            ))}
-          </div>
+          {converterGroups.map((group) => (
+            <ConverterGroup key={group.category} group={group} />
+          ))}
         </div>
       </section>
 
