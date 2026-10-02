@@ -93,7 +93,7 @@ export function LandingPage() {
             </button>
             <a href="#/how-it-works" className="landing-text-link">See how it works</a>
           </div>
-          <p className="landing-intro-note">Single files are free. No account, ads, or watermarks.</p>
+          <p className="landing-intro-note">File conversion is free, including batches. No account, ads, or watermarks.</p>
         </div>
 
         <aside className="landing-quick" aria-labelledby="landing-quick-title">
@@ -129,13 +129,13 @@ export function LandingPage() {
       <section className="landing-demo" aria-labelledby="landing-demo-title">
         <div className="landing-demo-copy">
           <span className="landing-eyebrow">See it in action</span>
-          <h2 id="landing-demo-title">A photo, converted from start to finish.</h2>
+          <h2 id="landing-demo-title">See a conversion from start to finish.</h2>
           <p>
-            Watch an iPhone photo turn from HEIC into JPG. Choose the format, select the file,
-            adjust the result, and save it — all in the browser.
+            Choose a conversion, drag in a file, adjust the output settings, and download the
+            result. It all happens in your browser.
           </p>
-          <a href="#/tool?converter=heic-to-jpg" className="landing-inline-link">
-            Try HEIC to JPG <Arrow diagonal />
+          <a href="#/tool" className="landing-inline-link">
+            Try the converter <Arrow diagonal />
           </a>
         </div>
         <Showcase />
@@ -166,8 +166,8 @@ export function LandingPage() {
           <h2 id="landing-practical-title">Good to know before you start.</h2>
         </div>
         <dl className="landing-facts">
-          <div><dt>Free use</dt><dd>Convert one file at a time, with no signup, ads, or watermarks.</dd></div>
-          <div><dt>Pro</dt><dd>Batch conversion and ZIP downloads are available with a license key.</dd></div>
+          <div><dt>Free use</dt><dd>Convert single files or batches, with no signup, ads, or watermarks.</dd></div>
+          <div><dt>Downloads</dt><dd>Download each result separately or save multiple results as a ZIP.</dd></div>
           <div><dt>File limits</dt><dd>Up to 100 MB per file. Images are capped at 16,384 px per side and 50 megapixels.</dd></div>
           <div><dt>Browsers</dt><dd>Current Chrome, Edge, Firefox, and Safari on desktop and mobile.</dd></div>
         </dl>
