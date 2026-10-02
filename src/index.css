@@ -1858,6 +1858,7 @@ a.hero-pill:hover {
 .legal {
   max-width: 720px;
   margin: 0 auto;
+  padding: 48px 0;
   width: 100%;
 }
 
@@ -3424,6 +3425,10 @@ a.hero-pill:hover {
 @media (max-width: 680px) {
   .page:has(.landing-page, .legal, .converter-page) {
     padding: 20px 20px 40px;
+  }
+
+  .legal {
+    padding: 32px 0;
   }
 
   .landing-intro {

@@ -21,9 +21,6 @@ export function HowItWorksPage() {
   return (
     <main className="main legal">
       <div className="legal-header">
-        <a className="btn btn-ghost" href="#/">
-          &larr; Back
-        </a>
         <h1>How it works &mdash; and why it&apos;s private</h1>
         <p className="legal-updated">
           Everything runs inside your browser tab. There is no upload step and no server-side
@@ -198,11 +195,6 @@ export function HowItWorksPage() {
           <li>Always check the converted output before relying on it.</li>
         </ul>
 
-        <div className="modal-actions">
-          <a href="#/tool" className="btn btn-primary">
-            Start converting
-          </a>
-        </div>
       </div>
     </main>
   )

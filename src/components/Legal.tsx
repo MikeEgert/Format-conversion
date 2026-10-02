@@ -12,9 +12,6 @@ function LegalLayout({
   return (
     <main className="main legal">
       <div className="legal-header">
-        <a className="btn btn-ghost" href="#/">
-          &larr; Back
-        </a>
         <h1>{title}</h1>
         <p className="legal-updated">Last updated: {updated}</p>
       </div>
