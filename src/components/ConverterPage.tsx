@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { converters, ConversionError } from '../converters'
+import { converters, ConversionError, groupConvertersByCategory } from '../converters'
 import type { ConversionResult, ImageFormat } from '../converters'
 import { mapWithConcurrency, zipResults } from '../lib/batch'
 import { assertFileSize, downloadResult, formatBytes } from '../converters/helpers'
@@ -36,6 +36,7 @@ interface FailedFile {
 }
 
 type Outcome = { ok: true; result: ConversionResult } | ({ ok: false } & FailedFile)
+const converterGroups = groupConvertersByCategory(converters)
 
 function getInitialConverterId(): string {
   const match = window.location.hash.match(/[?&]converter=([^&]+)/)
@@ -225,38 +226,74 @@ export function ConverterPage() {
   }
 
   return (
-    <main className="main">
-      <section className="converters-select" aria-label="Choose a conversion">
-        {converters.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            className={c.id === converterId ? 'converter-pill active' : 'converter-pill'}
-            onClick={() => selectConverter(c.id)}
-            title={c.name}
+    <main className="main converter-page">
+      <div className="converter-workspace">
+        <aside className="converter-types" aria-labelledby="converter-types-title">
+          <span className="tool-panel-eyebrow">Conversion type</span>
+          <h2 id="converter-types-title">Choose a format</h2>
+          <select
+            className="converter-type-select"
+            aria-label="Choose a conversion"
+            value={converterId}
+            onChange={(e) => selectConverter(e.target.value)}
           >
-            <span className="from">{c.fromLabel}</span>
-            <svg className="arrow" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span className="to">{c.toLabel}</span>
-          </button>
-        ))}
-      </section>
-
-      <section id="tool">
-        {showImageOptions && (
-          <div className="options">
-            {converter.formats && (
-              <FormatPicker formats={converter.formats} value={format} onChange={setFormat} />
-            )}
-            {converter.supportsResize && (
-              <ResizePicker value={maxDimension} onChange={setMaxDimension} />
-            )}
-            {showQuality && <QualityPicker value={quality} onChange={setQuality} />}
+            {converterGroups.map((group) => (
+              <optgroup key={group.category} label={group.category}>
+                {group.converters.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <div className="converter-type-groups">
+            {converterGroups.map((group) => (
+              <div className="converter-type-group" key={group.category}>
+                <h3>{group.category}</h3>
+                {group.converters.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className={c.id === converterId ? 'converter-type-button active' : 'converter-type-button'}
+                    onClick={() => selectConverter(c.id)}
+                    aria-pressed={c.id === converterId}
+                  >
+                    <strong>{c.name}</strong>
+                    <span>{c.fromLabel} → {c.toLabel}</span>
+                  </button>
+                ))}
+              </div>
+            ))}
           </div>
-        )}
+        </aside>
 
+        <aside className="converter-settings" aria-labelledby="converter-settings-title">
+          <span className="tool-panel-eyebrow">Output settings</span>
+          <h2 id="converter-settings-title">Adjust output</h2>
+          {showImageOptions ? (
+            <div className="options">
+              {converter.formats ? (
+                <FormatPicker formats={converter.formats} value={format} onChange={setFormat} />
+              ) : (
+                <div className="setting-static">
+                  <span>Convert to</span>
+                  <strong>{converter.toLabel}</strong>
+                </div>
+              )}
+              {converter.supportsResize && (
+                <ResizePicker value={maxDimension} onChange={setMaxDimension} />
+              )}
+              {showQuality && <QualityPicker value={quality} onChange={setQuality} />}
+            </div>
+          ) : (
+            <div className="setting-static">
+              <span>Convert to</span>
+              <strong>{converter.toLabel}</strong>
+            </div>
+          )}
+          <p className="tool-panel-note">Your files stay on your device.</p>
+        </aside>
+
+        <section id="tool" className="converter-stage" aria-label="Convert a file">
         {status === 'working' ? (
           <div className="working">
             <span className="spinner" aria-hidden="true" />
@@ -415,7 +452,8 @@ export function ConverterPage() {
             in your browser.
           </p>
         )}
-      </section>
+        </section>
+      </div>
     </main>
   )
 }

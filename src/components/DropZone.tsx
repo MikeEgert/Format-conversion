@@ -56,12 +56,14 @@ export function DropZone({ accept, disabled, onFiles }: DropZoneProps) {
           e.target.value = ''
         }}
       />
-      <svg className="dropzone-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 16V4m0 0L8 8m4-4 4 4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      <p className="dropzone-title">Drop files here</p>
-      <p className="dropzone-hint">or click to browse — select more than one to batch convert</p>
+      <span className="dropzone-action">
+        <svg className="dropzone-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 16V4m0 0L8 8m4-4 4 4" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span className="dropzone-title">Select a file</span>
+      </span>
+      <p className="dropzone-hint">or drag files here</p>
     </div>
   )
 }
