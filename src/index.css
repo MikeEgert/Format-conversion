@@ -1109,10 +1109,10 @@ a.hero-pill:hover {
   gap: 18px;
   min-height: 280px;
   padding: 52px 24px;
-  background: #fff;
-  border: 2px solid #d7d7d0;
+  background: var(--surface);
+  border: 2px solid var(--border);
   border-radius: 8px;
-  color: #1e2a25;
+  color: var(--text);
   cursor: pointer;
   text-align: center;
   transition: border-color 0.15s, background 0.15s;
@@ -1121,7 +1121,7 @@ a.hero-pill:hover {
 .dropzone:hover,
 .dropzone.dragging {
   border-color: var(--accent);
-  background: #fbf8ef;
+  background: var(--accent-soft);
 }
 
 .dropzone-action {
@@ -1130,15 +1130,15 @@ a.hero-pill:hover {
   justify-content: center;
   gap: 12px;
   padding: 14px 22px;
-  background: #d8b777;
+  background: var(--accent);
   border-radius: 999px;
-  color: #1e2a25;
-  box-shadow: 0 4px 16px rgba(30, 42, 37, 0.13);
+  color: var(--bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
 }
 
 .dropzone:hover .dropzone-action,
 .dropzone.dragging .dropzone-action {
-  background: #ebca8b;
+  background: var(--accent-strong);
 }
 
 .dropzone-icon {
@@ -1155,7 +1155,7 @@ a.hero-pill:hover {
 
 .dropzone-hint {
   margin: 0;
-  color: #53645b;
+  color: var(--text-muted);
   font-size: 16px;
 }
 
@@ -2128,16 +2128,16 @@ a.hero-pill:hover {
   gap: 10px;
   width: 100%;
   height: 100%;
-  background: #fff;
-  border: 2px solid #d7d7d0;
+  background: var(--surface);
+  border: 2px solid var(--border);
   border-radius: 6px;
-  color: #1e2a25;
+  color: var(--text);
   text-align: center;
   transition: border-color 0.2s, background 0.2s;
 }
 
 .showcase-drop.is-over {
-  background: #fbf8ef;
+  background: var(--accent-soft);
   border-color: var(--accent);
 }
 
@@ -2146,9 +2146,10 @@ a.hero-pill:hover {
   align-items: center;
   gap: 6px;
   padding: 8px 10px;
-  background: #d8b777;
+  background: var(--accent);
   border-radius: 999px;
-  box-shadow: 0 4px 12px rgba(30, 42, 37, 0.13);
+  color: var(--bg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
@@ -2160,7 +2161,7 @@ a.hero-pill:hover {
 }
 
 .showcase-drop-hint {
-  color: #53645b;
+  color: var(--text-muted);
   font-size: 11px;
 }
 
