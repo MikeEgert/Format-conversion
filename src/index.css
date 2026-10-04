@@ -3421,6 +3421,20 @@ a.hero-pill:hover {
   --accent-soft: rgba(129, 96, 31, 0.1);
 }
 
+:root:has(.pdf-tools-page) {
+  --bg: #191a25;
+  --surface: #24232d;
+  --surface-2: #302f3a;
+  --border: #44434f;
+}
+
+:root[data-theme='light']:has(.pdf-tools-page) {
+  --bg: #f1ece8;
+  --surface: #fffaf7;
+  --surface-2: #e9dfd8;
+  --border: #d2c5bc;
+}
+
 .page:has(.landing-page, .legal, .converter-page) {
   max-width: 1160px;
   gap: 0;
