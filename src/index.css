@@ -721,22 +721,64 @@ a.hero-pill:hover {
   }
 }
 
-.pdf-tools-stage-heading h1 {
-  margin: 8px 0 4px;
-  font-size: 24px;
-  font-weight: 650;
-  letter-spacing: -0.035em;
-  line-height: 1.2;
-}
-
-.pdf-tools-stage-heading p {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
 .pdf-tools-page .converter-stage .dropzone {
   min-height: 380px;
+}
+
+.pdf-tools-page {
+  --pdf-workspace-bg: #191a25;
+  --pdf-panel-bg: #24232d;
+}
+
+.page-pdf-tools {
+  background: #191a25;
+}
+
+:root[data-theme='light'] .pdf-tools-page {
+  --pdf-workspace-bg: #f1ece8;
+  --pdf-panel-bg: #fffaf7;
+}
+
+:root[data-theme='light'] .page-pdf-tools {
+  background: #f1ece8;
+}
+
+.page-pdf-tools .footer {
+  margin: auto -24px -56px;
+  padding: 24px 24px 56px;
+  background: #12131c;
+}
+
+:root[data-theme='light'] .page-pdf-tools .footer {
+  background: #e8e0da;
+}
+
+.pdf-tools-page .converter-workspace {
+  background: var(--pdf-workspace-bg);
+}
+
+.pdf-tools-page .converter-settings,
+.pdf-tools-page .converter-types,
+.pdf-tools-page .converter-stage .dropzone {
+  background: var(--pdf-panel-bg);
+}
+
+.pdf-tools-page .pdf-tools-file,
+.pdf-tools-page .pdf-page-row {
+  background: var(--pdf-panel-bg);
+}
+
+.pdf-tools-page .working,
+.pdf-tools-page .result {
+  background: var(--pdf-panel-bg);
+}
+
+.pdf-tools-page .pdf-tools-field input {
+  background: var(--pdf-workspace-bg);
+}
+
+.pdf-tools-page .setting-static strong {
+  background: var(--pdf-workspace-bg);
 }
 
 .pdf-tools-selection {
@@ -3275,6 +3317,15 @@ a.hero-pill:hover {
 @media (max-width: 480px) {
   .page {
     padding: 20px 16px 40px;
+  }
+
+  .page-pdf-tools .footer {
+    margin-right: -16px;
+    margin-bottom: -40px;
+    margin-left: -16px;
+    padding-right: 16px;
+    padding-bottom: 40px;
+    padding-left: 16px;
   }
 
   .hero-actions {

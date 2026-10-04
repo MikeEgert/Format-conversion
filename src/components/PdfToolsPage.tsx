@@ -172,18 +172,6 @@ export function PdfToolsPage() {
         </aside>
 
         <section className="converter-stage pdf-tools-stage" aria-label={activeMode.name}>
-          <div className="pdf-tools-stage-heading">
-            <span className="tool-panel-eyebrow">Local PDF workspace</span>
-            <h1>{activeMode.name}</h1>
-            <p>
-              {mode === 'merge'
-                ? 'Combine PDF files in your browser.'
-                : mode === 'extract'
-                  ? 'Save only the pages you need.'
-                  : 'Reorder, rotate, or remove pages.'}
-            </p>
-          </div>
-
           {files.length === 0 ? (
             <DropZone accept=".pdf,application/pdf" onFiles={handleFiles} />
           ) : (
