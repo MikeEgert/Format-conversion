@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PDFDocument } from 'pdf-lib'
-import { extractPdfPages, organizePdf, parsePageRanges } from './pdfTools'
+import { extractPdfPages, mergePdfs, organizePdf, parsePageRanges } from './pdfTools'
 
 async function createPdf(pageCount: number): Promise<ArrayBuffer> {
   const document = await PDFDocument.create()
@@ -22,6 +22,11 @@ describe('parsePageRanges', () => {
 })
 
 describe('PDF page operations', () => {
+  it('merges multiple PDFs into one document in input order', async () => {
+    const output = await PDFDocument.load(await mergePdfs([await createPdf(2), await createPdf(3)]))
+    expect(output.getPageCount()).toBe(5)
+  })
+
   it('extracts pages in the requested order', async () => {
     const output = await PDFDocument.load(await extractPdfPages(await createPdf(3), [3, 1]))
     expect(output.getPageCount()).toBe(2)

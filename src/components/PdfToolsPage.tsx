@@ -227,7 +227,6 @@ export function PdfToolsPage() {
               </button>
             </div>
           )}
-          <p className="note">No upload, no account, and no watermark.</p>
         </section>
       </div>
     </main>
