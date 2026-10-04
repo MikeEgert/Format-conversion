@@ -753,6 +753,21 @@ a.hero-pill:hover {
   background: #e8e0da;
 }
 
+.page:has(.landing-page) .footer {
+  margin: auto -32px -48px;
+  padding: 24px 32px 48px;
+  background: #0d1c16;
+  color: #e5eee8;
+}
+
+.page:has(.landing-page) .footer-links a {
+  color: #9bb0a4;
+}
+
+.page:has(.landing-page) .footer-links a:hover {
+  color: #fff;
+}
+
 .pdf-tools-page .converter-workspace {
   background: var(--pdf-workspace-bg);
 }
@@ -3320,6 +3335,15 @@ a.hero-pill:hover {
   }
 
   .page-pdf-tools .footer {
+    margin-right: -16px;
+    margin-bottom: -40px;
+    margin-left: -16px;
+    padding-right: 16px;
+    padding-bottom: 40px;
+    padding-left: 16px;
+  }
+
+  .page:has(.landing-page) .footer {
     margin-right: -16px;
     margin-bottom: -40px;
     margin-left: -16px;
