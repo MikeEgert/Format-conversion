@@ -1,5 +1,13 @@
 import { converters } from './index'
 import type { ConversionOptions, ConversionResult, ImageFormatOption } from './types'
+export {
+  extractPdfPages,
+  getPdfPageCount,
+  mergePdfs,
+  organizePdf,
+  parsePageRanges,
+} from '../pdf/pdfTools'
+export type { PdfPageOperation } from '../pdf/pdfTools'
 
 export { setFontBaseUrl } from './fontConfig'
 

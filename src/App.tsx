@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { converters, groupConvertersByCategory } from './converters'
 import { ConverterPage } from './components/ConverterPage'
+import { PdfToolsPage } from './components/PdfToolsPage'
 import { HowItWorksPage } from './components/HowItWorks'
 import { LandingPage } from './components/Landing'
 import { LegalNoticePage, OpenSourcePage, PrivacyPage, TermsPage } from './components/Legal'
@@ -84,6 +85,7 @@ function App() {
   }, [route])
 
   const isTool = route.startsWith('#/tool')
+  const isPdfTools = route.startsWith('#/pdf-tools')
   const isHowItWorks = route.startsWith('#/how-it-works')
   const isTerms = route.startsWith('#/terms')
   const isPrivacy = route.startsWith('#/privacy')
@@ -117,6 +119,9 @@ function App() {
             <a className="nav-link" href="#/how-it-works">
               How it works
             </a>
+            <a className="nav-link" href="#/pdf-tools">
+              PDF tools
+            </a>
           </nav>
           <button
             className="theme-toggle"
@@ -147,6 +152,8 @@ function App() {
 
       {isTool ? (
         <ConverterPage />
+      ) : isPdfTools ? (
+        <PdfToolsPage />
       ) : isHowItWorks ? (
         <HowItWorksPage />
       ) : isTerms ? (

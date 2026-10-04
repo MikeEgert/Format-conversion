@@ -126,6 +126,25 @@ export function LandingPage() {
         </div>
       </section>
 
+      <section className="landing-pdf-feature" aria-labelledby="landing-pdf-title">
+        <div>
+          <span className="landing-eyebrow">A different kind of PDF tool</span>
+          <h2 id="landing-pdf-title">Merge and organize PDFs without uploading them.</h2>
+          <p>
+            Combine documents, extract page ranges, rotate pages, or remove pages directly in your
+            browser. No account, watermark, or server copy.
+          </p>
+          <a href="#/pdf-tools" className="landing-inline-link">
+            Open PDF tools <Arrow diagonal />
+          </a>
+        </div>
+        <ul className="landing-pdf-feature-list">
+          <li><strong>Merge</strong><span>Combine multiple PDFs into one file.</span></li>
+          <li><strong>Extract</strong><span>Keep only the pages you need.</span></li>
+          <li><strong>Organize</strong><span>Reorder, rotate, and remove pages.</span></li>
+        </ul>
+      </section>
+
       <section className="landing-demo" aria-labelledby="landing-demo-title">
         <div className="landing-demo-copy">
           <span className="landing-eyebrow">See it in action</span>

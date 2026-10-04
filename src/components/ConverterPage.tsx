@@ -291,6 +291,9 @@ export function ConverterPage() {
             </div>
           )}
           <p className="tool-panel-note">Your files stay on your device.</p>
+          <a className="converter-pdf-link" href="#/pdf-tools">
+            Need page tools? Merge, extract, and organize PDFs locally →
+          </a>
         </aside>
 
         <section id="tool" className="converter-stage" aria-label="Convert a file">
