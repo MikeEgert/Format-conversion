@@ -2197,7 +2197,10 @@ a.hero-pill:hover {
 
 .how-header {
   max-width: 760px;
+  align-items: center;
+  margin-inline: auto;
   gap: 10px;
+  text-align: center;
 }
 
 .how-eyebrow,
