@@ -26,6 +26,15 @@ function ConvertersDropdown() {
         aria-expanded={open}
         onKeyDown={(e) => {
           if (e.key === 'Escape') setOpen(false)
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            window.location.hash = '#/tool'
+            setOpen(false)
+          }
+        }}
+        onClick={() => {
+          window.location.hash = '#/tool'
+          setOpen(false)
         }}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
