@@ -2198,7 +2198,7 @@ a.hero-pill:hover {
 .how-header {
   max-width: 760px;
   align-items: center;
-  margin-inline: auto;
+  margin: 0 auto 24px;
   gap: 10px;
   text-align: center;
 }
@@ -2234,7 +2234,7 @@ a.hero-pill:hover {
 
 .how-toc {
   position: sticky;
-  top: 24px;
+  top: calc(50vh - 110px);
   display: flex;
   flex-direction: column;
   gap: 4px;
