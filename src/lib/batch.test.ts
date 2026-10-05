@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { mapWithConcurrency } from './batch'
+import { strFromU8, unzipSync } from 'fflate'
+import { mapWithConcurrency, zipResults } from './batch'
 
 describe('mapWithConcurrency', () => {
   it('runs all items in order', async () => {
@@ -62,5 +63,27 @@ describe('mapWithConcurrency', () => {
     expect(results[0]).toBe(10)
     expect(results[1]).toBeUndefined()
     expect(results[2]).toBeUndefined()
+  })
+})
+
+describe('zipResults', () => {
+  it('keeps every file when a generated name matches another original name', async () => {
+    const names = ['a.csv', 'a.csv', 'a (2).csv']
+    const results = names.map((filename, index) => ({
+      filename,
+      blob: new Blob([String(index + 1)]),
+    }))
+
+    const zip = await zipResults(results)
+    const files = unzipSync(new Uint8Array(await zip.arrayBuffer()))
+    const contents = Object.fromEntries(
+      Object.entries(files).map(([name, bytes]) => [name, strFromU8(bytes)]),
+    )
+
+    expect(contents).toEqual({
+      'a.csv': '1',
+      'a (3).csv': '2',
+      'a (2).csv': '3',
+    })
   })
 })

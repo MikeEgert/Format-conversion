@@ -29,21 +29,24 @@ export async function mapWithConcurrency<T, R>(
 
 export async function zipResults(results: ConversionResult[]): Promise<Blob> {
   const entries: Record<string, Uint8Array> = {}
-  const seen = new Map<string, number>()
+  const originalNames = new Set(results.map((result) => result.filename))
+  const usedNames = new Set<string>()
 
   for (const result of results) {
     const original = result.filename
-    const count = (seen.get(original) ?? 0) + 1
-    seen.set(original, count)
-
     let name = original
-    if (count > 1) {
+    if (usedNames.has(name)) {
       const dot = original.lastIndexOf('.')
       const base = dot > 0 ? original.slice(0, dot) : original
       const ext = dot > 0 ? original.slice(dot) : ''
-      name = `${base} (${count})${ext}`
+      let count = 2
+      do {
+        name = `${base} (${count})${ext}`
+        count += 1
+      } while (usedNames.has(name) || originalNames.has(name))
     }
 
+    usedNames.add(name)
     entries[name] = new Uint8Array(await result.blob.arrayBuffer())
   }
 
