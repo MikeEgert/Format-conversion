@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { converters, ConversionError, groupConvertersByCategory } from '../converters'
+import { converters, groupConvertersByCategory } from '../converters'
 import type { ConversionResult, ImageFormat } from '../converters'
 import { mapWithConcurrency, zipResults } from '../lib/batch'
 import { assertFileSize, downloadResult, formatBytes } from '../converters/helpers'
 import { describeCsvError, describeJsonError } from '../converters/validateText'
 import { getLandingPageByPath } from '../seo/landingPages'
+import { describeConversionFailure } from './conversionFailure'
 import { DropZone } from './DropZone'
 import { FormatPicker } from './FormatPicker'
 import { QualityPicker } from './QualityPicker'
@@ -59,6 +60,7 @@ export function ConverterPage() {
   const [fileStatuses, setFileStatuses] = useState<FileStatus[]>([])
   const [error, setError] = useState<string | null>(null)
   const [errorHint, setErrorHint] = useState<string | null>(null)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const [quality, setQuality] = useState(0.9)
@@ -92,6 +94,7 @@ export function ConverterPage() {
     setFileStatuses([])
     setError(null)
     setErrorHint(null)
+    setDownloadError(null)
     setStatus('idle')
     setProgress(null)
   }
@@ -106,6 +109,7 @@ export function ConverterPage() {
     setFileStatuses([])
     setError(null)
     setErrorHint(null)
+    setDownloadError(null)
   }
 
   function selectConverter(id: string) {
@@ -138,6 +142,7 @@ export function ConverterPage() {
     setFileStatuses(selected.map(() => 'pending'))
     setError(null)
     setErrorHint(null)
+    setDownloadError(null)
     setStatus('working')
     setProgress({ done: 0, total: selected.length })
 
@@ -166,15 +171,7 @@ export function ConverterPage() {
             next[i] = 'failed'
             return next
           })
-          return {
-            ok: false,
-            name: file.name,
-            message:
-              err instanceof Error && err.message
-                ? err.message
-                : 'Could not convert this file.',
-            hint: err instanceof ConversionError ? err.hint : undefined,
-          }
+          return { ok: false, name: file.name, ...describeConversionFailure(err) }
         }
       },
       (done, total) => setProgress({ done, total }),
@@ -185,6 +182,7 @@ export function ConverterPage() {
 
     const converted = outcomes.filter((o): o is Extract<Outcome, { ok: true }> => o.ok)
     const failures = outcomes.filter((o): o is Extract<Outcome, { ok: false }> => !o.ok)
+    setFailed(failures)
 
     if (converted.length === 0) {
       setStatus('error')
@@ -194,7 +192,6 @@ export function ConverterPage() {
     }
 
     setResults(converted.map((o) => o.result))
-    setFailed(failures)
     setStatus('done')
   }
 
@@ -221,8 +218,13 @@ export function ConverterPage() {
   }, [converterId])
 
   async function handleDownloadAll() {
-    const zip = await zipResults(results)
-    downloadResult({ blob: zip, filename: 'converted-files.zip' })
+    setDownloadError(null)
+    try {
+      const zip = await zipResults(results)
+      downloadResult({ blob: zip, filename: 'converted-files.zip' })
+    } catch {
+      setDownloadError('Could not prepare the ZIP download.')
+    }
   }
 
   return (
@@ -356,8 +358,8 @@ export function ConverterPage() {
                 </>
               )}
             </p>
-            <p className="error-detail">{error}</p>
-            {errorHint && <p className="error-hint">{errorHint}</p>}
+            {files.length === 1 && <p className="error-detail">{error}</p>}
+            {files.length === 1 && errorHint && <p className="error-hint">{errorHint}</p>}
             <button type="button" className="btn btn-ghost" onClick={reset}>
               Try again
             </button>
@@ -432,14 +434,21 @@ export function ConverterPage() {
           </>
         )}
 
-        {status === 'done' && failed.length > 0 && (
+        {status === 'done' && downloadError && (
+          <div className="error" role="alert">
+            <p>{downloadError}</p>
+            <p className="error-hint">Try again or download each file individually.</p>
+          </div>
+        )}
+
+        {(status === 'done' || (status === 'error' && files.length > 1)) && failed.length > 0 && (
           <div className="failures">
             <p className="failures-title">
               {failed.length} file{failed.length > 1 ? 's' : ''} couldn&apos;t be converted:
             </p>
             <ul className="failures-list">
-              {failed.map((f) => (
-                <li key={f.name} className="failures-item">
+              {failed.map((f, index) => (
+                <li key={`${index}-${f.name}`} className="failures-item">
                   <strong className="failures-name">{f.name}</strong>
                   <span className="failures-reason">{f.message}</span>
                   {f.hint && <span className="failures-hint">{f.hint}</span>}
