@@ -12,6 +12,7 @@ export interface ConversionResult {
   blob: Blob
   filename: string
   sourceSize?: number
+  durationMs?: number
 }
 
 export type ConverterCategory = 'Images' | 'Documents' | 'E-books' | 'Data'

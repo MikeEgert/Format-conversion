@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { downloadResult, formatBytes } from '../converters/helpers'
+import { downloadResult, formatBytes, formatDuration } from '../converters/helpers'
 import type { ConversionResult } from '../converters/types'
 import { SizeSavings } from './SizeSavings'
 
@@ -106,6 +106,9 @@ export function ResultCard({ result, onReset }: ResultCardProps) {
               formatBytes(result.blob.size)
             )}
           </span>
+          {result.durationMs != null && (
+            <span className="result-time">Converted in {formatDuration(result.durationMs)}</span>
+          )}
         </div>
         <div className="result-actions">
           <button type="button" className="btn btn-ghost" onClick={onReset}>

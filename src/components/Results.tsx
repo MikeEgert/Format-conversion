@@ -1,4 +1,4 @@
-import { downloadResult, formatBytes } from '../converters/helpers'
+import { downloadResult, formatBytes, formatDuration } from '../converters/helpers'
 import type { ConversionResult } from '../converters/types'
 import { SizeSavings } from './SizeSavings'
 
@@ -30,8 +30,8 @@ export function Results({ results, onDownloadAll, onReset }: ResultsProps) {
       </div>
 
       <ul className="results-list">
-        {results.map((result) => (
-          <li key={result.filename} className="results-item">
+        {results.map((result, index) => (
+          <li key={`${result.filename}-${index}`} className="results-item">
             <div className="result-file">
               <span className="result-name">{result.filename}</span>
               <span className="result-size">
@@ -45,6 +45,11 @@ export function Results({ results, onDownloadAll, onReset }: ResultsProps) {
                   formatBytes(result.blob.size)
                 )}
               </span>
+              {result.durationMs != null && (
+                <span className="result-time">
+                  Converted in {formatDuration(result.durationMs)}
+                </span>
+              )}
             </div>
             <button
               type="button"

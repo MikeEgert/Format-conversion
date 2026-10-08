@@ -4,6 +4,7 @@ import {
   assertFileSize,
   assertImageDimensions,
   formatBytes,
+  formatDuration,
   formatSizeSavings,
   isHeicFile,
   isZipFile,
@@ -62,6 +63,30 @@ describe('formatBytes', () => {
     expect(formatBytes(1023)).toBe('1023 B')
     expect(formatBytes(1024)).toBe('1.0 KB')
     expect(formatBytes(1048576)).toBe('1.0 MB')
+  })
+})
+
+describe('formatDuration', () => {
+  it('shows sub-second durations in milliseconds', () => {
+    expect(formatDuration(0)).toBe('0 ms')
+    expect(formatDuration(42)).toBe('42 ms')
+    expect(formatDuration(999)).toBe('999 ms')
+  })
+
+  it('shows seconds with one decimal', () => {
+    expect(formatDuration(1000)).toBe('1.0 s')
+    expect(formatDuration(1234)).toBe('1.2 s')
+    expect(formatDuration(59_900)).toBe('59.9 s')
+  })
+
+  it('shows minutes for long conversions', () => {
+    expect(formatDuration(60_000)).toBe('1m 0s')
+    expect(formatDuration(75_000)).toBe('1m 15s')
+  })
+
+  it('handles invalid input', () => {
+    expect(formatDuration(-1)).toBe('—')
+    expect(formatDuration(Number.NaN)).toBe('—')
   })
 })
 
