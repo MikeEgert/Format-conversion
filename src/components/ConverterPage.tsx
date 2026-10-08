@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { converters, groupConvertersByCategory } from '../converters'
 import type { ConversionResult, ImageFormat } from '../converters'
 import { mapWithConcurrency, zipResults } from '../lib/batch'
@@ -63,6 +63,7 @@ export function ConverterPage() {
   const [downloadError, setDownloadError] = useState<string | null>(null)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const stageRef = useRef<HTMLElement>(null)
   const [quality, setQuality] = useState(0.9)
   const [format, setFormat] = useState<ImageFormat>('jpg')
   const [maxDimension, setMaxDimension] = useState(0)
@@ -157,8 +158,10 @@ export function ConverterPage() {
         })
         try {
           assertFileSize(file)
+          const startedAt = performance.now()
           const result = await converter.convert(file, { quality, format, maxDimension })
           result.sourceSize = file.size
+          result.durationMs = performance.now() - startedAt
           setFileStatuses((prev) => {
             const next = [...prev]
             next[i] = 'done'
@@ -217,6 +220,12 @@ export function ConverterPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [converterId])
 
+  useEffect(() => {
+    if (status === 'done' || status === 'error') {
+      stageRef.current?.focus()
+    }
+  }, [status])
+
   async function handleDownloadAll() {
     setDownloadError(null)
     try {
@@ -229,6 +238,7 @@ export function ConverterPage() {
 
   return (
     <main className="main converter-page">
+      <h1 className="sr-only">{converter.name}</h1>
       <div className="converter-workspace">
         <aside className="converter-types" aria-labelledby="converter-types-title">
           <span className="tool-panel-eyebrow">Conversion type</span>
@@ -298,7 +308,16 @@ export function ConverterPage() {
           </a>
         </aside>
 
-        <section id="tool" className="converter-stage" aria-label="Convert a file">
+        <section id="tool" ref={stageRef} tabIndex={-1} className="converter-stage" aria-label="Convert a file">
+          <p className="sr-only" role="status" aria-live="polite">
+            {status === 'working'
+              ? `Converting ${files.length} file${files.length === 1 ? '' : 's'}…`
+              : status === 'done'
+                ? `Conversion complete. ${results.length} file${results.length === 1 ? '' : 's'} ready to download.`
+                : status === 'error'
+                  ? 'Conversion failed.'
+                  : ''}
+          </p>
         {status === 'working' ? (
           <div className="working">
             <span className="spinner" aria-hidden="true" />
@@ -350,7 +369,7 @@ export function ConverterPage() {
         ) : status === 'done' ? (
           <Results results={results} onDownloadAll={handleDownloadAll} onReset={reset} />
         ) : status === 'error' ? (
-          <div className="error">
+          <div className="error" role="alert">
             <p>
               {files.length > 1 ? 'Conversion failed.' : (
                 <>
@@ -367,11 +386,33 @@ export function ConverterPage() {
         ) : (
           <>
             {converter.supportsTextInput && (
-              <div className="input-mode" role="tablist" aria-label="Input type">
+              <div
+                className="input-mode"
+                role="tablist"
+                aria-label="Input type"
+                onKeyDown={(e: KeyboardEvent<HTMLDivElement>) => {
+                  const tabs = Array.from(
+                    e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+                  )
+                  const current = tabs.indexOf(document.activeElement as HTMLButtonElement)
+                  if (current === -1) return
+                  let next = -1
+                  if (e.key === 'ArrowRight') next = (current + 1) % tabs.length
+                  else if (e.key === 'ArrowLeft') next = (current - 1 + tabs.length) % tabs.length
+                  else if (e.key === 'Home') next = 0
+                  else if (e.key === 'End') next = tabs.length - 1
+                  else return
+                  e.preventDefault()
+                  tabs[next].focus()
+                  tabs[next].click()
+                }}
+              >
                 <button
                   type="button"
                   role="tab"
+                  id="tab-file"
                   aria-selected={inputMode === 'file'}
+                  aria-controls="panel-upload"
                   className={inputMode === 'file' ? 'input-mode-tab active' : 'input-mode-tab'}
                   onClick={() => setInputMode('file')}
                 >
@@ -380,7 +421,9 @@ export function ConverterPage() {
                 <button
                   type="button"
                   role="tab"
+                  id="tab-paste"
                   aria-selected={inputMode === 'paste'}
+                  aria-controls="panel-paste"
                   className={inputMode === 'paste' ? 'input-mode-tab active' : 'input-mode-tab'}
                   onClick={() => setInputMode('paste')}
                 >
@@ -389,7 +432,13 @@ export function ConverterPage() {
               </div>
             )}
             {converter.supportsTextInput && inputMode === 'paste' ? (
-              <div className="paste-panel">
+              <div
+                id="panel-paste"
+                role="tabpanel"
+                aria-labelledby="tab-paste"
+                tabIndex={0}
+                className="paste-panel"
+              >
                 <textarea
                   className="paste-textarea"
                   value={pasteText}
@@ -429,7 +478,14 @@ export function ConverterPage() {
                 </div>
               </div>
             ) : (
-              <DropZone accept={converter.accept} onFiles={handleFiles} />
+              <div
+                id="panel-upload"
+                role="tabpanel"
+                aria-labelledby="tab-file"
+                tabIndex={0}
+              >
+                <DropZone accept={converter.accept} onFiles={handleFiles} />
+              </div>
             )}
           </>
         )}
@@ -442,7 +498,7 @@ export function ConverterPage() {
         )}
 
         {(status === 'done' || (status === 'error' && files.length > 1)) && failed.length > 0 && (
-          <div className="failures">
+          <div className="failures" role="alert">
             <p className="failures-title">
               {failed.length} file{failed.length > 1 ? 's' : ''} couldn&apos;t be converted:
             </p>

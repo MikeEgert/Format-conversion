@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ConversionError } from '../converters'
 import { downloadResult, formatBytes, replaceExtension, assertFileSize } from '../converters/helpers'
 import { DropZone } from './DropZone'
@@ -39,6 +39,13 @@ export function PdfToolsPage() {
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState<{ message: string; hint?: string } | null>(null)
   const [result, setResult] = useState<{ blob: Blob; filename: string } | null>(null)
+  const stageRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (status === 'done' || status === 'error') {
+      stageRef.current?.focus()
+    }
+  }, [status])
 
   useEffect(() => {
     if (files.length !== 1 || mode === 'merge') return
@@ -122,6 +129,7 @@ export function PdfToolsPage() {
   const activeMode = pdfModes.find((item) => item.id === mode) ?? pdfModes[0]
   return (
     <main className="main converter-page pdf-tools-page">
+      <h1 className="sr-only">{activeMode.name}</h1>
       <div className="converter-workspace pdf-tools-workspace">
         <aside className="converter-types" aria-labelledby="pdf-tools-types-title">
           <span className="tool-panel-eyebrow">PDF tools</span>
@@ -171,7 +179,16 @@ export function PdfToolsPage() {
           <a className="converter-pdf-link" href="#/tool">Back to converters →</a>
         </aside>
 
-        <section className="converter-stage pdf-tools-stage" aria-label={activeMode.name}>
+        <section ref={stageRef} tabIndex={-1} className="converter-stage pdf-tools-stage" aria-label={activeMode.name}>
+          <p className="sr-only" role="status" aria-live="polite">
+            {status === 'working'
+              ? 'Processing locally…'
+              : status === 'done'
+                ? 'PDF ready to download.'
+                : status === 'error'
+                  ? 'PDF processing failed.'
+                  : ''}
+          </p>
           {files.length === 0 ? (
             <DropZone accept=".pdf,application/pdf" onFiles={handleFiles} />
           ) : (
