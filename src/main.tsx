@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 if (window.top && window.top !== window.self) {
   document.documentElement.style.display = 'none'
@@ -10,14 +11,6 @@ if (window.top && window.top !== window.self) {
   } catch {
     window.stop()
   }
-}
-
-try {
-  if (localStorage.getItem('theme') === 'light') {
-    document.documentElement.dataset.theme = 'light'
-  }
-} catch {
-  /* storage unavailable — keep default dark theme */
 }
 
 try {
@@ -40,6 +33,8 @@ try {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

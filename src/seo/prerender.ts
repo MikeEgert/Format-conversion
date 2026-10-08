@@ -57,7 +57,9 @@ function jsonLd(page: LandingPageData, origin: string): string {
 }
 
 export function extractAssetsFromIndexHtml(indexHtml: string): LandingPageAssets {
-  const scriptMatch = indexHtml.match(/<script\b[^>]*\bsrc="[^"]*"[^>]*><\/script>/)
+  const scriptMatch =
+    indexHtml.match(/<script\b[^>]*\btype="module"[^>]*\bsrc="[^"]*"[^>]*><\/script>/) ??
+    indexHtml.match(/<script\b[^>]*\bsrc="[^"]*"[^>]*><\/script>/)
   const cssMatch = indexHtml.match(/<link\b[^>]*\brel="stylesheet"[^>]*>/)
   if (!scriptMatch || !cssMatch) {
     throw new Error('Could not locate built JS/CSS tags in dist/index.html')
@@ -156,10 +158,11 @@ export function buildLandingPageHtml({
     '<meta charset="UTF-8" />',
     '<link rel="icon" type="image/png" href="/favicon.png?v=2" />',
     '<link rel="apple-touch-icon" href="/favicon.png?v=2" />',
-    '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />',
-    '<meta name="theme-color" content="#f3f8f9" />',
-    '<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a" />',
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0" />',
+    '<meta name="theme-color" content="#f3f1ea" />',
+    '<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#101614" />',
     '<meta name="color-scheme" content="dark light" />',
+    '<script src="/theme-init.js"></script>',
     `<title>${escapeHtml(page.title)}</title>`,
     `<meta name="description" content="${escapeHtml(page.description)}" />`,
     `<link rel="canonical" href="${escapeHtml(url)}" />`,
