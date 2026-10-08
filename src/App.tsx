@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { converters, groupConvertersByCategory } from './converters'
 import { ConverterPage } from './components/ConverterPage'
 import { PdfToolsPage } from './components/PdfToolsPage'
@@ -9,33 +9,31 @@ import { getLandingPage, getLandingPageByPath } from './seo/landingPages'
 
 function ConvertersDropdown() {
   const [open, setOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   return (
     <div
       className={`nav-dropdown${open ? ' is-open' : ''}`}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
-      onFocus={() => setOpen(true)}
-      onBlur={() => setOpen(false)}
-    >
-      <div
-        className="nav-dropdown-trigger"
-        tabIndex={0}
-        role="button"
-        aria-haspopup="true"
-        aria-expanded={open}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') setOpen(false)
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            window.location.hash = '#/tool'
-            setOpen(false)
-          }
-        }}
-        onClick={() => {
-          window.location.hash = '#/tool'
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && open) {
+          e.stopPropagation()
           setOpen(false)
-        }}
+          triggerRef.current?.focus()
+        }
+      }}
+    >
+      <button
+        ref={triggerRef}
+        type="button"
+        className="nav-dropdown-trigger"
+        aria-expanded={open}
+        aria-controls="converters-menu"
+        onClick={() => setOpen((value) => !value)}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <rect x="4" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
@@ -47,8 +45,8 @@ function ConvertersDropdown() {
         <svg className="caret" viewBox="0 0 24 24" aria-hidden="true">
           <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      </div>
-      <div className="nav-dropdown-menu" role="menu" aria-label="Converters">
+      </button>
+      <div className="nav-dropdown-menu" id="converters-menu" aria-label="Converters">
         {groupConvertersByCategory(converters).map((group) => (
           <div className="nav-dropdown-group" key={group.category}>
             <span className="nav-dropdown-group-title">{group.category}</span>
@@ -59,7 +57,6 @@ function ConvertersDropdown() {
                   key={c.id}
                   className="nav-dropdown-item"
                   href={landing ? landing.path : `#/tool?converter=${c.id}`}
-                  role="menuitem"
                   onClick={() => setOpen(false)}
                 >
                   <span className="ndi-from">{c.fromLabel}</span>
