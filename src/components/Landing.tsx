@@ -1,6 +1,5 @@
 import { converters, groupConvertersByCategory } from '../converters'
 import type { Converter } from '../converters'
-import { Showcase } from './Showcase'
 
 const featuredIds = ['heic-to-jpg', 'pdf-to-docx', 'image', 'csv-to-json']
 const featuredConverters = featuredIds
@@ -97,7 +96,6 @@ export function LandingPage() {
         </div>
 
         <aside className="landing-quick" aria-labelledby="landing-quick-title">
-          <span className="landing-eyebrow">Start here</span>
           <h2 id="landing-quick-title">Common conversions</h2>
           <ul>
             {featuredConverters.map((converter) => (
@@ -115,9 +113,11 @@ export function LandingPage() {
 
       <section className="landing-directory" id="conversions" aria-labelledby="conversions-title">
         <div className="landing-section-heading">
-          <span className="landing-eyebrow">All tools / {converters.length} conversions</span>
-          <h2 id="conversions-title">Choose a conversion.</h2>
-          <p>Choose a conversion to open the tool. You can check its details before you begin.</p>
+          <h2 id="conversions-title">All conversions.</h2>
+          <p>
+            {converters.length} tools across images, documents, e-books, and data. Open one to
+            start, or check its details first.
+          </p>
         </div>
         <div className="landing-categories">
           {converterGroups.map((group) => (
@@ -128,7 +128,6 @@ export function LandingPage() {
 
       <section className="landing-pdf-feature" aria-labelledby="landing-pdf-title">
         <div>
-          <span className="landing-eyebrow">A different kind of PDF tool</span>
           <h2 id="landing-pdf-title">Merge and organize PDFs without uploading them.</h2>
           <p>
             Combine documents, extract page ranges, rotate pages, or remove pages directly in your
@@ -145,24 +144,8 @@ export function LandingPage() {
         </ul>
       </section>
 
-      <section className="landing-demo" aria-labelledby="landing-demo-title">
-        <div className="landing-demo-copy">
-          <span className="landing-eyebrow">See it in action</span>
-          <h2 id="landing-demo-title">See a conversion from start to finish.</h2>
-          <p>
-            Choose a conversion, drag in a file, adjust the output settings, and download the
-            result. It all happens in your browser.
-          </p>
-          <a href="#/tool" className="landing-inline-link">
-            Try the converter <Arrow diagonal />
-          </a>
-        </div>
-        <Showcase />
-      </section>
-
       <section className="landing-process" aria-labelledby="landing-process-title">
         <div>
-          <span className="landing-eyebrow">Your file, your device</span>
           <h2 id="landing-process-title">No upload step. No server copy.</h2>
           <p>
             Conversion happens inside your browser tab. We never receive or store your file, and
@@ -181,7 +164,6 @@ export function LandingPage() {
 
       <section className="landing-practical" aria-labelledby="landing-practical-title">
         <div className="landing-section-heading">
-          <span className="landing-eyebrow">The practical details</span>
           <h2 id="landing-practical-title">Good to know before you start.</h2>
         </div>
         <dl className="landing-facts">
