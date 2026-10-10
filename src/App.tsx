@@ -16,6 +16,7 @@ function ConvertersDropdown() {
       className={`nav-dropdown${open ? ' is-open' : ''}`}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false)
       }}
@@ -33,7 +34,10 @@ function ConvertersDropdown() {
         className="nav-dropdown-trigger"
         aria-expanded={open}
         aria-controls="converters-menu"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          setOpen(false)
+          window.location.hash = '#/tool'
+        }}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <rect x="4" y="4" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.8" />
