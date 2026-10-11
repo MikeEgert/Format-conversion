@@ -109,9 +109,14 @@ export function formatDuration(ms: number): string {
   if (!Number.isFinite(ms) || ms < 0) return '—'
   if (ms < 1000) return `${Math.round(ms)} ms`
   const seconds = ms / 1000
-  if (seconds < 60) return `${seconds.toFixed(1)} s`
-  const minutes = Math.floor(seconds / 60)
-  return `${minutes}m ${Math.round(seconds % 60)}s`
+  if (seconds < 60) {
+    const rounded = Math.round(seconds * 10) / 10
+    return rounded >= 60 ? '1m 0s' : `${rounded.toFixed(1)} s`
+  }
+  const roundedSeconds = Math.round(seconds)
+  const minutes = Math.floor(roundedSeconds / 60)
+  const remainder = roundedSeconds % 60
+  return `${minutes}m ${remainder}s`
 }
 
 export function formatSizeSavings(sourceSize: number, outputSize: number): string | null {

@@ -79,9 +79,19 @@ describe('formatDuration', () => {
     expect(formatDuration(59_900)).toBe('59.9 s')
   })
 
+  it('rolls rounded seconds over to a minute', () => {
+    expect(formatDuration(59_950)).toBe('1m 0s')
+    expect(formatDuration(59_999)).toBe('1m 0s')
+  })
+
   it('shows minutes for long conversions', () => {
     expect(formatDuration(60_000)).toBe('1m 0s')
     expect(formatDuration(75_000)).toBe('1m 15s')
+  })
+
+  it('never shows 60 seconds as a remainder', () => {
+    expect(formatDuration(119_999)).toBe('2m 0s')
+    expect(formatDuration(179_999)).toBe('3m 0s')
   })
 
   it('handles invalid input', () => {
