@@ -171,5 +171,11 @@ handle sales tax). Built in 3 pieces, all done:
   XLSX→JSON path re-keys rows via `setOwn` (guarding `__proto__`). Prefer the SheetJS CDN build
   if this ever becomes a shared/trusted-input surface. `.xlsx`/`.xls` inputs are format-sniffed
   (ZIP or OLE2 magic) before parsing; plain text is rejected.
+  The `Dependency audit` workflow
+  (`.github/workflows/security.yml`) allowlists these two xlsx advisories plus the
+  `sprintf-js` DoS (GHSA-hp3w-g68c-fv3c) via mammoth's argparse CLI path — that path is never
+  imported by the client bundle (no sprintf/argparse in `dist/`), the format strings are static,
+  and it has no npm-line fix without a breaking `mammoth@0.3.29` downgrade. Keep the allowlist
+  in sync with the advisory rationale if dependencies change.
 - Prefer small, focused diffs. No unrelated refactors.
 - No tests exist yet — if you add non-trivial logic, add a test alongside it rather than leaving it untested.
