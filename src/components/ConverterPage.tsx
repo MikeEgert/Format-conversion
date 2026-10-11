@@ -477,7 +477,7 @@ export function ConverterPage() {
                   </button>
                 </div>
               </div>
-            ) : (
+            ) : converter.supportsTextInput ? (
               <div
                 id="panel-upload"
                 role="tabpanel"
@@ -486,6 +486,8 @@ export function ConverterPage() {
               >
                 <DropZone accept={converter.accept} onFiles={handleFiles} />
               </div>
+            ) : (
+              <DropZone accept={converter.accept} onFiles={handleFiles} />
             )}
           </>
         )}
