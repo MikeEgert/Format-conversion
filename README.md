@@ -10,7 +10,7 @@ This project is open source (MIT). See [LICENSE](LICENSE).
 ## Screenshots
 
 ### Landing page
-Direct conversion links, a HEIC → JPG animation, local-processing explanation, and practical limits.
+Hero, featured conversions, the full tool directory, PDF tools, and the local-processing rundown.
 
 ![Format Converter landing page](docs/screenshots/landing.png)
 
