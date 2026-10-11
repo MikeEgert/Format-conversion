@@ -64,6 +64,7 @@ export function ConverterPage() {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const stageRef = useRef<HTMLElement>(null)
+  const userRunRef = useRef(false)
   const [quality, setQuality] = useState(0.9)
   const [format, setFormat] = useState<ImageFormat>('jpg')
   const [maxDimension, setMaxDimension] = useState(0)
@@ -123,12 +124,14 @@ export function ConverterPage() {
 
   function handleFiles(selected: File[]) {
     if (selected.length === 0) return
+    userRunRef.current = true
     void run(selected)
   }
 
   function handlePasteConvert() {
     const ext = converter.accept.includes('.json') ? 'json' : 'csv'
     const type = ext === 'json' ? 'application/json' : 'text/csv'
+    userRunRef.current = true
     void run([new File([pasteText], `pasted.${ext}`, { type })])
   }
 
@@ -201,6 +204,7 @@ export function ConverterPage() {
   useEffect(() => {
     if (!isImageEditor) return
     if (status !== 'done' || results.length !== 1 || files.length !== 1) return
+    userRunRef.current = false
     void run(files)
     // Re-convert the single image whenever the options change. status/files/results are
     // intentionally read via closure to avoid re-running when the conversion itself completes.
@@ -222,7 +226,10 @@ export function ConverterPage() {
 
   useEffect(() => {
     if (status === 'done' || status === 'error') {
-      stageRef.current?.focus()
+      if (userRunRef.current) {
+        userRunRef.current = false
+        stageRef.current?.focus()
+      }
     }
   }, [status])
 
