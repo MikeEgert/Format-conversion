@@ -164,18 +164,16 @@ handle sales tax). Built in 3 pieces, all done:
   (`sanitizeForFont`). CJK/emoji are not covered.
 - Don't commit secrets/env values, and don't run `wrangler deploy` or touch `worker/` deploy
   config without asking first.
-- `xlsx` is pinned to `0.18.5` (npm registry), which carries two known advisories with no fix
-  on the npm line: prototype pollution (CVE-2023-30533) and a formula-parsing ReDoS
-  (CVE-2024-22363), both fixed only in the CDN-hosted 0.19.3+/0.20.x builds. Accepted because
-  parsing happens client-side on the user's own file, the app has no XSS sink, and the
-  XLSX→JSON path re-keys rows via `setOwn` (guarding `__proto__`). Prefer the SheetJS CDN build
-  if this ever becomes a shared/trusted-input surface. `.xlsx`/`.xls` inputs are format-sniffed
-  (ZIP or OLE2 magic) before parsing; plain text is rejected.
-  The `Dependency audit` workflow
-  (`.github/workflows/security.yml`) allowlists these two xlsx advisories plus the
-  `sprintf-js` DoS (GHSA-hp3w-g68c-fv3c) via mammoth's argparse CLI path — that path is never
-  imported by the client bundle (no sprintf/argparse in `dist/`), the format strings are static,
-  and it has no npm-line fix without a breaking `mammoth@0.3.29` downgrade. Keep the allowlist
-  in sync with the advisory rationale if dependencies change.
+- `xlsx` comes from the SheetJS CDN tarball pinned to `0.20.3`
+  (`https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz`), not the npm registry. This clears the
+  two npm-line advisories (prototype pollution CVE-2023-30533 and formula-parsing ReDoS
+  CVE-2024-22363) that affected `0.18.5`. Trade-off: `npm ci` depends on cdn.sheetjs.com being
+  reachable, and the lockfile pins the tarball + integrity. The XLSX→JSON path still re-keys
+  rows via `setOwn` (guarding `__proto__`) as defense-in-depth. `.xlsx`/`.xls` inputs are
+  format-sniffed (ZIP or OLE2 magic) before parsing; plain text is rejected.
+  The `Dependency audit` workflow (`.github/workflows/security.yml`) currently allowlists
+  nothing: the xlsx advisories are gone with the CDN build, and the `sprintf-js` DoS advisory
+  (GHSA-hp3w-g68c-fv3c, via mammoth's argparse CLI path) was withdrawn upstream. Keep the
+  allowlist in sync with the advisory rationale if dependencies change.
 - Prefer small, focused diffs. No unrelated refactors.
 - No tests exist yet — if you add non-trivial logic, add a test alongside it rather than leaving it untested.

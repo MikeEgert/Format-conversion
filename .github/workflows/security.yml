@@ -31,17 +31,11 @@ jobs:
           npm audit --json > /tmp/audit.json || true
           node -e "
             const report = require('/tmp/audit.json')
-            // Known, accepted advisories (see AGENTS.md):
-            // prototype pollution GHSA-4r6h-8v6p-xvw6, ReDoS GHSA-5pgg-2g8v-p4x9
-            // (both on the npm-line xlsx build), plus the sprintf-js DoS
-            // GHSA-hp3w-g68c-fv3c via mammoth's argparse CLI path, which is never
-            // imported by the client bundle (verified: no sprintf/argparse in dist)
-            // and has no npm-line fix without a breaking mammoth downgrade.
-            const allowed = new Set([
-              'https://github.com/advisories/GHSA-4r6h-8v6p-xvw6',
-              'https://github.com/advisories/GHSA-5pgg-2g8v-p4x9',
-              'https://github.com/advisories/GHSA-hp3w-g68c-fv3c',
-            ])
+            // No accepted advisories right now (see AGENTS.md). xlsx comes from
+            // the SheetJS CDN (0.20.3), which clears the npm-line advisories, and
+            // the sprintf-js DoS advisory was withdrawn. Add entries here only
+            // with a documented rationale in AGENTS.md.
+            const allowed = new Set([])
             const urls = new Set()
             for (const v of Object.values(report.vulnerabilities || {})) {
               for (const a of v.via || []) if (typeof a === 'object' && a.url) urls.add(a.url)
